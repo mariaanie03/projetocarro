@@ -1,0 +1,40 @@
+#carro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  #carro-imagem {
+    width:100px; /* Ajuste o tamanho conforme necessário */
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  #botoes {
+    text-align: center;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50; /* Cor verde */
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    background-color: #3e8e41; /* Cor verde mais escura */
+  }
+  
+  #status.ligado {
+    color: rgb(15, 70, 223);
+    font-weight: bold;
+  }
+  
+  #status.desligado {
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+  }
