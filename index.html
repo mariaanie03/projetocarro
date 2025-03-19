@@ -1,27 +1,42 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carro em JavaScript</title>
+  <title>Herança em JavaScript</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <h1>Herança em JavaScript</h1>
 
-  <h1>Meu Carro</h1>
-
-  <div id="carro-container">
-    <img id="carro-imagem" src="img/carro.webp" alt="Imagem do Carro">
-    <p id="carro-info">Modelo: <span id="modelo"></span>, Cor: <span id="cor"></span>, Status: <span id="status">Desligado</span></p>
+  <h2>Carro Esportivo</h2>
+    <img src="img/ferrari.jpg" alt="Ferrari" width="200">  <!-- Adicionada a imagem -->
+    <p>Modelo: <span id="modeloEsportivo"></span></p>
+    <p>Cor: <span id="corEsportivo"></span></p>
+    <p>Ligado: <span id="ligadoEsportivo"></span></p>
+    <p>Velocidade: <span id="velocidadeEsportivo"></span></p>
+    <p>Turbo Ativado: <span id="turboEsportivo"></span></p>
+    <button id="ligarEsportivoBtn">Ligar</button>
+    <button id="desligarEsportivoBtn">Desligar</button>
+    <button id="acelerarEsportivoBtn">Acelerar</button>
+    <button id="frearEsportivoBtn">Frear</button>
+    <button id="ativarTurboBtn">Ativar Turbo</button>
   </div>
 
-  <!-- Sons do carro -->
-  <audio id="som-ligando" src="ligando.mp3" preload="auto"></audio>
-  <audio id="som-desligando" src="desligando.mp3" preload="auto"></audio>
-</div>
-
-  <div id="botoes">
-    <button id="ligar-desligar">Ligar</button>
+  <h2>Caminhão</h2>
+  <div id="caminhaoDiv">
+    <img src="img/caminhãoazul.jpg" alt="Caminhão" width="200">  <!-- Adicionada a imagem -->
+    <p>Modelo: <span id="modeloCaminhao"></span></p>
+    <p>Cor: <span id="corCaminhao"></span></p>
+    <p>Ligado: <span id="ligadoCaminhao"></span></p>
+    <p>Velocidade: <span id="velocidadeCaminhao"></span></p>
+    <p>Capacidade de Carga: <span id="capacidadeCarga"></span></p>
+    <p>Carga Atual: <span id="cargaAtual"></span></p>
+    <button id="ligarCaminhaoBtn">Ligar</button>
+    <button id="desligarCaminhaoBtn">Desligar</button>
+    <button id="acelerarCaminhaoBtn">Acelerar</button>
+    <button id="frearCaminhaoBtn">Frear</button>
+    <label for="pesoCarga">Peso da Carga:</label>
+    <input type="number" id="pesoCarga">
+    <button id="carregarCaminhaoBtn">Carregar</button>
   </div>
 
   <script src="script.js"></script>
