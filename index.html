@@ -1,44 +1,50 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Herança em JavaScript</title>
-  <link rel="stylesheet" href="style.css">
+    <title>Garagem Inteligente</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Herança em JavaScript</h1>
+    <h1>Garagem Inteligente</h1>
 
-  <h2>Carro Esportivo</h2>
-    <img src="img/ferrari.jpg" alt="Ferrari" width="200">  <!-- Adicionada a imagem -->
-    <p>Modelo: <span id="modeloEsportivo"></span></p>
-    <p>Cor: <span id="corEsportivo"></span></p>
-    <p>Ligado: <span id="ligadoEsportivo"></span></p>
-    <p>Velocidade: <span id="velocidadeEsportivo"></span></p>
-    <p>Turbo Ativado: <span id="turboEsportivo"></span></p>
-    <button id="ligarEsportivoBtn">Ligar</button>
-    <button id="desligarEsportivoBtn">Desligar</button>
-    <button id="acelerarEsportivoBtn">Acelerar</button>
-    <button id="frearEsportivoBtn">Frear</button>
-    <button id="ativarTurboBtn">Ativar Turbo</button>
-  </div>
+    <div id="selecao-veiculo">
+        <h2>Selecionar Veículo</h2>
+        <button onclick="garagem.selecionarVeiculo(0)">Meu Carro</button>
+        <button onclick="garagem.selecionarVeiculo(1)">Meu Carro Esportivo</button>
+        <button onclick="garagem.selecionarVeiculo(2)">Meu Caminhão</button>
+        <button onclick="garagem.selecionarVeiculo(3)">Minha Moto</button>
+        <button onclick="garagem.selecionarVeiculo(4)">Minha Bicicleta</button>
+    </div>
 
-  <h2>Caminhão</h2>
-  <div id="caminhaoDiv">
-    <img src="img/caminhãoazul.jpg" alt="Caminhão" width="200">  <!-- Adicionada a imagem -->
-    <p>Modelo: <span id="modeloCaminhao"></span></p>
-    <p>Cor: <span id="corCaminhao"></span></p>
-    <p>Ligado: <span id="ligadoCaminhao"></span></p>
-    <p>Velocidade: <span id="velocidadeCaminhao"></span></p>
-    <p>Capacidade de Carga: <span id="capacidadeCarga"></span></p>
-    <p>Carga Atual: <span id="cargaAtual"></span></p>
-    <button id="ligarCaminhaoBtn">Ligar</button>
-    <button id="desligarCaminhaoBtn">Desligar</button>
-    <button id="acelerarCaminhaoBtn">Acelerar</button>
-    <button id="frearCaminhaoBtn">Frear</button>
-    <label for="pesoCarga">Peso da Carga:</label>
-    <input type="number" id="pesoCarga">
-    <button id="carregarCaminhaoBtn">Carregar</button>
-  </div>
+    <div id="interacao">
+        <h2>Interação</h2>
+        <button onclick="garagem.interagir('ligar')">Ligar</button>
+        <button onclick="garagem.interagir('desligar')">Desligar</button>
+        <button onclick="garagem.interagir('acelerar')">Acelerar</button>
+        <button onclick="garagem.interagir('frear')">Frear</button>
+        <button onclick="garagem.interagir('ativarTurbo')">Ativar Turbo</button>
+        <button onclick="garagem.interagir('desativarTurbo')">Desativar Turbo</button>
+        <button onclick="garagem.interagir('carregar')">Carregar</button>
+        <button onclick="garagem.interagir('descarregar')">Descarregar</button>
+        <button onclick="garagem.interagir('buzinar')">Buzinar</button>
+        <br>
+        <label for="novaCor">Nova Cor:</label>
+        <input type="text" id="novaCor" value="Azul">
+        <button onclick="garagem.interagir('pintar')">Pintar</button>
+        <br>
+        <label for="novoModelo">Novo Modelo:</label>
+        <input type="text" id="novoModelo" value="Novo Modelo">
+        <button onclick="garagem.interagir('mudarModelo')">Mudar Modelo</button>
+        <p id="combustivel"></p>
+    </div>
 
-  <script src="script.js"></script>
+    <div id="informacoesVeiculo">
+        <h2>Informações do Veículo</h2>
+        <p id="info"></p>
+    </div>
+
+    <audio id="buzinaSom" src="buzina.mp3" preload="auto"></audio>
+
+    <script src="script.js"></script>
 </body>
 </html>

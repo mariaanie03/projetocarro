@@ -1,81 +1,15 @@
 body {
-    font-family: 'Arial', sans-serif; /* Fonte padrão */
-    background-color: #f4f4f4; /* Cor de fundo suave */
-    margin: 0; /* Remove margens padrão */
-    padding: 0;
-    color: #333; /* Cor do texto principal */
-    line-height: 1.6; /* Espaçamento entre linhas */
-  }
-  
-  h1 {
-    text-align: center; /* Título centralizado */
-    color: #0056b3; /* Cor do título */
-    margin-top: 20px; /* Espaçamento acima do título */
-  }
-  
-  h2 {
-    color: #007bff; /* Cor dos subtítulos */
-    margin-top: 30px; /* Espaçamento acima dos subtítulos */
-    border-bottom: 2px solid #007bff; /* Linha abaixo do subtítulo */
-    padding-bottom: 5px;
-  }
-  
-  /* Estilos para as Divs dos Carros */
-  div {
-    margin-bottom: 30px; /* Espaçamento abaixo das divs */
-    padding: 20px;
-    border: 1px solid #ddd; /* Borda suave */
-    background-color: #fff; /* Fundo branco */
-    border-radius: 8px; /* Bordas arredondadas */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Sombra suave */
-  }
-  
-  /* Estilos para as Imagens */
-  img {
-    max-width: 100%; /* Garante que a imagem não ultrapasse a largura da div */
-    height: auto; /* Mantém a proporção da imagem */
-    margin-bottom: 15px; /* Espaçamento abaixo da imagem */
-    border-radius: 5px;
-  }
-  
-  /* Estilos para os Parágrafos */
-  p {
-    margin-bottom: 8px; /* Espaçamento abaixo dos parágrafos */
-  }
-  
-  /* Estilos para os Spans (onde os valores são exibidos) */
-  span {
-    font-weight: bold; /* Texto em negrito */
-    color: #495057; /* Cor um pouco mais escura */
-  }
-  
-  /* Estilos para os Botões */
-  button {
-    background-color: #007bff; /* Cor de fundo azul */
-    color: #fff; /* Cor do texto branco */
-    padding: 10px 15px; /* Espaçamento interno */
-    border: none; /* Remove a borda padrão */
-    border-radius: 5px; /* Bordas arredondadas */
-    cursor: pointer; /* Muda o cursor para uma mãozinha ao passar o mouse */
-    margin-right: 10px; /* Espaçamento à direita dos botões */
-    font-size: 14px;
-    transition: background-color 0.3s ease; /* Transição suave na cor de fundo */
-  }
-  
-  button:hover {
-    background-color: #0056b3; /* Cor de fundo mais escura no hover */
-  }
-  
-  /* Estilos para o Input (Peso da Carga) */
-  input[type="number"] {
-    padding: 8px;
+    font-family: sans-serif;
+}
+
+#selecao-veiculo, #interacao, #informacoesVeiculo {
     border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-right: 10px;
-  }
-  
-  /* Estilos para o Label do Input */
-  label {
-    margin-right: 5px;
-    font-weight: bold;
-  }
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+button {
+    margin: 5px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
