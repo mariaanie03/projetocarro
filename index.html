@@ -16,12 +16,27 @@
         <button onclick="garagem.selecionarVeiculo(4)">Minha Bicicleta</button>
     </div>
 
+    <div id="veiculo-exibicao">
+        <h2>Veículo Selecionado</h2>
+        <img id="veiculo-imagem" src="" alt="Veículo">
+        <div id="informacoesVeiculo">
+            <p id="info"></p>
+            <p id="combustivel"></p>
+        </div>
+        <div id="status-ligado"></div>
+    </div>
+
     <div id="interacao">
         <h2>Interação</h2>
         <button onclick="garagem.interagir('ligar')">Ligar</button>
         <button onclick="garagem.interagir('desligar')">Desligar</button>
         <button onclick="garagem.interagir('acelerar')">Acelerar</button>
+        <div id="velocidade-display">Velocidade: <span>0</span> km/h</div>
+        <div id="aceleracao-barra">
+            <div id="progresso"></div>
+        </div>
         <button onclick="garagem.interagir('frear')">Frear</button>
+
         <button onclick="garagem.interagir('ativarTurbo')">Ativar Turbo</button>
         <button onclick="garagem.interagir('desativarTurbo')">Desativar Turbo</button>
         <button onclick="garagem.interagir('carregar')">Carregar</button>
@@ -35,15 +50,16 @@
         <label for="novoModelo">Novo Modelo:</label>
         <input type="text" id="novoModelo" value="Novo Modelo">
         <button onclick="garagem.interagir('mudarModelo')">Mudar Modelo</button>
-        <p id="combustivel"></p>
+
+        <div id="mensagemAlerta"></div>
+
     </div>
 
-    <div id="informacoesVeiculo">
-        <h2>Informações do Veículo</h2>
-        <p id="info"></p>
-    </div>
-
-    <audio id="buzinaSom" src="buzina.mp3" preload="auto"></audio>
+    <audio id="buzinaSom" src="sons/buzina.mp3" preload="auto"></audio>
+    <audio id="acelerarSom" src="sons/acelerar.mp3" preload="auto"></audio>
+    <audio id="frearSom" src="sons/frear.mp3" preload="auto"></audio>
+    <audio id="ligarSom" src="sons/ligar.mp3" preload="auto"></audio>
+    <audio id="desligarSom" src="sons/desligar.mp3" preload="auto"></audio>
 
     <script src="script.js"></script>
 </body>

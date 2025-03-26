@@ -7,28 +7,54 @@ class Veiculo {
         this.velocidade = 0;
         this.combustivel = combustivelMaximo;
         this.combustivelMaximo = combustivelMaximo;
+        this.imagemSrc = "imagens/carro.png"; // Imagem padrão
     }
 
     ligar() {
         if (this.combustivel > 0) {
             this.ligado = true;
+            this.tocarSom("ligarSom");
+        } else {
+            this.exibirAlerta("Não há combustível para ligar o veículo!");
         }
+        this.atualizarStatusVisual();
     }
 
     desligar() {
         this.ligado = false;
         this.velocidade = 0;
+        this.tocarSom("desligarSom");
+        this.atualizarStatusVisual();
     }
 
     acelerar(incremento) {
         if (this.ligado && this.combustivel > 0) {
-            this.velocidade += incremento;
-            this.combustivel -= 1;
+            if (this.velocidade + incremento <= 200){
+                this.velocidade += incremento;
+                this.combustivel -= 1;
+                this.tocarSom("acelerarSom");
+                this.atualizarVelocidadeDisplay();
+                this.atualizarAceleracaoBarra();
+            } else {
+              this.exibirAlerta("Velocidade Maxima atingida");
+            }
+
+        } else if (!this.ligado) {
+            this.exibirAlerta("O veículo precisa estar ligado para acelerar!");
+        } else {
+            this.exibirAlerta("O veículo está sem combustível!");
         }
     }
 
     frear(decremento) {
-        this.velocidade = Math.max(0, this.velocidade - decremento);
+        if (this.velocidade > 0){
+          this.velocidade = Math.max(0, this.velocidade - decremento);
+          this.tocarSom("frearSom");
+          this.atualizarVelocidadeDisplay();
+          this.atualizarAceleracaoBarra();
+        } else {
+          this.exibirAlerta("o carro ja esta parado");
+        }
     }
 
     pintar(novaCor) {
@@ -40,8 +66,7 @@ class Veiculo {
     }
 
     buzinar() {
-        const buzinaSom = document.getElementById("buzinaSom");
-        buzinaSom.play(); // Toca o som da buzina
+        this.tocarSom("buzinaSom");
     }
 
     exibirInformacoes() {
@@ -52,21 +77,64 @@ class Veiculo {
         this.combustivel = Math.max(0, this.combustivel - quantidade);
     }
 
-    carregar(quantidade) {}
-    descarregar(quantidade) {}
-    ativarTurbo() {}
-    desativarTurbo(){}
+    tocarSom(somId) {
+        const som = document.getElementById(somId);
+        som.currentTime = 0; // Reinicia o som para que possa tocar novamente rapidamente
+        som.play();
+    }
+
+    exibirAlerta(mensagem) {
+        const alerta = document.getElementById("mensagemAlerta");
+        alerta.textContent = mensagem;
+        setTimeout(() => {
+            alerta.textContent = ""; // Limpa a mensagem após alguns segundos
+        }, 3000);
+    }
+
+    atualizarStatusVisual() {
+        const statusDiv = document.getElementById("status-ligado");
+        if (this.ligado) {
+            statusDiv.classList.remove("desligado");
+            statusDiv.classList.add("ligado");
+        } else {
+            statusDiv.classList.remove("ligado");
+            statusDiv.classList.add("desligado");
+        }
+    }
+
+    atualizarVelocidadeDisplay() {
+        document.getElementById("velocidade-display").querySelector("span").textContent = this.velocidade;
+    }
+
+    atualizarAceleracaoBarra() {
+        const progresso = document.getElementById("progresso");
+        progresso.style.width = `${(this.velocidade / 200) * 100}%`; // Velocidade máxima = 200
+    }
+    carregar(quantidade) {} // Método vazio para evitar erros
+    descarregar(quantidade) {}// Método vazio para evitar erros
+    ativarTurbo() {}// Método vazio para evitar erros
+    desativarTurbo(){} // Método vazio para evitar erros
+
 }
 
 class CarroEsportivo extends Veiculo {
     constructor(modelo, cor) {
         super(modelo, cor);
         this.turboAtivado = false;
+        this.imagemSrc = "imagens/carro_esportivo.png";
     }
 
     ativarTurbo() {
+      if (!(this instanceof CarroEsportivo)) {
+        this.exibirAlerta("Essa ação nao pode ser feita para este veiculo");
+        return;
+      }
         if (this.ligado && this.combustivel > 0) {
             this.turboAtivado = true;
+        } else if (!this.ligado) {
+            this.exibirAlerta("O veiculo deve estar ligado");
+        } else if (this.combustivel <= 0){
+             this.exibirAlerta("O veiculo esta sem combustivel")
         }
     }
 
@@ -75,6 +143,11 @@ class CarroEsportivo extends Veiculo {
     }
 
     acelerar(incremento) {
+      if (!(this instanceof CarroEsportivo)) {
+        this.exibirAlerta("Essa ação nao pode ser feita para este veiculo");
+        return;
+      }
+
         let incrementoTurbo = this.turboAtivado ? incremento * 2 : incremento;
         super.acelerar(incrementoTurbo);
         if (this.turboAtivado && this.ligado && this.combustivel > 0) {
@@ -92,15 +165,26 @@ class Caminhao extends Veiculo {
         super(modelo, cor);
         this.capacidadeCarga = capacidadeCarga;
         this.cargaAtual = 0;
+        this.imagemSrc = "imagens/caminhao.png";
     }
 
     carregar(quantidade) {
+      if (!(this instanceof Caminhao)) {
+        this.exibirAlerta("Essa ação nao pode ser feita para este veiculo");
+        return;
+      }
         if (this.cargaAtual + quantidade <= this.capacidadeCarga) {
             this.cargaAtual += quantidade;
+        } else {
+             this.exibirAlerta("Capacidade Maxima atingida");
         }
     }
 
     descarregar(quantidade) {
+      if (!(this instanceof Caminhao)) {
+        this.exibirAlerta("Essa ação nao pode ser feita para este veiculo");
+        return;
+      }
         this.cargaAtual = Math.max(0, this.cargaAtual - quantidade);
     }
 
@@ -119,6 +203,7 @@ class Caminhao extends Veiculo {
 class Moto extends Veiculo {
     constructor(modelo, cor) {
         super(modelo, cor, 50);
+        this.imagemSrc = "imagens/moto.png";
     }
 
     acelerar(incremento) {
@@ -136,13 +221,24 @@ class Moto extends Veiculo {
 class Bicicleta extends Veiculo {
     constructor(modelo, cor) {
         super(modelo, cor, Infinity);
+        this.imagemSrc = "imagens/bicicleta.png";
     }
 
     ligar() {
+        this.exibirAlerta("Bicicleta não precisa ser ligada.");
     }
 
     acelerar(incremento) {
         this.velocidade += incremento;
+    }
+
+    frear(decremento) {
+        if (this.velocidade > 0){
+          this.velocidade = Math.max(0, this.velocidade - decremento);
+        } else {
+          this.exibirAlerta("a bicicleta ja esta parada");
+        }
+
     }
 
     exibirInformacoes() {
@@ -170,7 +266,7 @@ class Garagem {
     selecionarVeiculo(index) {
         if (index >= 0 && index < this.veiculos.length) {
             this.veiculoSelecionado = this.veiculos[index];
-            this.atualizarCombustivelInfo();
+            this.atualizarExibicaoVeiculo();
             this.exibirInformacoes();
         } else {
             console.log("Veículo não encontrado.");
@@ -216,14 +312,13 @@ class Garagem {
                 const novoModelo = document.getElementById("novoModelo").value;
                 this.veiculoSelecionado.mudarModelo(novoModelo);
                 break;
-            case "buzinar": // Nova ação para buzinar
+            case "buzinar":
                 this.veiculoSelecionado.buzinar();
                 break;
             default:
                 console.log("Ação inválida.");
         }
 
-        this.atualizarCombustivelInfo();
         this.exibirInformacoes();
     }
 
@@ -235,13 +330,19 @@ class Garagem {
         }
     }
 
-    atualizarCombustivelInfo() {
+    atualizarExibicaoVeiculo() {
         if (this.veiculoSelecionado) {
+            const img = document.getElementById("veiculo-imagem");
+            img.src = this.veiculoSelecionado.imagemSrc;
+            img.alt = this.veiculoSelecionado.modelo;
+
             document.getElementById("combustivel").textContent = `Combustível: ${this.veiculoSelecionado.combustivel}/${this.veiculoSelecionado.combustivelMaximo}`;
-        } else {
-            document.getElementById("combustivel").textContent = "";
+            this.veiculoSelecionado.atualizarStatusVisual();
+            this.veiculoSelecionado.atualizarVelocidadeDisplay();
+            this.veiculoSelecionado.atualizarAceleracaoBarra();
         }
     }
+
 }
 
 // Instancia a Garagem

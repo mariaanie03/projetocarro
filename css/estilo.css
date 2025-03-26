@@ -2,7 +2,7 @@ body {
     font-family: sans-serif;
 }
 
-#selecao-veiculo, #interacao, #informacoesVeiculo {
+#selecao-veiculo, #interacao, #veiculo-exibicao {
     border: 1px solid #ccc;
     padding: 10px;
     margin-bottom: 10px;
@@ -12,4 +12,44 @@ button {
     margin: 5px;
     padding: 8px 12px;
     cursor: pointer;
+}
+
+#status-ligado {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.ligado {
+    background-color: green;
+}
+
+.desligado {
+    background-color: red;
+}
+
+#aceleracao-barra {
+    width: 200px;
+    height: 20px;
+    border: 1px solid black;
+    margin-top: 5px;
+}
+
+#progresso {
+    height: 100%;
+    width: 0;
+    background-color: blue;
+}
+
+#veiculo-imagem {
+    max-width: 200px;
+    max-height: 150px;
+}
+
+#mensagemAlerta {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
 }
