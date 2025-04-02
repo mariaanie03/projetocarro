@@ -1,55 +1,170 @@
+/* style.css - Folha de Estilos para a Garagem Virtual */
+
+/* ========================== */
+/* Estilos Gerais e Reset     */
+/* ========================== */
 body {
-    font-family: sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #eef2f7;
+    color: #333;
+}
+h1, h2, h3 { color: #2c3e50; margin-top: 0; margin-bottom: 1rem; }
+h1 { text-align: center; margin-bottom: 30px; font-size: 2.2em; }
+hr { border: 0; height: 1px; background-color: #dce1e6; margin: 25px 0; }
+
+/* ========================== */
+/* Layout Principal (Grid)    */
+/* ========================== */
+.container {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1.5fr;
+    gap: 25px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.section-box {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e4e8;
 }
 
-#selecao-veiculo, #interacao, #veiculo-exibicao {
-    border: 1px solid #ccc;
-    padding: 10px;
-    margin-bottom: 10px;
+/* ========================== */
+/* Seção: Seleção/Adição      */
+/* ========================== */
+.selecao-veiculo h2 { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+#botoes-veiculo { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; min-height: 40px; }
+#botoes-veiculo p { font-style: italic; color: #777; width: 100%; }
+
+/* ========================== */
+/* Estilos de Botões          */
+/* ========================== */
+button { padding: 10px 18px; cursor: pointer; background-color: #3498db; color: white; border: none; border-radius: 5px; font-size: 0.95em; transition: background-color 0.2s ease, transform 0.1s ease; border-bottom: 2px solid #2980b9; font-weight: 500; vertical-align: middle; }
+button:hover { background-color: #2980b9; }
+button:active { transform: translateY(1px); border-bottom-width: 1px; }
+#botoes-veiculo button.selecionado { background-color: #2c3e50; border-bottom-color: #1a252f; font-weight: bold; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); }
+
+/* ========================== */
+/* Estilos de Formulários     */
+/* ========================== */
+form label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9em; color: #555; }
+form select, form input[type="text"], form input[type="number"], form input[type="date"], form textarea { display: block; width: 100%; margin-bottom: 18px; padding: 10px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 1em; box-sizing: border-box; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+form select:focus, form input:focus, form textarea:focus { border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); }
+form textarea { min-height: 80px; resize: vertical; }
+form button[type="submit"] { background-color: #2ecc71; border-bottom-color: #27ae60; width: 100%; padding: 12px; font-size: 1.05em; }
+form button[type="submit"]:hover { background-color: #27ae60; }
+
+/* ========================== */
+/* Seção: Display do Veículo  */
+/* ========================== */
+.display-veiculo h2 span { font-weight: normal; color: #3498db; font-size: 0.9em; vertical-align: middle; }
+
+/* Container da Imagem */
+#imagem-veiculo-container {
+    text-align: center;
+    margin-bottom: 25px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    min-height: 180px; /* Ajuste conforme necessário */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #ced4da;
+    overflow: hidden; /* Esconde imagens não ativas */
 }
 
-button {
-    margin: 5px;
-    padding: 8px 12px;
-    cursor: pointer;
+/* Estilos COMUNS a TODAS as imagens de veículo */
+.imagem-display {
+    max-width: 50%;
+    max-height: 100px; /* Ajuste conforme necessário */
+    object-fit: scale-down; /* Garante visibilidade e proporção */
+    transition: opacity 0.3s ease-in-out; /* Suaviza a troca, se feita com opacidade */
+    /* display: none; */ /* O JS controlará o display */
+    /* 'display: block;' será adicionado pelo JS à imagem ativa */
 }
 
-#status-ligado {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 10px;
-}
+/* Área de informações */
+#informacoes-veiculo { margin-top: 15px; margin-bottom: 25px; padding: 20px; background-color: #e9f5fb; border-radius: 5px; border-left: 5px solid #3498db; font-size: 0.95em; line-height: 1.7; min-height: 100px; }
+#informacoes-veiculo strong { color: #2c3e50; }
+#informacoes-veiculo progress { margin-left: 10px; width: 100px; height: 12px; vertical-align: middle; border-radius: 6px; overflow: hidden; border: 1px solid #ccc; }
+#informacoes-veiculo progress::-webkit-progress-bar { background-color: #eee; border-radius: 6px; }
+#informacoes-veiculo progress::-webkit-progress-value { background-color: #5cb85c; border-radius: 6px 0 0 6px; }
+#informacoes-veiculo progress::-moz-progress-bar { background-color: #5cb85c; border-radius: 6px; }
 
-.ligado {
-    background-color: green;
-}
+/* Estilos de Status */
+.status-ligado { color: #27ae60; font-weight: bold; background-color: rgba(46, 204, 113, 0.1); padding: 3px 6px; border-radius: 3px; border: 1px solid rgba(46, 204, 113, 0.3); display: inline-block; }
+.status-desligado { color: #c0392b; font-weight: bold; background-color: rgba(231, 76, 60, 0.1); padding: 3px 6px; border-radius: 3px; border: 1px solid rgba(231, 76, 60, 0.3); display: inline-block; }
 
-.desligado {
-    background-color: red;
-}
+/* Velocímetro */
+#velocimetro-container { margin-top: 20px; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#velocimetro-container label { margin-bottom: 0; flex-shrink: 0; font-weight: 600; }
+#velocimetro { flex-grow: 1; height: 18px; appearance: none; border-radius: 9px; overflow: hidden; border: 1px solid #bdc3c7; background-color: #ecf0f1; min-width: 150px; }
+#velocimetro::-webkit-progress-value { background: linear-gradient(to right, #f1c40f, #e74c3c); border-radius: 9px 0 0 9px; transition: width 0.2s linear; }
+#velocimetro::-moz-progress-bar { background: linear-gradient(to right, #f1c40f, #e74c3c); border-radius: 9px; transition: width 0.2s linear; }
+#velocidade-texto { font-weight: bold; font-family: 'Consolas', 'Menlo', 'Monaco', monospace; white-space: nowrap; min-width: 80px; text-align: right; background-color: #f1f1f1; padding: 3px 6px; border-radius: 3px; border: 1px solid #ddd; }
 
-#aceleracao-barra {
-    width: 200px;
-    height: 20px;
-    border: 1px solid black;
-    margin-top: 5px;
-}
+/* Controles do Veículo */
+#controles-veiculo { margin-top: 25px; padding-top: 20px; border-top: 1px solid #e0e4e8; }
+#controles-veiculo h3 { margin-bottom: 15px; }
+#controles-veiculo button, #controles-veiculo .acao-caminhao { margin: 5px 4px; }
+.acao-caminhao { display: inline-block; vertical-align: middle; border: 1px solid #eee; padding: 8px 12px; border-radius: 5px; margin-left: 10px; background-color: #fdfdfd; }
+.acao-caminhao label { margin-right: 5px; margin-bottom: 0; font-size: 0.85em; font-weight: normal; }
+.acao-caminhao input[type="number"] { width: 70px; display: inline-block; margin-bottom: 0; padding: 8px; margin-right: 5px; text-align: right; vertical-align: middle; }
+.acao-caminhao button { padding: 8px 12px; margin: 0 2px; background-color: #f39c12; border-bottom-color: #e67e22; }
+.acao-caminhao button:hover { background-color: #e67e22; }
 
-#progresso {
-    height: 100%;
-    width: 0;
-    background-color: blue;
-}
+/* ========================== */
+/* Alertas de Feedback        */
+/* ========================== */
+#alerta-container { margin-top: 20px; padding: 15px 20px; border-radius: 5px; font-weight: 500; text-align: center; display: none; opacity: 0; transition: opacity 0.4s ease; border-width: 1px; border-style: solid; }
+#alerta-container:not(:empty).alerta-erro, #alerta-container:not(:empty).alerta-info { display: block; opacity: 1; }
+.alerta-erro { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+.alerta-info { background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
 
-#veiculo-imagem {
-    max-width: 200px;
-    max-height: 150px;
-}
+/* ========================== */
+/* Seção: Manutenção          */
+/* ========================== */
+.manutencao-veiculo h2, .manutencao-veiculo h3 { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+#historico-manutencao h4 { margin-bottom: 10px; margin-top: 20px; color: #555; font-size: 1.1em; font-weight: 600; }
+#historico-manutencao h4:first-of-type { margin-top: 0; }
+#historico-manutencao ul { list-style: none; padding: 0; margin: 0 0 20px 0; }
+#historico-manutencao li { background-color: #f9f9f9; padding: 12px 15px; margin-bottom: 8px; border: 1px solid #eef1f3; border-radius: 4px; font-size: 0.9em; line-height: 1.5; word-wrap: break-word; }
+#historico-manutencao li:last-child { margin-bottom: 0; }
+#historico-manutencao li small i { color: #666; margin-left: 5px; }
+#manutencao-sem-veiculo { font-style: italic; color: #777; text-align: center; padding: 20px 0; }
 
-#mensagemAlerta {
-    color: red;
-    font-weight: bold;
-    margin-top: 10px;
+/* ========================== */
+/* Controles de Áudio         */
+/* ========================== */
+.audio-controls { position: fixed; bottom: 15px; right: 20px; background-color: rgba(44, 62, 80, 0.92); padding: 10px 18px; border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.25); z-index: 1000; display: flex; align-items: center; }
+.audio-controls label { color: #ecf0f1; margin-right: 10px; font-size: 0.9em; vertical-align: middle; }
+#volume-control { display: inline-block; vertical-align: middle; cursor: pointer; appearance: none; width: 120px; height: 8px; background: #566573; border-radius: 4px; outline: none; }
+#volume-control::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: #ecf0f1; border-radius: 50%; cursor: pointer; }
+#volume-control::-moz-range-thumb { width: 16px; height: 16px; background: #ecf0f1; border-radius: 50%; cursor: pointer; border: none; }
+
+/* ========================== */
+/* Responsividade             */
+/* ========================== */
+@media (max-width: 1200px) {
+    .container { grid-template-columns: 1fr 1.8fr; grid-template-areas: "selecao display" "manutencao manutencao"; }
+    .selecao-veiculo { grid-area: selecao; } .display-veiculo { grid-area: display; } .manutencao-veiculo { grid-area: manutencao; }
+}
+@media (max-width: 768px) {
+    body { padding: 10px; } h1 { font-size: 1.8em; margin-bottom: 20px; }
+    .container { grid-template-columns: 1fr; grid-template-areas: "selecao" "display" "manutencao"; gap: 20px; }
+    .section-box { padding: 15px; }
+    #velocimetro-container { flex-wrap: wrap; justify-content: space-between; }
+    #velocimetro { order: 1; width: 100%; margin-top: 8px; }
+    #velocidade-texto, #velocimetro-container label { order: 0; }
+    .audio-controls { position: static; margin-top: 25px; text-align: center; background: none; box-shadow: none; padding: 0; width: 100%; justify-content: center; }
+    .audio-controls label { color: #333; }
+    form select, form input, form textarea { padding: 12px; } form button[type="submit"] { padding: 14px; }
+    .acao-caminhao { display: block; margin-left: 0; margin-top: 15px; text-align: center; }
+    .acao-caminhao input[type="number"], .acao-caminhao button { width: calc(50% - 8px); margin: 5px 2px 0 2px; box-sizing: border-box; }
+    .acao-caminhao label { display: block; margin-bottom: 5px; }
 }
