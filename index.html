@@ -1,154 +1,153 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garagem Virtual Interativa</title>
+    <title>Garagem Inteligente v4.0 - Feedback Interativo</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.png" type="image/png">
 </head>
 <body>
-    <h1>Garagem Virtual Interativa</h1>
 
-    <div class="container">
-
-        <!-- Seção 1: Seleção e Adição de Veículos -->
-        <div class="selecao-veiculo section-box">
-            <h2>Garagem</h2>
-            <!-- Área para os botões de seleção -->
-            <div id="botoes-veiculo">
-                <p>Carregando veículos...</p>
-            </div>
-            <hr>
-            <h2>Adicionar Novo Veículo</h2>
-            <!-- Formulário de adição -->
-            <form id="form-add-veiculo">
-                <label for="tipo-veiculo">Tipo:</label>
-                <select id="tipo-veiculo" required>
-                    <option value="" disabled selected>Selecione o Tipo</option>
-                    <option value="Carro">Carro</option>
-                    <option value="CarroEsportivo">Carro Esportivo</option>
-                    <option value="Caminhao">Caminhão</option>
-                </select>
-                <label for="modelo-veiculo">Modelo:</label>
-                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca, Ferrari F40" required>
-                <label for="cor-veiculo">Cor:</label>
-                <input type="text" id="cor-veiculo" placeholder="Ex: Azul, Vermelho" required>
-                <div id="campo-capacidade" style="display: none;">
-                     <label for="capacidade-veiculo">Capacidade de Carga (kg):</label>
-                    <input type="number" id="capacidade-veiculo" placeholder="Ex: 25000" min="1">
-                </div>
-                <button type="submit">Adicionar à Garagem</button>
-            </form>
+    <header class="main-header">
+        <h1>Garagem Inteligente v4.0</h1>
+        <nav class="tab-navigation">
+            <button class="tab-button active" data-tab="tab-garage">Minha Garagem</button>
+            <button class="tab-button" data-tab="tab-add">Adicionar Veículo</button>
+            <button class="tab-button" id="tab-button-details" data-tab="tab-details" disabled>Detalhes do Veículo</button>
+        </nav>
+        <!-- Controle de Volume (Opcional) -->
+        <div class="volume-control">
+            <label for="volumeSlider">Volume:</label>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
         </div>
+    </header>
 
-        <!-- Seção 2: Display do Veículo Selecionado e Controles -->
-        <div class="display-veiculo section-box">
-            <h2>Veículo Selecionado: <span id="nome-veiculo-selecionado">Nenhum</span></h2>
+    <main class="tab-content-area">
 
-            <!-- ================================================ -->
-            <!--        Área para Exibição da Imagem              -->
-            <!-- ================================================ -->
-            <!-- Container da imagem -->
-            <div id="imagem-veiculo-container">
-                <!-- Imagem Placeholder - Exibida quando nenhum veículo está selecionado -->
-                <img id="imagem-placeholder" class="imagem-display" src="images/placeholder.png" alt="Nenhum veículo selecionado" style="display: block;"> <!-- Começa visível -->
-
-                <!-- Imagem para Carro Comum (Ex: Fusca) -->
-                <!-- ID específico: 'imagem-carro' -->
-                <!-- Classe 'imagem-display' para controle geral de visibilidade/estilo -->
-                <img id="imagem-carro" class="imagem-display" src="imagens/Ferrari_F40-removebg-preview.png" alt="Imagem de um Carro" style="display: none;"> <!-- Começa escondida -->
-
-                <!-- Imagem para Carro Esportivo (Ex: Ferrari) -->
-                <!-- ID específico: 'imagem-esportivo' -->
-                <img id="imagem-esportivo" class="imagem-display" src="imagens/volkswagen-fusca--removebg-preview.png" alt="Imagem de um Carro Esportivo" style="display: none;"> <!-- Começa escondida -->
-
-                <!-- Imagem para Caminhão (Ex: Scania) -->
-                <!-- ID específico: 'imagem-caminhao' -->
-                <img id="imagem-caminhao" class="imagem-display" src="imagens/1211367.png" alt="Imagem de um Caminhão" style="display: none;"> <!-- Começa escondida -->
-
-                <!-- Adicionar mais tags <img> aqui para outros tipos de veículos, se necessário, -->
-                <!-- seguindo o padrão de ID 'imagem-TIPONOMINUSCULO' e classe 'imagem-display' -->
-
-                <!-- ***** IMPORTANTE: Crie a pasta 'images' e coloque: ***** -->
-                <!-- placeholder.png, carro.png, esportivo.png, caminhao.png -->
+        <!-- Aba: Adicionar Veículo -->
+        <section id="tab-add" class="tab-pane">
+            <div class="painel">
+                <h2>Adicionar Novo Veículo</h2>
+                <form id="formAdicionarVeiculo">
+                    <div class="form-grid">
+                        <div>
+                            <label for="tipoVeiculo">Tipo:</label>
+                            <select id="tipoVeiculo" required>
+                                <option value="" disabled selected>-- Selecione --</option>
+                                <option value="Carro">Carro Comum</option>
+                                <option value="CarroEsportivo">Carro Esportivo</option>
+                                <option value="Caminhao">Caminhão</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="modeloVeiculo">Modelo:</label>
+                            <input type="text" id="modeloVeiculo" placeholder="Ex: Fusca, Ferrari F40" required>
+                        </div>
+                        <div>
+                            <label for="corVeiculo">Cor:</label>
+                            <input type="color" id="corVeiculo" value="#cccccc" title="Clique para escolher a cor">
+                        </div>
+                        <div id="campoCapacidadeCarga" class="hidden"> 
+                            <label for="capacidadeCarga">Capacidade Carga (kg):</label>
+                            <input type="number" id="capacidadeCarga" min="100" value="10000" step="100">
+                        </div>
+                    </div>
+                    <button type="submit" class="botao-principal">Adicionar à Garagem</button>
+                </form>
             </div>
-            <!-- ================================================ -->
-            <!--      Fim da Área para Exibição da Imagem         -->
-            <!-- ================================================ -->
+        </section>
 
-            <!-- Área para informações textuais do veículo -->
-            <div id="informacoes-veiculo">
-                <p>Selecione um veículo na garagem...</p>
-            </div>
-
-            <!-- Velocímetro -->
-            <div id="velocimetro-container">
-                 <label for="velocimetro">Velocidade:</label>
-                 <progress id="velocimetro" value="0" max="100">0%</progress>
-                 <span id="velocidade-texto">0 km/h</span>
-            </div>
-
-            <!-- Container de Alertas -->
-            <div id="alerta-container"></div>
-
-            <!-- Container de Controles de Ação -->
-            <div id="controles-veiculo" style="display: none;">
-                <h3>Ações do Veículo:</h3>
-                <button data-acao="ligar" title="Ligar o motor">Ligar</button>
-                <button data-acao="desligar" title="Desligar o motor">Desligar</button>
-                <button data-acao="acelerar" title="Aumentar a velocidade">Acelerar</button>
-                <button data-acao="frear" title="Diminuir a velocidade">Frear</button>
-                <button data-acao="buzinar" title="Tocar a buzina">Buzinar</button>
-                <!-- Controles específicos (turbo) -->
-                <button data-acao="ativarTurbo" class="acao-esportivo" style="display: none;">Ativar Turbo</button>
-                <button data-acao="desativarTurbo" class="acao-esportivo" style="display: none;">Desativar Turbo</button>
-                <!-- Controles específicos (carga) -->
-                <div class="acao-caminhao" style="display: none;">
-                    <label for="peso-carga">Peso (kg):</label>
-                    <input type="number" id="peso-carga" placeholder="500" min="1">
-                    <button data-acao="carregar">Carregar</button>
-                    <button data-acao="descarregar">Descarregar</button>
+        <!-- Aba: Minha Garagem -->
+        <section id="tab-garage" class="tab-pane active">
+            <div class="painel">
+                <h2>Minha Garagem</h2>
+                <p>Selecione um veículo abaixo para ver detalhes e interagir:</p>
+                <div id="listaVeiculosGaragem">
+                    <p class="placeholder-text">Carregando veículos...</p>
                 </div>
             </div>
-        </div> <!-- FIM .display-veiculo -->
+        </section>
 
-        <!-- Seção 3: Manutenção -->
-        <div class="manutencao-veiculo section-box">
-            <h2>Manutenção</h2>
-            <div id="historico-manutencao">
-                 <p>Selecione um veículo...</p>
+        <!-- Aba: Detalhes do Veículo -->
+        <section id="tab-details" class="tab-pane">
+            <div class="painel">
+                <div class="details-header">
+                     <h2 id="tituloVeiculo">Detalhes</h2>
+                     <button id="btnRemoverVeiculo" class="botao-perigo" title="Remover este veículo permanentemente" disabled>Remover Veículo</button>
+                </div>
+
+                <div id="informacoesVeiculo" class="info-box">
+                    <p class="placeholder-text">Selecione um veículo na aba "Minha Garagem".</p>
+                    
+                </div>
+                <hr>
+
+                <h3>Ações</h3>
+                <div class="acoes-container">
+                    <button id="btnLigar" title="Ligar o veículo" disabled>Ligar</button>
+                    <button id="btnDesligar" title="Desligar o veículo (somente parado)" disabled>Desligar</button>
+                    <button id="btnAcelerar" title="Aumentar a velocidade" disabled>Acelerar</button>
+                    <button id="btnFrear" title="Diminuir a velocidade" disabled>Frear</button>
+                    <button id="btnBuzinar" title="Buzinar!" disabled>Buzinar 🔊</button>
+
+                    <div id="controlesEsportivo" class="controles-especificos hidden">
+                        <button id="btnAtivarTurbo" title="Ativar o turbo" disabled>Ativar Turbo 🚀</button>
+                        <button id="btnDesativarTurbo" title="Desativar o turbo" disabled>Desativar Turbo</button>
+                    </div>
+                    <div id="controlesCaminhao" class="controles-especificos hidden">
+                        <label for="cargaInput">Peso Carga (kg):</label>
+                        <input type="number" id="cargaInput" value="1000" min="1" step="100" disabled>
+                        <button id="btnCarregar" title="Adicionar carga" disabled>Carregar</button>
+                        <button id="btnDescarregar" title="Remover carga" disabled>Descarregar</button>
+                    </div>
+                </div>
+                <hr>
+
+                <h3>Manutenção</h3>
+                <div class="manutencao-container">
+                    <div class="form-manutencao">
+                        <h4>Registrar / Agendar</h4>
+                        <form id="formManutencao">
+                            <label for="dataManutencao">Data:</label>
+                            <input type="date" id="dataManutencao" required disabled>
+                            <label for="tipoManutencao">Tipo Serviço:</label>
+                            <input type="text" id="tipoManutencao" placeholder="Ex: Troca de óleo" required disabled>
+                            <label for="custoManutencao">Custo (R$):</label>
+                            <input type="number" id="custoManutencao" min="0" step="0.01" value="0" required disabled>
+                            <label for="descManutencao">Descrição (Opcional):</label>
+                            <textarea id="descManutencao" rows="2" placeholder="Detalhes..." disabled></textarea>
+                            <button type="submit" class="botao-secundario" disabled>Adicionar Registro</button>
+                        </form>
+                    </div>
+                    <div class="historico-agendamento">
+                        <h4>Histórico (Passado)</h4>
+                        <ul id="historicoLista"><li class="placeholder-text">Nenhum histórico.</li></ul>
+                        <h4>Agendamentos (Futuro)</h4>
+                        <ul id="agendamentosLista"><li class="placeholder-text">Nenhum agendamento.</li></ul>
+                    </div>
+                </div>
             </div>
-            <hr>
-            <h3>Agendar / Registrar Manutenção</h3>
-            <form id="form-add-manutencao" style="display: none;">
-                 <label for="data-manutencao">Data:</label>
-                 <input type="date" id="data-manutencao" required>
-                 <label for="tipo-servico">Tipo de Serviço:</label>
-                 <input type="text" id="tipo-servico" placeholder="Ex: Troca de óleo" required>
-                 <label for="custo-manutencao">Custo (R$):</label>
-                 <input type="number" id="custo-manutencao" placeholder="150.50" min="0" step="0.01" required>
-                 <label for="descricao-manutencao">Descrição (Opcional):</label>
-                 <textarea id="descricao-manutencao" placeholder="Detalhes..."></textarea>
-                 <button type="submit">Agendar/Registrar</button>
-            </form>
-            <p id="manutencao-sem-veiculo" style="display: block;">Selecione um veículo...</p>
-        </div> <!-- FIM .manutencao-veiculo -->
+        </section>
 
-    </div> <!-- Fim do .container principal -->
+    </main>
 
-    <!-- Controles de Áudio Globais -->
-    <div class="audio-controls">
-        <label for="volume-control">Volume:</label>
-        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
-        <!-- Tags de áudio (escondidas) -->
-        <audio id="som-ligar" src="sounds/car_start.mp3" preload="auto"></audio>
-        <audio id="som-desligar" src="sounds/car_stop.mp3" preload="auto"></audio>
-        <audio id="som-acelerar" src="sounds/car_accelerate.mp3" preload="auto"></audio>
-        <audio id="som-frear" src="sounds/car_brake.mp3" preload="auto"></audio>
-        <audio id="som-buzina" src="sounds/car_horn.mp3" preload="auto"></audio>
-    </div>
+    <!-- Container para Notificações Flutuantes -->
+    <div id="notificacoes" class="notificacoes-container"></div>
 
-    <!-- Link para o Arquivo JavaScript -->
+    <!-- Elementos de Áudio (Ocultos) -->
+    <audio id="somLigar" src="audio/ligando.mp3" preload="auto"></audio>
+    <audio id="somDesligar" src="audio/desligamento.mp3" preload="auto"></audio>
+    <audio id="somAcelerar" src="audio/quot-acceleration-quot-sound-effect-205860.mp3" preload="auto"></audio>
+    <audio id="somFrear" src="audio/harsh-car-brake.mp3" preload="auto"></audio>
+    <audio id="somBuzina" src="audio/buzina-carro-carrinha-20241217.mp3" preload="auto"></audio>
+  
+
+
+    <footer class="main-footer-credits">
+        <p>Garagem Inteligente v4.0 - Desenvolvido com HTML, CSS e JavaScript</p>
+    </footer>
+
     <script src="script.js"></script>
 </body>
 </html>
