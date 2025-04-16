@@ -1,147 +1,256 @@
+/* Aplica estilos a todo o corpo (<body>) do documento HTML */
 body {
+    /* Define a família de fontes a ser usada para o texto. 'sans-serif' é uma fonte genérica sem serifas (como Arial, Helvetica) */
     font-family: sans-serif;
+    /* Define a altura da linha (espaçamento vertical entre linhas de texto) como 1.6 vezes o tamanho da fonte, para melhor legibilidade */
     line-height: 1.6;
+    /* Define uma margem de 20 pixels em todos os lados do corpo, criando um espaço entre o conteúdo e a borda da janela do navegador */
     margin: 20px;
+    /* Define a cor de fundo para todo o corpo da página como um cinza claro (#f4f4f4) */
     background-color: #f4f4f4;
 }
 
+/* Estiliza elementos que possuem a classe 'container' */
+/* (Nota: Esta classe não parece estar sendo usada no HTML fornecido, mas é um padrão comum) */
 .container {
+    /* Define a largura máxima que este container pode ter (900 pixels) */
     max-width: 900px;
+    /* Centraliza o container horizontalmente na página (auto nas margens esquerda e direita) */
     margin: auto;
+    /* Define a cor de fundo do container como branco (#fff) */
     background: #fff;
+    /* Define um preenchimento interno de 20 pixels em todos os lados do container */
     padding: 20px;
+    /* Arredonda os cantos do container com um raio de 8 pixels */
     border-radius: 8px;
+    /* Adiciona uma sombra sutil ao container: deslocamento horizontal 0, vertical 2px, desfoque 5px, cor preta com 10% de opacidade */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
+/* Estiliza todos os elementos de título de nível 1 (<h1>), 2 (<h2>), e 3 (<h3>) */
 h1, h2, h3 {
+    /* Define a cor do texto dos títulos como um cinza escuro (#333) */
     color: #333;
+    /* Define uma margem inferior de 10 pixels abaixo de cada título, criando espaço antes do conteúdo seguinte */
     margin-bottom: 10px;
 }
 
+/* Comentário descritivo para a regra seguinte */
 /* Estilo dos 'cards' para cada seção */
+/* Aplica estilos a elementos que possuem a classe 'card' */
+/* (Nota: Esta classe também não parece estar sendo usada no HTML principal fornecido, mas sim em um exemplo anterior) */
 .card {
+    /* Define a cor de fundo do card como branco (#fff) */
     background-color: #fff;
+    /* Define uma borda sólida de 1 pixel, cor cinza claro (#ddd) */
     border: 1px solid #ddd;
+    /* Arredonda os cantos do card com um raio de 5 pixels */
     border-radius: 5px;
+    /* Define um preenchimento interno de 15 pixels em todos os lados */
     padding: 15px;
+    /* Define uma margem inferior de 20 pixels abaixo de cada card */
     margin-bottom: 20px;
+    /* Adiciona uma sombra muito sutil ao card: deslocamento horizontal 0, vertical 1px, desfoque 3px, cor preta com 5% de opacidade */
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
-
+/* Comentário descritivo geral para as regras de formulário */
 /* Formulários */
+
+/* Estiliza todos os elementos <label> que estão dentro de um <form> */
 form label {
+    /* Faz com que o rótulo ocupe sua própria linha, empurrando o campo para baixo */
     display: block;
+    /* Adiciona um espaço de 5 pixels abaixo do rótulo */
     margin-bottom: 5px;
+    /* Define o texto do rótulo como negrito */
     font-weight: bold;
 }
 
+/* Estiliza múltiplos tipos de campos de entrada (<input>, <select>, <textarea>) dentro de um <form> */
 form input[type="text"],
 form input[type="number"],
 form input[type="date"],
 form select,
 form textarea {
+    /* Define a largura do campo. 'calc(100% - 22px)' tenta compensar o padding (10px * 2) e a borda (1px * 2) para que o campo não ultrapasse 100% da largura do container pai */
+    /* NOTA: Usar 'box-sizing: border-box;' (como no CSS mais completo anterior) é geralmente uma abordagem melhor e mais simples para incluir padding/borda na largura total. */
     width: calc(100% - 22px); /* Ajusta padding e borda */
+    /* Adiciona preenchimento interno de 10 pixels */
     padding: 10px;
+    /* Adiciona margem inferior de 10 pixels abaixo de cada campo */
     margin-bottom: 10px;
+    /* Define uma borda sólida cinza claro (#ccc) de 1 pixel */
     border: 1px solid #ccc;
+    /* Arredonda os cantos com raio de 4 pixels */
     border-radius: 4px;
 }
 
+/* Estiliza todos os botões (<button>) dentro de um <form> */
 form button {
+    /* Define a cor de fundo como verde (#5cb85c) */
     background-color: #5cb85c;
+    /* Define a cor do texto como branco */
     color: white;
+    /* Define o preenchimento interno (10px vertical, 15px horizontal) */
     padding: 10px 15px;
+    /* Remove qualquer borda padrão do botão */
     border: none;
+    /* Arredonda os cantos com raio de 4 pixels */
     border-radius: 4px;
+    /* Muda o cursor para uma mãozinha ao passar sobre o botão */
     cursor: pointer;
+    /* Define o tamanho da fonte como 1em (tamanho padrão do contexto) */
     font-size: 1em;
 }
 
+/* Estiliza o botão do formulário quando o mouse está sobre ele (:hover) */
 form button:hover {
+    /* Muda a cor de fundo para um verde ligeiramente mais escuro (#4cae4c) */
     background-color: #4cae4c;
 }
 
+/* Comentário descritivo para as regras de exibição da garagem */
 /* Display da Garagem */
+/* Estiliza elementos com a classe 'vehicle' que estão dentro de um elemento com id 'garage-display' */
+/* (Nota: IDs como #garage-display não estão no HTML principal fornecido, essa estrutura pode ser de uma versão anterior) */
 #garage-display .vehicle {
+    /* Define uma borda sólida cinza bem claro (#eee) de 1 pixel */
     border: 1px solid #eee;
+    /* Adiciona preenchimento interno de 15 pixels */
     padding: 15px;
+    /* Adiciona margem inferior de 10 pixels abaixo de cada veículo */
     margin-bottom: 10px;
+    /* Arredonda os cantos com raio de 5 pixels */
     border-radius: 5px;
+    /* Define a cor de fundo como um cinza muito claro (#f9f9f9) */
     background-color: #f9f9f9;
+    /* Define o posicionamento como relativo. Isso permite que elementos filhos com 'position: absolute' (como .details-button) sejam posicionados em relação a este container */
     position: relative; /* Para posicionar botões de detalhes */
 }
 
+/* Estiliza títulos <h4> dentro de um '.vehicle' em '#garage-display' */
 #garage-display .vehicle h4 {
+    /* Remove a margem superior padrão do h4 */
     margin-top: 0;
+    /* Adiciona margem inferior de 10 pixels */
     margin-bottom: 10px;
+    /* Define a cor do texto como um azul escuro (#0056b3) */
     color: #0056b3;
 }
 
+/* Estiliza parágrafos <p> dentro de um '.vehicle' em '#garage-display' */
 #garage-display .vehicle p {
+    /* Define margem vertical de 5 pixels (em cima e embaixo) e 0 horizontal */
     margin: 5px 0;
+    /* Define o tamanho da fonte ligeiramente menor que o padrão (0.95em) */
     font-size: 0.95em;
 }
 
+/* Estiliza elementos com a classe 'status' dentro de um '.vehicle' em '#garage-display' */
 #garage-display .vehicle .status {
+    /* Define o texto como negrito */
     font-weight: bold;
 }
 
+/* Estiliza especificamente elementos com as classes 'status' e 'ligado' */
 #garage-display .vehicle .status.ligado {
+    /* Define a cor do texto como verde */
     color: green;
 }
 
+/* Estiliza especificamente elementos com as classes 'status' e 'desligado' */
 #garage-display .vehicle .status.desligado {
+    /* Define a cor do texto como vermelho */
     color: red;
 }
 
+/* Estiliza botões <button> dentro de um elemento com classe 'actions' */
+/* que esteja dentro de '#garage-display .vehicle' OU dentro de '#vehicle-details' */
+/* (Nota: Esses seletores podem ser de uma estrutura HTML diferente) */
 #garage-display .vehicle .actions button,
 #vehicle-details .actions button {
+    /* Adiciona margem direita de 5 pixels entre botões */
     margin-right: 5px;
+    /* Adiciona margem superior de 5 pixels (para espaçamento vertical se quebrar linha) */
     margin-top: 5px;
+    /* Define o preenchimento interno (5px vertical, 8px horizontal) */
     padding: 5px 8px;
+    /* Define o tamanho da fonte menor (0.9em) */
     font-size: 0.9em;
+    /* Muda o cursor para mãozinha */
     cursor: pointer;
 }
 
+/* Estiliza especificamente botões com classe 'turbo-active' dentro de '#vehicle-details .actions' */
 #vehicle-details .actions button.turbo-active {
+    /* Define a cor de fundo como amarelo (#ffc107) para indicar turbo ativo */
     background-color: #ffc107; /* Amarelo para turbo ativo */
+    /* Define a cor da borda para combinar com o fundo */
     border-color: #ffc107;
 }
 
 
+/* Comentário descritivo para as regras da seção de detalhes */
 /* Seção de Detalhes e Manutenção */
+/* Estiliza títulos <h3> dentro de um elemento com id 'details-section' */
+/* (Nota: ID #details-section não está no HTML principal fornecido) */
 #details-section h3 {
+    /* Adiciona margem superior de 20 pixels */
     margin-top: 20px;
+    /* Adiciona uma borda superior cinza claro (#eee) de 1 pixel */
     border-top: 1px solid #eee;
+    /* Adiciona preenchimento superior de 15 pixels (espaço entre a borda e o texto do título) */
     padding-top: 15px;
 }
 
+/* Estiliza itens de lista <li> dentro de elementos com id 'maintenance-history' OU 'future-appointments-list' */
+/* (Nota: IDs não estão no HTML principal fornecido, que usa #historicoLista e #agendamentosLista) */
 #maintenance-history li,
 #future-appointments-list li {
+    /* Define a cor de fundo como cinza claro (#e9ecef) */
     background-color: #e9ecef;
+    /* Define preenchimento interno de 8 pixels */
     padding: 8px;
+    /* Adiciona margem inferior de 5 pixels entre itens da lista */
     margin-bottom: 5px;
+    /* Arredonda os cantos com raio de 3 pixels */
     border-radius: 3px;
+    /* Define o tamanho da fonte menor (0.9em) */
     font-size: 0.9em;
 }
 
+/* Estiliza especificamente itens <li> dentro de '#future-appointments-list' */
 #future-appointments-list li {
+    /* Sobrescreve a cor de fundo para azul claro (#d1ecf1) para destacar agendamentos */
     background-color: #d1ecf1; /* Azul claro para agendamentos */
 }
 
+/* Comentário descritivo para o botão de detalhes */
 /* Botão para ver detalhes/manutenção */
+/* Estiliza elementos com a classe 'details-button' */
+/* (Nota: Classe não usada no HTML principal fornecido) */
 .details-button {
+    /* Define o posicionamento como absoluto, permitindo posicioná-lo precisamente dentro de um container pai com 'position: relative' (como #garage-display .vehicle) */
     position: absolute;
+    /* Posiciona a 10 pixels do topo do container pai */
     top: 10px;
+    /* Posiciona a 10 pixels da direita do container pai */
     right: 10px;
+    /* Define o preenchimento interno (5px vertical, 10px horizontal) */
     padding: 5px 10px;
+    /* Define a cor de fundo como azul (#007bff) */
     background-color: #007bff;
+    /* Define a cor do texto como branco */
     color: white;
+    /* Remove a borda padrão */
     border: none;
+    /* Arredonda os cantos com raio de 4 pixels */
     border-radius: 4px;
+    /* Muda o cursor para mãozinha */
     cursor: pointer;
 }
+/* Estiliza o botão de detalhes quando o mouse está sobre ele (:hover) */
 .details-button:hover {
+    /* Muda a cor de fundo para um azul mais escuro (#0056b3) */
     background-color: #0056b3;
 }

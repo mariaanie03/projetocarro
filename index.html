@@ -1,153 +1,324 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garagem Inteligente v4.0 - Feedback Interativo</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="images/favicon.png" type="image/png">
+<!DOCTYPE html> <!-- Declaração do tipo de documento, indica que é um documento HTML5 -->
+<html lang="pt-BR"> <!-- Elemento raiz do documento HTML. 'lang="pt-BR"' define o idioma principal da página como Português do Brasil -->
+<head> <!-- Seção que contém metadados sobre o documento HTML, não visíveis diretamente na página -->
+    <meta charset="UTF-8"> <!-- Define a codificação de caracteres usada pelo documento como UTF-8, que suporta a maioria dos caracteres e símbolos, incluindo acentuação -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configura a janela de visualização (viewport) para dispositivos móveis. 'width=device-width' ajusta a largura da página à largura da tela do dispositivo. 'initial-scale=1.0' define o nível de zoom inicial quando a página é carregada -->
+    <title>Garagem Inteligente v4.0 - Feedback Interativo</title> <!-- Define o título da página, exibido na aba ou janela do navegador -->
+    <link rel="stylesheet" href="style.css"> <!-- Vincula um arquivo CSS externo (style.css) para aplicar estilos à página -->
+    <link rel="icon" href="images/favicon.png" type="image/png"> <!-- Define o ícone da página (favicon), exibido na aba do navegador, usando uma imagem PNG -->
 </head>
-<body>
+<body> <!-- Corpo do documento HTML, contém todo o conteúdo visível da página -->
 
-    <header class="main-header">
-        <h1>Garagem Inteligente v4.0</h1>
-        <nav class="tab-navigation">
+    <!-- Cabeçalho principal da página -->
+    <header class="main-header"> <!-- Elemento semântico que representa o cabeçalho da página ou de uma seção. A classe 'main-header' é usada para aplicar estilos específicos via CSS -->
+        <h1>Garagem Inteligente v4.0</h1> <!-- Título principal da página (Heading 1) -->
+
+        <!-- Navegação principal por abas -->
+        <nav class="tab-navigation"> <!-- Elemento semântico para agrupar links de navegação. A classe 'tab-navigation' é usada para estilização -->
+            <!-- Botão para a aba "Minha Garagem" -->
+            <!-- 'class="tab-button active"' define estilos comuns de botão de aba e o estado 'active' (ativo/selecionado) inicial -->
+            <!-- 'data-tab="tab-garage"' é um atributo de dados personalizado usado pelo JavaScript para identificar qual aba este botão controla -->
             <button class="tab-button active" data-tab="tab-garage">Minha Garagem</button>
-            <button class="tab-button" data-tab="tab-add">Adicionar Veículo</button>
-            <button class="tab-button" id="tab-button-details" data-tab="tab-details" disabled>Detalhes do Veículo</button>
-        </nav>
-        <!-- Controle de Volume (Opcional) -->
-        <div class="volume-control">
-            <label for="volumeSlider">Volume:</label>
-            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
-        </div>
-    </header>
 
+            <!-- Botão para a aba "Adicionar Veículo" -->
+            <!-- 'class="tab-button"' aplica estilos comuns de botão de aba -->
+            <!-- 'data-tab="tab-add"' identifica a aba controlada por este botão -->
+            <button class="tab-button" data-tab="tab-add">Adicionar Veículo</button>
+
+            <!-- Botão para a aba "Detalhes do Veículo" -->
+            <!-- 'id="tab-button-details"' é um identificador único para este botão, permitindo selecioná-lo especificamente no JavaScript/CSS -->
+            <!-- 'disabled' torna o botão não clicável inicialmente (será habilitado via JavaScript) -->
+            <button class="tab-button" id="tab-button-details" data-tab="tab-details" disabled>Detalhes do Veículo</button>
+        </nav> <!-- Fim da navegação por abas -->
+
+        <!-- Seção para o Controle de Volume (Opcional) -->
+        <div class="volume-control"> <!-- Div usada como container para os elementos de controle de volume -->
+            <!-- Rótulo para o slider de volume, associado pelo atributo 'for' -->
+            <label for="volumeSlider">Volume:</label>
+            <!-- Input do tipo 'range' (slider) para controlar o volume -->
+            <!-- 'id="volumeSlider"' identifica o slider -->
+            <!-- 'min="0"', 'max="1"', 'step="0.1"' definem o intervalo (0.0 a 1.0) e a granularidade do controle -->
+            <!-- 'value="0.5"' define o valor inicial do volume (50%) -->
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.1" value="0.5">
+        </div> <!-- Fim do controle de volume -->
+    </header> <!-- Fim do cabeçalho principal -->
+
+        <!-- Área Principal que contém o conteúdo das diferentes abas -->
+    <!-- 'class="tab-content-area"' é usada para aplicar estilos gerais a esta área -->
     <main class="tab-content-area">
 
-        <!-- Aba: Adicionar Veículo -->
+        <!-- Seção representando a aba "Adicionar Veículo" -->
+        <!-- 'id="tab-add"' identifica unicamente esta aba -->
+        <!-- 'class="tab-pane"' é uma classe comum para todas as seções de aba, usada para controlar a visibilidade (geralmente 'display: none' por padrão) -->
         <section id="tab-add" class="tab-pane">
+            <!-- Container interno para o conteúdo da aba, com padding e estilos -->
+            <!-- 'class="painel"' aplica estilos visuais comuns a todos os painéis de conteúdo das abas -->
             <div class="painel">
+                <!-- Título da seção "Adicionar Novo Veículo" -->
                 <h2>Adicionar Novo Veículo</h2>
+
+                <!-- Formulário para coletar dados do novo veículo -->
+                <!-- 'id="formAdicionarVeiculo"' identifica o formulário para manipulação via JavaScript -->
                 <form id="formAdicionarVeiculo">
+                    <!-- Container para organizar os campos do formulário em um grid (definido no CSS) -->
+                    <!-- 'class="form-grid"' aplica o layout de grid aos elementos filhos -->
                     <div class="form-grid">
-                        <div>
-                            <label for="tipoVeiculo">Tipo:</label>
-                            <select id="tipoVeiculo" required>
-                                <option value="" disabled selected>-- Selecione --</option>
-                                <option value="Carro">Carro Comum</option>
-                                <option value="CarroEsportivo">Carro Esportivo</option>
-                                <option value="Caminhao">Caminhão</option>
+
+                        <!-- Grupo: Tipo do Veículo -->
+                        <div> <!-- Div agrupadora para o label e select -->
+                            <label for="tipoVeiculo">Tipo:</label> <!-- Rótulo associado ao select -->
+                            <select id="tipoVeiculo" required> <!-- Campo de seleção obrigatório -->
+                                <option value="" disabled selected>-- Selecione --</option> <!-- Opção placeholder -->
+                                <option value="Carro">Carro Comum</option> <!-- Opção Carro -->
+                                <option value="CarroEsportivo">Carro Esportivo</option> <!-- Opção Esportivo -->
+                                <option value="Caminhao">Caminhão</option> <!-- Opção Caminhão -->
                             </select>
                         </div>
-                        <div>
-                            <label for="modeloVeiculo">Modelo:</label>
+
+                        <!-- Grupo: Modelo do Veículo -->
+                        <div> <!-- Div agrupadora para o label e input -->
+                            <label for="modeloVeiculo">Modelo:</label> <!-- Rótulo associado ao input -->
+                            <!-- Campo de texto para o modelo, obrigatório -->
+                            <!-- 'placeholder' fornece uma dica ao usuário -->
                             <input type="text" id="modeloVeiculo" placeholder="Ex: Fusca, Ferrari F40" required>
                         </div>
-                        <div>
-                            <label for="corVeiculo">Cor:</label>
+
+                        <!-- Grupo: Cor do Veículo -->
+                        <div> <!-- Div agrupadora para o label e input -->
+                            <label for="corVeiculo">Cor:</label> <!-- Rótulo associado ao input -->
+                            <!-- Input do tipo 'color', permite ao usuário escolher uma cor visualmente -->
+                            <!-- 'value="#cccccc"' define a cor padrão inicial (cinza claro) -->
+                            <!-- 'title' fornece uma dica ao passar o mouse -->
                             <input type="color" id="corVeiculo" value="#cccccc" title="Clique para escolher a cor">
                         </div>
-                        <div id="campoCapacidadeCarga" class="hidden"> 
-                            <label for="capacidadeCarga">Capacidade Carga (kg):</label>
+
+                        <!-- Grupo: Capacidade de Carga (Específico para Caminhão) -->
+                        <!-- 'id="campoCapacidadeCarga"' identifica este grupo -->
+                        <!-- 'class="hidden"' torna este grupo invisível por padrão (será mostrado/ocultado via JavaScript) -->
+                        <div id="campoCapacidadeCarga" class="hidden">
+                            <label for="capacidadeCarga">Capacidade Carga (kg):</label> <!-- Rótulo -->
+                            <!-- Input numérico para a capacidade de carga -->
+                            <!-- 'min="100"' define o valor mínimo permitido -->
+                            <!-- 'value="10000"' define o valor padrão inicial -->
+                            <!-- 'step="100"' define o incremento/decremento ao usar as setas do campo -->
                             <input type="number" id="capacidadeCarga" min="100" value="10000" step="100">
                         </div>
-                    </div>
+                    </div> <!-- Fim do form-grid -->
+
+                    <!-- Botão para submeter o formulário -->
+                    <!-- 'type="submit"' indica que este botão envia o formulário -->
+                    <!-- 'class="botao-principal"' aplica o estilo de botão principal (geralmente verde) -->
                     <button type="submit" class="botao-principal">Adicionar à Garagem</button>
-                </form>
-            </div>
-        </section>
+                </form> <!-- Fim do formulário -->
+            </div> <!-- Fim do painel -->
+        </section> <!-- Fim da aba Adicionar Veículo -->
 
-        <!-- Aba: Minha Garagem -->
+               <!-- Seção representando a aba "Minha Garagem" -->
+        <!-- 'id="tab-garage"' identifica unicamente esta aba -->
+        <!-- 'class="tab-pane active"' define esta como uma seção de aba e a marca como 'active' (visível por padrão ao carregar a página) -->
         <section id="tab-garage" class="tab-pane active">
+            <!-- Container interno para o conteúdo da aba -->
             <div class="painel">
+                <!-- Título da seção "Minha Garagem" -->
                 <h2>Minha Garagem</h2>
+                <!-- Parágrafo instrutivo para o usuário -->
                 <p>Selecione um veículo abaixo para ver detalhes e interagir:</p>
+                <!-- Container onde a lista de veículos (sejam botões ou cards de imagem) será inserida dinamicamente pelo JavaScript -->
+                <!-- 'id="listaVeiculosGaragem"' permite ao JavaScript encontrar este elemento para preenchê-lo -->
                 <div id="listaVeiculosGaragem">
+                    <!-- Conteúdo inicial exibido enquanto o JavaScript carrega/processa os dados da garagem -->
+                    <!-- 'class="placeholder-text"' aplica estilos para texto de placeholder (itálico, cinza, etc.) -->
                     <p class="placeholder-text">Carregando veículos...</p>
+                    <!-- Este parágrafo será substituído pelos veículos reais quando o JavaScript rodar -->
                 </div>
-            </div>
-        </section>
+            </div> <!-- Fim do painel -->
+        </section> <!-- Fim da aba Minha Garagem -->
 
-        <!-- Aba: Detalhes do Veículo -->
+        <!-- Seção representando a aba "Detalhes do Veículo" -->
+        <!-- 'id="tab-details"' identifica unicamente esta aba -->
+        <!-- 'class="tab-pane"' define esta como uma seção de aba (invisível por padrão) -->
         <section id="tab-details" class="tab-pane">
+            <!-- Container interno para o conteúdo da aba -->
             <div class="painel">
+                <!-- Cabeçalho específico para a seção de detalhes, contendo título e botão de remover -->
+                <!-- 'class="details-header"' aplica layout flexível (definido no CSS) para alinhar o título e o botão -->
                 <div class="details-header">
+                     <!-- Título da seção de detalhes. O conteúdo textual será atualizado pelo JavaScript com o nome do veículo selecionado -->
+                     <!-- 'id="tituloVeiculo"' permite ao JavaScript modificar este título -->
                      <h2 id="tituloVeiculo">Detalhes</h2>
+                     <!-- Botão para remover o veículo atualmente selecionado -->
+                     <!-- 'id="btnRemoverVeiculo"' identifica o botão para JavaScript -->
+                     <!-- 'class="botao-perigo"' aplica estilo de botão de perigo (vermelho) -->
+                     <!-- 'title' fornece uma dica ao usuário sobre a função do botão -->
+                     <!-- 'disabled' torna o botão inativo inicialmente (será habilitado quando um veículo for selecionado) -->
                      <button id="btnRemoverVeiculo" class="botao-perigo" title="Remover este veículo permanentemente" disabled>Remover Veículo</button>
-                </div>
+                </div> <!-- Fim do cabeçalho de detalhes -->
 
+                <!-- Container principal onde as informações detalhadas do veículo selecionado serão exibidas -->
+                <!-- 'id="informacoesVeiculo"' permite ao JavaScript encontrar e preencher esta área -->
+                <!-- 'class="info-box"' aplica estilos de caixa de informação (fundo, padding, borda) -->
                 <div id="informacoesVeiculo" class="info-box">
+                    <!-- Conteúdo placeholder inicial, exibido quando nenhum veículo está selecionado -->
                     <p class="placeholder-text">Selecione um veículo na aba "Minha Garagem".</p>
-                    
-                </div>
+                    <!-- Este conteúdo será substituído pelo HTML gerado pelo método 'exibirInformacoes()' do veículo selecionado -->
+                </div> <!-- Fim da área de informações -->
+
+                <!-- Linha horizontal para separação visual -->
                 <hr>
-
-                <h3>Ações</h3>
-                <div class="acoes-container">
-                    <button id="btnLigar" title="Ligar o veículo" disabled>Ligar</button>
-                    <button id="btnDesligar" title="Desligar o veículo (somente parado)" disabled>Desligar</button>
-                    <button id="btnAcelerar" title="Aumentar a velocidade" disabled>Acelerar</button>
-                    <button id="btnFrear" title="Diminuir a velocidade" disabled>Frear</button>
-                    <button id="btnBuzinar" title="Buzinar!" disabled>Buzinar 🔊</button>
-
-                    <div id="controlesEsportivo" class="controles-especificos hidden">
-                        <button id="btnAtivarTurbo" title="Ativar o turbo" disabled>Ativar Turbo 🚀</button>
-                        <button id="btnDesativarTurbo" title="Desativar o turbo" disabled>Desativar Turbo</button>
-                    </div>
-                    <div id="controlesCaminhao" class="controles-especificos hidden">
-                        <label for="cargaInput">Peso Carga (kg):</label>
-                        <input type="number" id="cargaInput" value="1000" min="1" step="100" disabled>
-                        <button id="btnCarregar" title="Adicionar carga" disabled>Carregar</button>
-                        <button id="btnDescarregar" title="Remover carga" disabled>Descarregar</button>
-                    </div>
-                </div>
-                <hr>
-
-                <h3>Manutenção</h3>
-                <div class="manutencao-container">
-                    <div class="form-manutencao">
-                        <h4>Registrar / Agendar</h4>
-                        <form id="formManutencao">
-                            <label for="dataManutencao">Data:</label>
-                            <input type="date" id="dataManutencao" required disabled>
-                            <label for="tipoManutencao">Tipo Serviço:</label>
-                            <input type="text" id="tipoManutencao" placeholder="Ex: Troca de óleo" required disabled>
-                            <label for="custoManutencao">Custo (R$):</label>
-                            <input type="number" id="custoManutencao" min="0" step="0.01" value="0" required disabled>
-                            <label for="descManutencao">Descrição (Opcional):</label>
-                            <textarea id="descManutencao" rows="2" placeholder="Detalhes..." disabled></textarea>
-                            <button type="submit" class="botao-secundario" disabled>Adicionar Registro</button>
-                        </form>
-                    </div>
-                    <div class="historico-agendamento">
-                        <h4>Histórico (Passado)</h4>
-                        <ul id="historicoLista"><li class="placeholder-text">Nenhum histórico.</li></ul>
-                        <h4>Agendamentos (Futuro)</h4>
-                        <ul id="agendamentosLista"><li class="placeholder-text">Nenhum agendamento.</li></ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Container para Notificações Flutuantes -->
+                               <!-- Título para a seção de ações interativas com o veículo -->
+                               <h3>Ações</h3>
+                               <!-- Container para agrupar todos os botões e controles de ação -->
+                               <!-- 'class="acoes-container"' aplica layout (provavelmente flex ou grid) para organizar os botões -->
+                               <div class="acoes-container">
+                                   <!-- Botão para Ligar o veículo -->
+                                   <!-- 'id="btnLigar"' identifica o botão -->
+                                   <!-- 'title' fornece dica sobre a função -->
+                                   <!-- 'disabled' o torna inativo inicialmente (habilitado/desabilitado via JS baseado no estado do veículo) -->
+                                   <button id="btnLigar" title="Ligar o veículo" disabled>Ligar</button>
+               
+                                   <!-- Botão para Desligar o veículo -->
+                                   <!-- 'title' explica a condição (somente parado) -->
+                                   <button id="btnDesligar" title="Desligar o veículo (somente parado)" disabled>Desligar</button>
+               
+                                   <!-- Botão para Acelerar o veículo -->
+                                   <button id="btnAcelerar" title="Aumentar a velocidade" disabled>Acelerar</button>
+               
+                                   <!-- Botão para Frear o veículo -->
+                                   <button id="btnFrear" title="Diminuir a velocidade" disabled>Frear</button>
+               
+                                   <!-- Botão para Buzinar -->
+                                   <!-- Emoji 🔊 adicionado para feedback visual -->
+                                   <button id="btnBuzinar" title="Buzinar!" disabled>Buzinar 🔊</button>
+               
+                                   <!-- Container para os controles específicos de Carro Esportivo -->
+                                   <!-- 'id="controlesEsportivo"' identifica este container -->
+                                   <!-- 'class="controles-especificos hidden"' aplica estilos para controles específicos e o torna oculto ('hidden') por padrão -->
+                                   <div id="controlesEsportivo" class="controles-especificos hidden">
+                                       <!-- Botão para Ativar o Turbo -->
+                                       <!-- Emoji 🚀 adicionado -->
+                                       <button id="btnAtivarTurbo" title="Ativar o turbo" disabled>Ativar Turbo 🚀</button>
+                                       <!-- Botão para Desativar o Turbo -->
+                                       <button id="btnDesativarTurbo" title="Desativar o turbo" disabled>Desativar Turbo</button>
+                                   </div> <!-- Fim dos controles de Esportivo -->
+               
+                                   <!-- Container para os controles específicos de Caminhão -->
+                                   <!-- 'id="controlesCaminhao"' identifica este container -->
+                                   <!-- 'class="controles-especificos hidden"' aplica estilos e o torna oculto por padrão -->
+                                   <div id="controlesCaminhao" class="controles-especificos hidden">
+                                       <!-- Rótulo para o campo de peso da carga -->
+                                       <label for="cargaInput">Peso Carga (kg):</label>
+                                       <!-- Campo numérico para inserir o peso a carregar/descarregar -->
+                                       <!-- 'id="cargaInput"' identifica o campo -->
+                                       <!-- 'min="1"' valor mínimo, 'step="100"' incremento -->
+                                       <input type="number" id="cargaInput" value="1000" min="1" step="100" disabled>
+                                       <!-- Botão para Carregar -->
+                                       <button id="btnCarregar" title="Adicionar carga" disabled>Carregar</button>
+                                       <!-- Botão para Descarregar -->
+                                       <button id="btnDescarregar" title="Remover carga" disabled>Descarregar</button>
+                                   </div> <!-- Fim dos controles de Caminhão -->
+                               </div> <!-- Fim do container de ações -->
+               
+                               <!-- Linha horizontal para separação visual -->
+                               <hr>
+               
+                               <!-- Título para a seção de Manutenção -->
+                               <h3>Manutenção</h3>
+                               <!-- Container principal para a seção de manutenção, provavelmente com layout de grid -->
+                               <!-- 'class="manutencao-container"' aplica layout para dividir formulário e histórico -->
+                               <div class="manutencao-container">
+                                   <!-- Div para o formulário de adicionar/agendar manutenção -->
+                                   <div class="form-manutencao">
+                                       <!-- Subtítulo para o formulário -->
+                                       <h4>Registrar / Agendar</h4>
+                                       <!-- Formulário para registrar nova manutenção -->
+                                       <!-- 'id="formManutencao"' identifica o formulário -->
+                                       <form id="formManutencao">
+                                           <!-- Grupo: Data da Manutenção -->
+                                           <label for="dataManutencao">Data:</label>
+                                           <!-- Input do tipo 'date', obrigatório, desabilitado inicialmente -->
+                                           <input type="date" id="dataManutencao" required disabled>
+               
+                                           <!-- Grupo: Tipo do Serviço -->
+                                           <label for="tipoManutencao">Tipo Serviço:</label>
+                                           <!-- Input de texto, obrigatório, com placeholder, desabilitado inicialmente -->
+                                           <input type="text" id="tipoManutencao" placeholder="Ex: Troca de óleo" required disabled>
+               
+                                           <!-- Grupo: Custo da Manutenção -->
+                                           <label for="custoManutencao">Custo (R$):</label>
+                                           <!-- Input numérico para custo, com valor mínimo, passo decimal, desabilitado inicialmente -->
+                                           <input type="number" id="custoManutencao" min="0" step="0.01" value="0" required disabled>
+               
+                                           <!-- Grupo: Descrição da Manutenção (Opcional) -->
+                                           <label for="descManutencao">Descrição (Opcional):</label>
+                                           <!-- Área de texto para detalhes, com placeholder, desabilitado inicialmente -->
+                                           <textarea id="descManutencao" rows="2" placeholder="Detalhes..." disabled></textarea>
+               
+                                           <!-- Botão para submeter o formulário de manutenção -->
+                                           <!-- 'class="botao-secundario"' aplica estilo de botão secundário (cinza) -->
+                                           <button type="submit" class="botao-secundario" disabled>Adicionar Registro</button>
+                                       </form> <!-- Fim do formulário de manutenção -->
+                                   </div> <!-- Fim da div do formulário -->
+               
+                                   <!-- Div para exibir o histórico e os agendamentos -->
+                                   <div class="historico-agendamento">
+                                       <!-- Subtítulo para o histórico passado -->
+                                       <h4>Histórico (Passado)</h4>
+                                       <!-- Lista não ordenada (ul) onde o histórico será exibido -->
+                                       <!-- 'id="historicoLista"' permite ao JavaScript preencher esta lista -->
+                                       <ul id="historicoLista"><li class="placeholder-text">Nenhum histórico.</li></ul> <!-- Item placeholder inicial -->
+               
+                                       <!-- Subtítulo para os agendamentos futuros -->
+                                       <h4>Agendamentos (Futuro)</h4>
+                                       <!-- Lista não ordenada (ul) onde os agendamentos serão exibidos -->
+                                       <!-- 'id="agendamentosLista"' permite ao JavaScript preencher esta lista -->
+                                       <ul id="agendamentosLista"><li class="placeholder-text">Nenhum agendamento.</li></ul> <!-- Item placeholder inicial -->
+                                   </div> <!-- Fim da div de histórico/agendamento -->
+                               </div> <!-- Fim do container de manutenção -->
+                           </div> <!-- Fim do painel da aba de detalhes -->
+                       </section> <!-- Fim da aba Detalhes do Veículo -->
+               
+                   </main> <!-- Fim da área principal de conteúdo -->
+       <!-- Container Vazio destinado a receber as notificações flutuantes geradas pelo JavaScript -->
+    <!-- 'id="notificacoes"' permite ao JS encontrar este container para adicionar/remover notificações -->
+    <!-- 'class="notificacoes-container"' aplica estilos CSS para posicionar o container (geralmente fixo em um canto da tela) e organizar as notificações dentro dele -->
     <div id="notificacoes" class="notificacoes-container"></div>
 
-    <!-- Elementos de Áudio (Ocultos) -->
+    <!-- Seção de Elementos de Áudio (Não Visíveis na Página) -->
+    <!-- Estes elementos <audio> são usados pelo JavaScript para tocar sons de feedback para as ações do usuário -->
+
+    <!-- Áudio para quando o veículo é ligado -->
+    <!-- 'id="somLigar"' identifica este áudio -->
+    <!-- 'src="..."' especifica o caminho para o arquivo de áudio -->
+    <!-- 'preload="auto"' sugere ao navegador carregar o arquivo de áudio o mais rápido possível em segundo plano, melhorando a resposta ao tocar -->
     <audio id="somLigar" src="audio/ligando.mp3" preload="auto"></audio>
+
+    <!-- Áudio para quando o veículo é desligado -->
     <audio id="somDesligar" src="audio/desligamento.mp3" preload="auto"></audio>
+
+    <!-- Áudio para quando o veículo acelera -->
     <audio id="somAcelerar" src="audio/quot-acceleration-quot-sound-effect-205860.mp3" preload="auto"></audio>
-    <audio id="somFrear" src="audio/harsh-car-brake.mp3" preload="auto"></audio>
+
+    <!-- Áudio para quando o veículo freia -->
+    <audio id="somFrear" src="audio/harsh-car-brake.mp3" preload="auto"></audio> <!-- Nota: O nome do arquivo parece ambiente, talvez um som de frenagem seja mais apropriado -->
+
+    <!-- Áudio para a buzina -->
     <audio id="somBuzina" src="audio/buzina-carro-carrinha-20241217.mp3" preload="auto"></audio>
-  
+
+    <!-- Áudio para indicar um erro ou ação inválida (Opcional, mas recomendado) -->
+    <audio id="somErro" src="audio/erro.mp3" preload="auto"></audio>
+    <!-- Você pode adicionar mais elementos <audio> para outros eventos, como sucesso, turbo, etc. -->
 
 
+    <!-- Rodapé da página -->
+    <!-- 'class="main-footer-credits"' aplica estilos específicos ao rodapé -->
     <footer class="main-footer-credits">
+        <!-- Parágrafo contendo os créditos ou informações do rodapé -->
         <p>Garagem Inteligente v4.0 - Desenvolvido com HTML, CSS e JavaScript</p>
     </footer>
 
+    <!-- Link para o arquivo JavaScript principal que contém toda a lógica da aplicação -->
+    <!-- Colocar o script no final do <body> geralmente é uma boa prática, pois garante que todo o HTML foi carregado e parseado antes que o script tente interagir com os elementos do DOM -->
     <script src="script.js"></script>
-</body>
-</html>
+
+</body> <!-- Fim do corpo do documento HTML -->
+</html> <!-- Fim do elemento raiz HTML -->
