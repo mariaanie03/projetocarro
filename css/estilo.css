@@ -1,256 +1,675 @@
 /* Aplica estilos a todo o corpo (<body>) do documento HTML */
 body {
-    /* Define a família de fontes a ser usada para o texto. 'sans-serif' é uma fonte genérica sem serifas (como Arial, Helvetica) */
     font-family: sans-serif;
-    /* Define a altura da linha (espaçamento vertical entre linhas de texto) como 1.6 vezes o tamanho da fonte, para melhor legibilidade */
     line-height: 1.6;
-    /* Define uma margem de 20 pixels em todos os lados do corpo, criando um espaço entre o conteúdo e a borda da janela do navegador */
-    margin: 20px;
-    /* Define a cor de fundo para todo o corpo da página como um cinza claro (#f4f4f4) */
+    margin: 0; /* Removido margin padrão para header ocupar largura total */
+    padding-top: 100px; /* Adiciona espaço no topo para compensar header fixo (ajustar altura conforme necessário) */
     background-color: #f4f4f4;
+    transition: opacity 0.3s ease-in-out; /* Suaviza a transição de opacidade do loading */
 }
 
-/* Estiliza elementos que possuem a classe 'container' */
-/* (Nota: Esta classe não parece estar sendo usada no HTML fornecido, mas é um padrão comum) */
-.container {
-    /* Define a largura máxima que este container pode ter (900 pixels) */
-    max-width: 900px;
-    /* Centraliza o container horizontalmente na página (auto nas margens esquerda e direita) */
-    margin: auto;
-    /* Define a cor de fundo do container como branco (#fff) */
-    background: #fff;
-    /* Define um preenchimento interno de 20 pixels em todos os lados do container */
-    padding: 20px;
-    /* Arredonda os cantos do container com um raio de 8 pixels */
-    border-radius: 8px;
-    /* Adiciona uma sombra sutil ao container: deslocamento horizontal 0, vertical 2px, desfoque 5px, cor preta com 10% de opacidade */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+/* Estilo para feedback de carregamento da API */
+body.api-loading {
+    cursor: wait !important; /* Mostra cursor de espera (importante para sobrescrever outros cursores) */
+    opacity: 0.9; /* Leve opacidade para indicar bloqueio */
 }
 
-/* Estiliza todos os elementos de título de nível 1 (<h1>), 2 (<h2>), e 3 (<h3>) */
-h1, h2, h3 {
-    /* Define a cor do texto dos títulos como um cinza escuro (#333) */
-    color: #333;
-    /* Define uma margem inferior de 10 pixels abaixo de cada título, criando espaço antes do conteúdo seguinte */
-    margin-bottom: 10px;
-}
-
-/* Comentário descritivo para a regra seguinte */
-/* Estilo dos 'cards' para cada seção */
-/* Aplica estilos a elementos que possuem a classe 'card' */
-/* (Nota: Esta classe também não parece estar sendo usada no HTML principal fornecido, mas sim em um exemplo anterior) */
-.card {
-    /* Define a cor de fundo do card como branco (#fff) */
-    background-color: #fff;
-    /* Define uma borda sólida de 1 pixel, cor cinza claro (#ddd) */
-    border: 1px solid #ddd;
-    /* Arredonda os cantos do card com um raio de 5 pixels */
-    border-radius: 5px;
-    /* Define um preenchimento interno de 15 pixels em todos os lados */
-    padding: 15px;
-    /* Define uma margem inferior de 20 pixels abaixo de cada card */
-    margin-bottom: 20px;
-    /* Adiciona uma sombra muito sutil ao card: deslocamento horizontal 0, vertical 1px, desfoque 3px, cor preta com 5% de opacidade */
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-/* Comentário descritivo geral para as regras de formulário */
-/* Formulários */
-
-/* Estiliza todos os elementos <label> que estão dentro de um <form> */
-form label {
-    /* Faz com que o rótulo ocupe sua própria linha, empurrando o campo para baixo */
-    display: block;
-    /* Adiciona um espaço de 5 pixels abaixo do rótulo */
-    margin-bottom: 5px;
-    /* Define o texto do rótulo como negrito */
-    font-weight: bold;
-}
-
-/* Estiliza múltiplos tipos de campos de entrada (<input>, <select>, <textarea>) dentro de um <form> */
-form input[type="text"],
-form input[type="number"],
-form input[type="date"],
-form select,
-form textarea {
-    /* Define a largura do campo. 'calc(100% - 22px)' tenta compensar o padding (10px * 2) e a borda (1px * 2) para que o campo não ultrapasse 100% da largura do container pai */
-    /* NOTA: Usar 'box-sizing: border-box;' (como no CSS mais completo anterior) é geralmente uma abordagem melhor e mais simples para incluir padding/borda na largura total. */
-    width: calc(100% - 22px); /* Ajusta padding e borda */
-    /* Adiciona preenchimento interno de 10 pixels */
-    padding: 10px;
-    /* Adiciona margem inferior de 10 pixels abaixo de cada campo */
-    margin-bottom: 10px;
-    /* Define uma borda sólida cinza claro (#ccc) de 1 pixel */
-    border: 1px solid #ccc;
-    /* Arredonda os cantos com raio de 4 pixels */
-    border-radius: 4px;
-}
-
-/* Estiliza todos os botões (<button>) dentro de um <form> */
-form button {
-    /* Define a cor de fundo como verde (#5cb85c) */
-    background-color: #5cb85c;
-    /* Define a cor do texto como branco */
+body.api-loading::after {
+    content: 'Carregando da API...';
+    position: fixed; /* Fixo na tela */
+    bottom: 15px;
+    right: 15px;
+    background-color: rgba(0, 86, 179, 0.85); /* Azul escuro com transparência */
     color: white;
-    /* Define o preenchimento interno (10px vertical, 15px horizontal) */
-    padding: 10px 15px;
-    /* Remove qualquer borda padrão do botão */
+    padding: 8px 15px;
+    border-radius: 15px; /* Bordas mais arredondadas */
+    font-size: 0.9em;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 1001; /* Garante que fique acima de outros elementos */
+    animation: pulse 1.5s infinite ease-in-out; /* Animação sutil */
+    pointer-events: none; /* Não interfere com cliques */
+}
+
+/* Animação de pulso para o indicador de loading */
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.03); }
+}
+
+/* Garante que botões desabilitados durante o loading tenham aparência clara */
+body.api-loading button:disabled,
+body.api-loading input:disabled,
+body.api-loading select:disabled,
+body.api-loading textarea:disabled {
+    cursor: wait !important; /* Cursor de espera também nos elementos */
+    opacity: 0.5 !important; /* Mais opacidade para indicar inatividade */
+    /* filter: grayscale(50%); */ /* Opcional: Deixar cinza */
+}
+
+/* Cabeçalho Principal */
+.main-header {
+    background-color: #333; /* Fundo escuro para o cabeçalho */
+    color: #fff; /* Texto branco */
+    padding: 10px 20px; /* Padding interno */
+    position: fixed; /* Fixa o cabeçalho no topo */
+    top: 0;
+    left: 0;
+    width: 100%; /* Ocupa toda a largura */
+    z-index: 1000; /* Garante que fique acima do conteúdo */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra sutil */
+    display: flex; /* Usa flexbox para alinhar itens */
+    justify-content: space-between; /* Espaça itens (título à esquerda, resto à direita) */
+    align-items: center; /* Alinha itens verticalmente */
+    box-sizing: border-box; /* Inclui padding na largura total */
+    min-height: 60px; /* Altura mínima para o header */
+}
+
+.main-header h1 {
+    margin: 0; /* Remove margens do H1 */
+    font-size: 1.5em; /* Tamanho da fonte do título */
+    white-space: nowrap; /* Evita quebra de linha */
+}
+
+/* Navegação por Abas */
+.tab-navigation {
+    display: flex; /* Alinha botões horizontalmente */
+    gap: 5px; /* Espaço entre botões */
+    margin: 0 20px; /* Margens laterais */
+}
+
+.tab-button {
+    padding: 8px 15px;
     border: none;
-    /* Arredonda os cantos com raio de 4 pixels */
-    border-radius: 4px;
-    /* Muda o cursor para uma mãozinha ao passar sobre o botão */
+    border-radius: 5px 5px 0 0; /* Cantos arredondados apenas no topo */
+    background-color: #555; /* Cor de fundo inativa */
+    color: #ccc; /* Cor do texto inativo */
     cursor: pointer;
-    /* Define o tamanho da fonte como 1em (tamanho padrão do contexto) */
-    font-size: 1em;
-}
-
-/* Estiliza o botão do formulário quando o mouse está sobre ele (:hover) */
-form button:hover {
-    /* Muda a cor de fundo para um verde ligeiramente mais escuro (#4cae4c) */
-    background-color: #4cae4c;
-}
-
-/* Comentário descritivo para as regras de exibição da garagem */
-/* Display da Garagem */
-/* Estiliza elementos com a classe 'vehicle' que estão dentro de um elemento com id 'garage-display' */
-/* (Nota: IDs como #garage-display não estão no HTML principal fornecido, essa estrutura pode ser de uma versão anterior) */
-#garage-display .vehicle {
-    /* Define uma borda sólida cinza bem claro (#eee) de 1 pixel */
-    border: 1px solid #eee;
-    /* Adiciona preenchimento interno de 15 pixels */
-    padding: 15px;
-    /* Adiciona margem inferior de 10 pixels abaixo de cada veículo */
-    margin-bottom: 10px;
-    /* Arredonda os cantos com raio de 5 pixels */
-    border-radius: 5px;
-    /* Define a cor de fundo como um cinza muito claro (#f9f9f9) */
-    background-color: #f9f9f9;
-    /* Define o posicionamento como relativo. Isso permite que elementos filhos com 'position: absolute' (como .details-button) sejam posicionados em relação a este container */
-    position: relative; /* Para posicionar botões de detalhes */
-}
-
-/* Estiliza títulos <h4> dentro de um '.vehicle' em '#garage-display' */
-#garage-display .vehicle h4 {
-    /* Remove a margem superior padrão do h4 */
-    margin-top: 0;
-    /* Adiciona margem inferior de 10 pixels */
-    margin-bottom: 10px;
-    /* Define a cor do texto como um azul escuro (#0056b3) */
-    color: #0056b3;
-}
-
-/* Estiliza parágrafos <p> dentro de um '.vehicle' em '#garage-display' */
-#garage-display .vehicle p {
-    /* Define margem vertical de 5 pixels (em cima e embaixo) e 0 horizontal */
-    margin: 5px 0;
-    /* Define o tamanho da fonte ligeiramente menor que o padrão (0.95em) */
+    transition: background-color 0.3s, color 0.3s; /* Transição suave */
     font-size: 0.95em;
 }
 
-/* Estiliza elementos com a classe 'status' dentro de um '.vehicle' em '#garage-display' */
-#garage-display .vehicle .status {
-    /* Define o texto como negrito */
+.tab-button:hover:not(:disabled) {
+    background-color: #777; /* Cor ao passar o mouse */
+    color: #fff;
+}
+
+.tab-button.active {
+    background-color: #f4f4f4; /* Cor de fundo ativa (mesma do body) */
+    color: #333; /* Cor do texto ativo */
+    font-weight: bold;
+    position: relative;
+    top: 1px; /* Leve deslocamento para conectar com o painel */
+}
+
+.tab-button:disabled {
+    background-color: #444; /* Cor de fundo desabilitado */
+    color: #888; /* Cor do texto desabilitado */
+    cursor: not-allowed; /* Cursor indicando não permitido */
+}
+
+/* Controle de Volume */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.volume-control label {
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.volume-control input[type="range"] {
+    cursor: pointer;
+    width: 100px; /* Largura do slider */
+}
+
+/* Área Principal de Conteúdo das Abas */
+.tab-content-area {
+    max-width: 900px; /* Largura máxima do conteúdo */
+    margin: 20px auto; /* Centraliza e adiciona margem abaixo do header */
+    padding: 0 20px; /* Padding lateral */
+}
+
+/* Painéis das Abas */
+.tab-pane {
+    display: none; /* Esconde abas inativas */
+    background-color: #fff; /* Fundo branco */
+    padding: 25px; /* Padding interno */
+    border: 1px solid #ccc; /* Borda sutil */
+    border-top: none; /* Remove borda superior (conecta com botão ativo) */
+    border-radius: 0 0 8px 8px; /* Cantos arredondados apenas embaixo */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.08); /* Sombra suave */
+    animation: fadeIn 0.5s ease-in-out; /* Animação de entrada */
+}
+
+.tab-pane.active {
+    display: block; /* Mostra aba ativa */
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.painel h2 {
+    margin-top: 0; /* Remove margem superior do H2 dentro do painel */
+    color: #0056b3; /* Cor azul para títulos de seção */
+    border-bottom: 2px solid #eee; /* Linha separadora abaixo do título */
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.painel h3 {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.painel h4 {
+    margin-top: 15px;
+    margin-bottom: 8px;
+    color: #555;
+    font-size: 1.05em;
+}
+
+/* Formulários dentro dos painéis */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Grid responsivo */
+    gap: 15px 20px; /* Espaçamento entre linhas e colunas */
+    margin-bottom: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    font-size: 0.9em;
+    color: #555;
+}
+
+form input[type="text"],
+form input[type="number"],
+form input[type="date"],
+form input[type="color"],
+form select,
+form textarea {
+    width: 100%; /* Ocupa toda a largura da célula do grid */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    box-sizing: border-box; /* Inclui padding e borda na largura total */
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+form input[type="color"] {
+    padding: 5px; /* Padding menor para input color */
+    height: 40px; /* Altura consistente */
+    cursor: pointer;
+}
+
+form input:focus,
+form select:focus,
+form textarea:focus {
+    border-color: #007bff; /* Borda azul ao focar */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); /* Sombra azul suave */
+    outline: none; /* Remove outline padrão */
+}
+
+form textarea {
+    resize: vertical; /* Permite redimensionar apenas verticalmente */
+    min-height: 60px;
+}
+
+/* Estilos de Botões */
+button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px); /* Leve efeito de elevação */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+button:active:not(:disabled) {
+    transform: translateY(0px); /* Remove elevação ao clicar */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+button:disabled {
+    background-color: #ccc !important; /* Fundo cinza claro para desabilitado */
+    color: #888 !important; /* Texto cinza */
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.botao-principal {
+    background-color: #28a745; /* Verde */
+    color: white;
+}
+.botao-principal:hover:not(:disabled) { background-color: #218838; }
+
+.botao-secundario {
+    background-color: #6c757d; /* Cinza */
+    color: white;
+}
+.botao-secundario:hover:not(:disabled) { background-color: #5a6268; }
+
+.botao-perigo {
+    background-color: #dc3545; /* Vermelho */
+    color: white;
+}
+.botao-perigo:hover:not(:disabled) { background-color: #c82333; }
+
+/* Campo específico de capacidade (inicialmente oculto) */
+.hidden { display: none; }
+
+/* Aba "Minha Garagem" */
+#listaVeiculosGaragem {
+    margin-top: 15px;
+    display: flex; /* Usa flexbox para os botões/cards */
+    flex-wrap: wrap; /* Permite quebrar linha */
+    gap: 10px; /* Espaçamento entre itens */
+}
+
+#listaVeiculosGaragem button { /* Estilo se usar botões */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #e9ecef;
+    color: #333;
+    border: 1px solid #ced4da;
+    font-weight: normal;
+    text-align: left;
+}
+
+#listaVeiculosGaragem button:hover:not(:disabled) {
+    background-color: #dde2e6;
+    border-color: #adb5bd;
+}
+
+#listaVeiculosGaragem button.selecionado {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
     font-weight: bold;
 }
 
-/* Estiliza especificamente elementos com as classes 'status' e 'ligado' */
-#garage-display .vehicle .status.ligado {
-    /* Define a cor do texto como verde */
-    color: green;
+#listaVeiculosGaragem button.highlight-add {
+    animation: highlight 1.5s ease-out;
 }
 
-/* Estiliza especificamente elementos com as classes 'status' e 'desligado' */
-#garage-display .vehicle .status.desligado {
-    /* Define a cor do texto como vermelho */
-    color: red;
+@keyframes highlight {
+  0% { box-shadow: 0 0 10px 3px rgba(40, 167, 69, 0.7); } /* Verde */
+  100% { box-shadow: none; }
 }
 
-/* Estiliza botões <button> dentro de um elemento com classe 'actions' */
-/* que esteja dentro de '#garage-display .vehicle' OU dentro de '#vehicle-details' */
-/* (Nota: Esses seletores podem ser de uma estrutura HTML diferente) */
-#garage-display .vehicle .actions button,
-#vehicle-details .actions button {
-    /* Adiciona margem direita de 5 pixels entre botões */
-    margin-right: 5px;
-    /* Adiciona margem superior de 5 pixels (para espaçamento vertical se quebrar linha) */
-    margin-top: 5px;
-    /* Define o preenchimento interno (5px vertical, 8px horizontal) */
-    padding: 5px 8px;
-    /* Define o tamanho da fonte menor (0.9em) */
-    font-size: 0.9em;
-    /* Muda o cursor para mãozinha */
-    cursor: pointer;
-}
-
-/* Estiliza especificamente botões com classe 'turbo-active' dentro de '#vehicle-details .actions' */
-#vehicle-details .actions button.turbo-active {
-    /* Define a cor de fundo como amarelo (#ffc107) para indicar turbo ativo */
-    background-color: #ffc107; /* Amarelo para turbo ativo */
-    /* Define a cor da borda para combinar com o fundo */
-    border-color: #ffc107;
-}
-
-
-/* Comentário descritivo para as regras da seção de detalhes */
-/* Seção de Detalhes e Manutenção */
-/* Estiliza títulos <h3> dentro de um elemento com id 'details-section' */
-/* (Nota: ID #details-section não está no HTML principal fornecido) */
-#details-section h3 {
-    /* Adiciona margem superior de 20 pixels */
-    margin-top: 20px;
-    /* Adiciona uma borda superior cinza claro (#eee) de 1 pixel */
-    border-top: 1px solid #eee;
-    /* Adiciona preenchimento superior de 15 pixels (espaço entre a borda e o texto do título) */
-    padding-top: 15px;
-}
-
-/* Estiliza itens de lista <li> dentro de elementos com id 'maintenance-history' OU 'future-appointments-list' */
-/* (Nota: IDs não estão no HTML principal fornecido, que usa #historicoLista e #agendamentosLista) */
-#maintenance-history li,
-#future-appointments-list li {
-    /* Define a cor de fundo como cinza claro (#e9ecef) */
-    background-color: #e9ecef;
-    /* Define preenchimento interno de 8 pixels */
-    padding: 8px;
-    /* Adiciona margem inferior de 5 pixels entre itens da lista */
-    margin-bottom: 5px;
-    /* Arredonda os cantos com raio de 3 pixels */
+.color-swatch-list {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
     border-radius: 3px;
-    /* Define o tamanho da fonte menor (0.9em) */
+    border: 1px solid rgba(0,0,0,0.2);
+    vertical-align: middle;
+}
+
+/* Aba "Detalhes" */
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.info-box {
+    background-color: #f8f9fa; /* Fundo ligeiramente diferente */
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+    margin-bottom: 20px;
+    position: relative; /* Para posicionar elementos internos se necessário */
+}
+
+.info-box p {
+    margin: 8px 0;
+    line-height: 1.5;
+}
+
+.info-box strong {
+    color: #495057;
+}
+
+.info-box small {
+    font-size: 0.8em;
+    color: #6c757d;
+    word-break: break-all; /* Quebra IDs longos */
+}
+
+.info-box .color-swatch {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%; /* Círculo */
+    border: 1px solid rgba(0,0,0,0.2);
+    vertical-align: middle;
+    margin-right: 5px;
+    position: relative;
+    top: -1px;
+}
+
+.veiculo-imagem {
+    max-width: 120px; /* Limita tamanho da imagem */
+    height: auto;
+    float: right; /* Flutua imagem à direita */
+    margin-left: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+.status-ligado, .status-desligado {
+    font-weight: bold;
+    display: inline-flex; /* Alinha indicador e texto */
+    align-items: center;
+    gap: 6px;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulseStatus 2s infinite ease-in-out;
+}
+
+.status-ligado .status-indicator { background-color: #28a745; box-shadow: 0 0 5px #28a745;}
+.status-desligado .status-indicator { background-color: #dc3545; animation: none; } /* Sem pulsar desligado */
+
+.status-ligado span:last-child { color: #28a745; }
+.status-desligado span:last-child { color: #dc3545; }
+
+@keyframes pulseStatus {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.velocimetro {
+    width: 100%;
+    background-color: #e9ecef;
+    border-radius: 15px;
+    margin-top: 15px;
+    height: 25px; /* Altura da barra */
+    position: relative; /* Para texto absoluto */
+    overflow: hidden; /* Esconde excesso da barra interna */
+    border: 1px solid #ced4da;
+}
+
+.velocimetro-barra {
+    height: 100%;
+    background-color: #007bff; /* Azul */
+    border-radius: 15px 0 0 15px; /* Arredonda só à esquerda */
+    transition: width 0.5s ease-out; /* Animação suave da largura */
+    text-align: right;
+    position: relative;
+    z-index: 1;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+	background-size: 1rem 1rem;
+}
+/* Adapta cor da barra para esportivo/caminhão se desejado */
+/* .carro-esportivo .velocimetro-barra { background-color: #ffc107; } */ /* Amarelo para esportivo */
+/* .caminhao .velocimetro-barra { background-color: #17a2b8; } */ /* Ciano para caminhão */
+
+.velocimetro-texto {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #333; /* Cor do texto que contrasta com a barra e o fundo */
+    font-weight: bold;
+    font-size: 0.9em;
+    z-index: 2;
+    text-shadow: 0 0 2px rgba(255,255,255,0.7); /* Sombra clara para legibilidade */
+}
+
+
+/* Controles de Ação */
+.acoes-container {
+    display: flex;
+    flex-wrap: wrap; /* Quebra linha se não couber */
+    gap: 10px; /* Espaçamento entre botões/controles */
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.controles-especificos {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border: 1px dashed #ccc; /* Borda tracejada para destacar */
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.controles-especificos label {
+    margin-bottom: 0; /* Remove margem do label */
     font-size: 0.9em;
 }
 
-/* Estiliza especificamente itens <li> dentro de '#future-appointments-list' */
-#future-appointments-list li {
-    /* Sobrescreve a cor de fundo para azul claro (#d1ecf1) para destacar agendamentos */
-    background-color: #d1ecf1; /* Azul claro para agendamentos */
+.controles-especificos input[type="number"] {
+    width: 80px; /* Largura menor para input de carga */
+    padding: 5px 8px;
+    margin-bottom: 0;
 }
 
-/* Comentário descritivo para o botão de detalhes */
-/* Botão para ver detalhes/manutenção */
-/* Estiliza elementos com a classe 'details-button' */
-/* (Nota: Classe não usada no HTML principal fornecido) */
-.details-button {
-    /* Define o posicionamento como absoluto, permitindo posicioná-lo precisamente dentro de um container pai com 'position: relative' (como #garage-display .vehicle) */
-    position: absolute;
-    /* Posiciona a 10 pixels do topo do container pai */
-    top: 10px;
-    /* Posiciona a 10 pixels da direita do container pai */
-    right: 10px;
-    /* Define o preenchimento interno (5px vertical, 10px horizontal) */
-    padding: 5px 10px;
-    /* Define a cor de fundo como azul (#007bff) */
-    background-color: #007bff;
-    /* Define a cor do texto como branco */
-    color: white;
-    /* Remove a borda padrão */
-    border: none;
-    /* Arredonda os cantos com raio de 4 pixels */
+.controles-especificos button {
+    font-size: 0.9em;
+    padding: 6px 12px;
+}
+
+/* Seção de Manutenção */
+.manutencao-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 2 colunas se couber, senão 1 */
+    gap: 30px; /* Espaço entre formulário e histórico */
+    margin-top: 15px;
+}
+
+.form-manutencao, .historico-agendamento {
+    /* background-color: #f8f9fa; */ /* Opcional: fundo leve */
+    /* padding: 15px; */
+    /* border-radius: 5px; */
+}
+
+.historico-agendamento ul {
+    list-style: none; /* Remove marcadores de lista */
+    padding: 0;
+    margin: 0;
+    max-height: 250px; /* Altura máxima com scroll */
+    overflow-y: auto; /* Adiciona scroll vertical se necessário */
+    border: 1px solid #eee;
     border-radius: 4px;
-    /* Muda o cursor para mãozinha */
+}
+
+.historico-agendamento li {
+    padding: 10px 12px;
+    margin-bottom: -1px; /* Sobrepõe bordas */
+    border-bottom: 1px solid #eee;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+    background-color: #fff; /* Fundo branco padrão */
+}
+.historico-agendamento li:last-child {
+    border-bottom: none; /* Remove borda do último item */
+}
+
+.historico-agendamento li:hover {
+    background-color: #f8f9fa; /* Fundo leve ao passar mouse */
+}
+
+#historicoLista li {
+    color: #333; /* Cor padrão para histórico */
+}
+
+#agendamentosLista li {
+    color: #0056b3; /* Cor azul para agendamentos */
+    font-weight: 500; /* Levemente mais forte */
+}
+
+#agendamentosLista li.agendamento-hoje {
+    background-color: #fff3cd; /* Fundo amarelo para hoje */
+    color: #856404;
+    font-weight: bold;
+    border-left: 4px solid #ffc107; /* Marcação lateral */
+}
+
+#agendamentosLista li.agendamento-amanha {
+    background-color: #d1ecf1; /* Fundo azul claro para amanhã */
+    color: #0c5460;
+    font-weight: bold;
+    border-left: 4px solid #17a2b8; /* Marcação lateral */
+}
+
+.placeholder-text {
+    font-style: italic;
+    color: #888;
+    padding: 20px;
+    text-align: center;
+}
+
+.error-text {
+    color: #dc3545; /* Vermelho */
+    font-weight: bold;
+    padding: 10px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+}
+
+/* Container de Notificações */
+.notificacoes-container {
+    position: fixed; /* Fixo na tela */
+    top: 80px; /* Abaixo do header */
+    right: 20px;
+    width: 300px; /* Largura máxima das notificações */
+    z-index: 1050; /* Acima de quase tudo */
+    display: flex;
+    flex-direction: column; /* Notificações empilhadas */
+    gap: 10px; /* Espaço entre notificações */
+}
+
+.notificacao {
+    background-color: rgba(51, 51, 51, 0.9); /* Fundo escuro semi-transparente */
+    color: #fff; /* Texto branco */
+    padding: 12px 40px 12px 15px; /* Padding (espaço extra à direita para botão fechar) */
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    opacity: 0; /* Inicialmente invisível */
+    transform: translateX(100%); /* Começa fora da tela à direita */
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* Animação suave */
+    font-size: 0.95em;
+    position: relative; /* Para posicionar o botão fechar */
+    word-wrap: break-word; /* Quebra palavras longas */
+}
+
+.notificacao.show {
+    opacity: 1; /* Torna visível */
+    transform: translateX(0); /* Move para a posição final */
+}
+
+/* Estilos por tipo de notificação */
+.notificacao.sucesso { background-color: rgba(40, 167, 69, 0.9); } /* Verde */
+.notificacao.erro { background-color: rgba(220, 53, 69, 0.9); } /* Vermelho */
+.notificacao.aviso { background-color: rgba(255, 193, 7, 0.9); color: #333; } /* Amarelo */
+.notificacao.info { background-color: rgba(23, 162, 184, 0.9); } /* Ciano */
+
+.notificacao-close {
+    position: absolute; /* Posicionamento absoluto dentro da notificação */
+    top: 5px;
+    right: 8px;
+    background: none; /* Sem fundo */
+    border: none; /* Sem borda */
+    color: inherit; /* Herda a cor do texto da notificação */
+    font-size: 1.4em;
+    font-weight: bold;
+    line-height: 1;
     cursor: pointer;
+    padding: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    box-shadow: none; /* Remove sombra padrão de botão */
 }
-/* Estiliza o botão de detalhes quando o mouse está sobre ele (:hover) */
-.details-button:hover {
-    /* Muda a cor de fundo para um azul mais escuro (#0056b3) */
-    background-color: #0056b3;
+
+.notificacao-close:hover {
+    opacity: 1;
+    transform: none; /* Impede efeito hover do botão geral */
 }
+
+/* Rodapé */
+.main-footer-credits {
+    text-align: center;
+    margin-top: 30px;
+    padding: 15px;
+    font-size: 0.85em;
+    color: #6c757d; /* Cinza */
+    border-top: 1px solid #e0e0e0; /* Linha separadora */
+}
+
+/* Barra de Carga do Caminhão */
+.carga-barra-container {
+    width: 100%;
+    height: 18px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    border: 1px solid #ced4da;
+    position: relative;
+}
+
+.carga-barra {
+    height: 100%;
+    background-color: #ffc107; /* Amarelo para carga */
+    border-radius: 10px 0 0 10px;
+    transition: width 0.5s ease-out;
+    text-align: center;
+    color: #333;
+    font-size: 0.8em;
+    line-height: 18px; /* Centraliza texto verticalmente */
+    font-weight: bold;
+    white-space: nowrap;
+}
+/* Adiciona um pseudo-elemento para mostrar a % dentro da barra */
+.carga-barra::after {
+    content: attr(style); /* Truque para pegar o width, mas precisa de JS para formatar */
+    /* Em vez disso, o JS já calcula e podemos exibir no title ou num elemento separado */
+}
+
+/* Placeholder Content (quando detalhes está vazio) */
+.placeholder-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px; /* Altura mínima */
+    text-align: center;
+    opacity: 0.7;
+}
+.placeholder-icon {
+    max-width: 80px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+

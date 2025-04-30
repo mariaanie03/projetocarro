@@ -12,6 +12,210 @@
     'use strict'; // Ativa o "modo estrito" do JavaScript. Isso ajuda a pegar erros comuns
                   // e a escrever um código mais seguro, proibindo certas sintaxes "ruins".
 
+
+                  // --- Referências a Elementos do DOM (Cache de Seletores) ---
+// ... (outras referências existentes) ...
+
+// Elementos da API Simulada (Parte 1)
+const btnVerDetalhesExtras = document.getElementById('btnVerDetalhesExtras');
+const detalhesExtrasApiDiv = document.getElementById('detalhesExtrasApi');
+
+// ... (resto das referências existentes) ...
+
+
+
+// --- Funções da API Simulada (Parte 1) ---
+
+/**
+ * Busca detalhes extras de um veículo na API simulada (arquivo JSON local).
+ * @param {string} identificadorVeiculo O ID do veículo a ser buscado.
+ * @returns {Promise<object|null>} Uma Promise que resolve com o objeto de detalhes do veículo ou null se não encontrado/erro.
+ */
+async function buscarDetalhesVeiculoAPI(identificadorVeiculo) {
+    const url = './dados_veiculos_api.json'; // Caminho para o arquivo JSON
+    console.log(`LOG API: Buscando detalhes para ID: ${identificadorVeiculo} em ${url}`);
+
+    try {
+        const response = await fetch(url);
+
+        // Verifica se a requisição foi bem-sucedida (status 2xx)
+        if (!response.ok) {
+            throw new Error(`Erro HTTP: ${response.status} ${response.statusText}`);
+        }
+
+        // Tenta parsear a resposta como JSON
+        const data = await response.json();
+
+        // Verifica se o JSON é um array
+        if (!Array.isArray(data)) {
+            throw new Error("Formato de dados da API inválido (esperado um array).");
+        }
+
+        // Encontra o veículo pelo identificador
+        const detalhes = data.find(item => item.identificadorVeiculo === identificadorVeiculo);
+
+        if (detalhes) {
+            console.log(`LOG API: Detalhes encontrados para ${identificadorVeiculo}:`, detalhes);
+            return detalhes; // Retorna o objeto encontrado
+        } else {
+            console.log(`LOG API: Detalhes não encontrados para ${identificadorVeiculo}.`);
+            return null; // Retorna null se não encontrou
+        }
+
+    } catch (error) {
+        console.error(`ERRO FATAL ao buscar/processar detalhes da API (${url}):`, error);
+        adicionarNotificacao(`Falha ao carregar dados extras: ${error.message}`, 'erro');
+        // Retorna null em caso de qualquer erro (fetch, parse, etc.)
+        return null;
+    }
+}
+
+/**
+ * Habilita ou desabilita o estado visual de carregamento da API.
+ * Adiciona/remove classe no body e desabilita/habilita botões principais.
+ * @param {boolean} isLoading True para ativar o estado de loading, false para desativar.
+ */
+function setApiLoadingState(isLoading) {
+    document.body.classList.toggle('api-loading', isLoading);
+
+    // Lista de botões a serem desabilitados durante o carregamento
+    const buttonsToDisable = [
+        btnVerDetalhesExtras, btnLigar, btnDesligar, btnAcelerar, btnFrear, btnBuzinar,
+        btnAtivarTurbo, btnDesativarTurbo, btnCarregar, btnDescarregar, btnRemoverVeiculo
+        // Adicione outros botões/inputs relevantes se necessário
+    ];
+    const formManutBotao = formManutencao ? formManutencao.querySelector('button') : null;
+    if(formManutBotao) buttonsToDisable.push(formManutBotao);
+
+    buttonsToDisable.forEach(btn => {
+        if (btn) {
+            btn.disabled = isLoading;
+        }
+    });
+
+    // Reabilitar botões na aba de detalhes *APENAS SE* um veículo estiver selecionado
+    // (Evita habilitar botões indevidamente se o usuário deselecionar enquanto carrega)
+    if (!isLoading && veiculoSelecionadoId) {
+         // A função atualizarDisplay() já lida com a habilitação correta dos botões
+         // com base no estado atual do veículo, então chamá-la é mais seguro.
+         atualizarDisplay();
+         // No entanto, o botão de API precisa ser habilitado manualmente aqui,
+         // pois atualizarDisplay() pode não o fazer se a lógica for complexa.
+         if(btnVerDetalhesExtras) btnVerDetalhesExtras.disabled = false;
+    } else if (!isLoading && !veiculoSelecionadoId) {
+        // Garante que se nenhum veículo for selecionado ao final do loading,
+        // o botão de detalhes extras permaneça desabilitado.
+         if(btnVerDetalhesExtras) btnVerDetalhesExtras.disabled = true;
+    }
+}
+
+
+
+/**
+ * Função assíncrona chamada ao clicar no botão "Ver Detalhes Extras".
+ * Gerencia o estado de carregamento, busca os dados e atualiza a UI.
+ */
+async function mostrarDetalhesExtrasAPI() {
+    if (!veiculoSelecionadoId) {
+        adicionarNotificacao("Nenhum veículo selecionado para buscar detalhes.", "aviso");
+        return;
+    }
+    if (!detalhesExtrasApiDiv) {
+         console.error("ERRO UI: Div #detalhesExtrasApi não encontrada!");
+         return;
+    }
+
+    // 1. Iniciar Estado de Carregamento
+    setApiLoadingState(true);
+    detalhesExtrasApiDiv.innerHTML = '<p class="placeholder-text">Carregando detalhes da API...</p>';
+
+    try {
+        // 2. Buscar os Dados
+        const detalhes = await buscarDetalhesVeiculoAPI(veiculoSelecionadoId);
+
+        // 3. Exibir Resultados ou Mensagem Adequada
+        if (detalhes) {
+            // Formatar e exibir os dados encontrados
+            let html = '';
+            // Usando Object.entries para iterar sobre as chaves e valores
+            Object.entries(detalhes).forEach(([chave, valor]) => {
+                // Não exibir o identificador novamente
+                if (chave === 'identificadorVeiculo') return;
+
+                // Formatar chave para exibição (ex: valorFIPE -> Valor FIPE)
+                const chaveFormatada = chave
+                    .replace(/([A-Z])/g, ' $1') // Adiciona espaço antes de letra maiúscula
+                    .replace(/^./, str => str.toUpperCase()); // Capitaliza a primeira letra
+
+                // Formatar valor (ex: boolean, moeda)
+                let valorFormatado = valor;
+                if (typeof valor === 'boolean') {
+                    valorFormatado = valor ? '<span style="color: green; font-weight: bold;">Sim</span>' : '<span style="color: red;">Não</span>';
+                    if (chave === 'recallPendente' && valor === true && detalhes.motivoRecall) {
+                        valorFormatado += ` <strong style="color: red;">(${detalhes.motivoRecall})</strong>`;
+                    }
+                } else if (chave === 'valorFIPE' && typeof valor === 'number') {
+                    valorFormatado = valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                } else if (chave === 'consumoMedio' && typeof valor === 'number') {
+                    valorFormatado = `${valor.toFixed(1)} km/l`;
+                } else if (chave === 'motivoRecall') {
+                    // Já tratado junto com recallPendente
+                    return;
+                }
+
+                html += `<p><strong>${chaveFormatada}:</strong> ${valorFormatado}</p>`;
+            });
+            detalhesExtrasApiDiv.innerHTML = html;
+        } else {
+            // Exibir mensagem de não encontrado
+            detalhesExtrasApiDiv.innerHTML = '<p class="placeholder-text">Detalhes extras não encontrados para este veículo.</p>';
+        }
+    } catch (error) {
+        // Erro já logado e notificado por buscarDetalhesVeiculoAPI
+        // Apenas exibe mensagem genérica na área de detalhes
+        console.error("ERRO no fluxo mostrarDetalhesExtrasAPI:", error); // Log adicional
+        detalhesExtrasApiDiv.innerHTML = '<p class="error-text">Ocorreu um erro ao buscar os detalhes extras. Tente novamente.</p>';
+    } finally {
+        // 4. Finalizar Estado de Carregamento (SEMPRE executar)
+        setApiLoadingState(false);
+    }
+}
+
+
+function atualizarDisplay() {
+    // ... (código existente no início da função) ...
+    const veiculo = garagem.find(v => v.id === veiculoSelecionadoId);
+    const formManutCampos = formManutencao ? [/* ... */].filter(Boolean) : [];
+
+    // Limpa a área de detalhes da API ao mudar de veículo ou deselecionar
+    if (detalhesExtrasApiDiv) {
+         detalhesExtrasApiDiv.innerHTML = '<p class="placeholder-text">Clique em "Ver Detalhes Extras (API)" para carregar.</p>';
+    }
+
+    if (veiculo) {
+        // ... (código existente para atualizar título, infos, velocímetro, controles específicos) ...
+
+        // Habilita/desabilita botões de ação comuns baseado no estado.
+        // ... (linhas existentes para btnLigar, btnDesligar, etc.) ...
+        if(btnBuzinar) btnBuzinar.disabled = false;
+        if(btnVerDetalhesExtras) btnVerDetalhesExtras.disabled = false; // HABILITA o botão da API
+
+        // ... (código existente para manutenção, etc.) ...
+
+    } else { // Se nenhum veículo está selecionado...
+        // ... (código existente para resetar título, infos, placeholder) ...
+
+        [btnLigar, btnDesligar, btnAcelerar, btnFrear, btnBuzinar, btnRemoverVeiculo, btnAtivarTurbo, btnDesativarTurbo, cargaInput, btnCarregar, btnDescarregar, btnVerDetalhesExtras] // ADICIONADO btnVerDetalhesExtras aqui
+            .forEach(el => { if(el) el.disabled = true; });
+        formManutCampos.forEach(campo => { if(campo) campo.disabled = true; });
+        if(tabButtonDetails) tabButtonDetails.disabled = true;
+        if (painelDetalhes && painelDetalhes.classList.contains('active')) { switchTab('tab-garage'); }
+    }
+}
+
+
+
+
     /* ==========================================================================
        CLASSE DE MANUTENÇÃO (Sem alterações nesta versão)
        Define a estrutura e o comportamento para representar um registro de manutenção.
@@ -1343,4 +1547,31 @@
         inicializarApp(); // ...chama a inicialização imediatamente.
     }
 
+
+    // --- EVENT LISTENERS ---
+// ... (outros listeners existentes) ...
+
+// Listener para buscar Detalhes Extras da API Simulada
+if (btnVerDetalhesExtras) {
+    btnVerDetalhesExtras.addEventListener('click', mostrarDetalhesExtrasAPI);
+} else {
+    console.warn("WARN UI: Botão #btnVerDetalhesExtras não encontrado!");
+}
+
+// Listener para o Controle de Volume
+// ... (listener existente) ...  
+
+
+ /**
+  * Função assíncrona chamada ao clicar no botão "Ver Detalhes Extras".
+  * Obtém o ID do veículo selecionado, gerencia o estado de carregamento da UI,
+  * chama a função `buscarDetalhesVeiculoAPI` e exibe os resultados ou mensagens
+  * de erro/não encontrado na div `detalhesExtrasApiDiv`.
+  * @async
+  */
+ async function mostrarDetalhesExtrasAPI() {
+    // ... (código da função)
+ }
+
+ 
 })(); // Fim da IIFE (Immediately Invoked Function Expression)
