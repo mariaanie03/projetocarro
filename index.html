@@ -4,7 +4,7 @@
     <meta charset="UTF-8"> <!-- Define a codificação de caracteres usada pelo documento como UTF-8, que suporta a maioria dos caracteres e símbolos, incluindo acentuação -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Configura a janela de visualização (viewport) para dispositivos móveis. 'width=device-width' ajusta a largura da página à largura da tela do dispositivo. 'initial-scale=1.0' define o nível de zoom inicial quando a página é carregada -->
     <title>Garagem Inteligente v4.0 - Feedback Interativo</title> <!-- Define o título da página, exibido na aba ou janela do navegador -->
-    <link rel="stylesheet" href="style.css"> <!-- Vincula um arquivo CSS externo (style.css) para aplicar estilos à página -->
+    <link rel="stylesheet" href="css/estilo.css"> <!-- Vincula um arquivo CSS externo (style.css) para aplicar estilos à página -->
     <link rel="icon" href="images/favicon.png" type="image/png"> <!-- Define o ícone da página (favicon), exibido na aba do navegador, usando uma imagem PNG -->
 </head>
 <body> <!-- Corpo do documento HTML, contém todo o conteúdo visível da página -->
@@ -29,6 +29,9 @@
             <!-- 'id="tab-button-details"' é um identificador único para este botão, permitindo selecioná-lo especificamente no JavaScript/CSS -->
             <!-- 'disabled' torna o botão não clicável inicialmente (será habilitado via JavaScript) -->
             <button class="tab-button" id="tab-button-details" data-tab="tab-details" disabled>Detalhes do Veículo</button>
+           <!-- START: ADIÇÃO DO BOTÃO DA ABA DE PREVISÃO DO TEMPO -->
+           <button class="tab-button" data-tab="tab-weather">Previsão do Tempo</button>
+           <!-- END: ADIÇÃO DO BOTÃO DA ABA DE PREVISÃO DO TEMPO -->
         </nav> <!-- Fim da navegação por abas -->
 
         <!-- Seção para o Controle de Volume (Opcional) -->
@@ -287,6 +290,26 @@
                                </div> <!-- Fim do container de manutenção -->
                            </div> <!-- Fim do painel da aba de detalhes -->
                        </section> <!-- Fim da aba Detalhes do Veículo -->
+
+
+                        <!-- START: NOVA SEÇÃO/ABA PARA PREVISÃO DO TEMPO DETALHADA -->
+        <section id="tab-weather" class="tab-pane">
+            <div class="painel">
+                <h2>Previsão do Tempo Detalhada</h2>
+                <p>Planeje sua viagem! Insira o nome da cidade para ver a previsão dos próximos dias.</p>
+                
+                <div class="weather-forecast-input-container">
+                    <label for="cityForecastInput">Cidade:</label>
+                    <input type="text" id="cityForecastInput" placeholder="Ex: São Paulo, London, Tokyo">
+                    <button id="getForecastBtn" class="botao-principal">Ver Previsão</button>
+                </div>
+
+                <div id="forecastResultContainer" class="forecast-results">
+                    <p class="placeholder-text">Insira uma cidade e clique em "Ver Previsão".</p>
+                </div>
+            </div>
+        </section>
+        <!-- END: NOVA SEÇÃO/ABA PARA PREVISÃO DO TEMPO DETALHADA -->
                
                    </main> <!-- Fim da área principal de conteúdo -->
        <!-- Container Vazio destinado a receber as notificações flutuantes geradas pelo JavaScript -->

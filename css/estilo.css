@@ -71,6 +71,95 @@ body.api-loading textarea:disabled {
     white-space: nowrap; /* Evita quebra de linha */
 }
 
+/* ... (estilos existentes) ... */
+
+/* MODIFICAÇÕES PONTUAIS NO HEADER (se necessário para acomodar a nova aba) */
+.main-header {
+    /* ... (propriedades existentes) ... */
+    flex-wrap: wrap; /* Permite que os itens quebrem linha se não couberem */
+    gap: 10px; /* Espaçamento entre os grupos de itens no header */
+}
+
+.tab-navigation {
+    /* ... (propriedades existentes) ... */
+    flex-grow: 1; /* Permite que a navegação ocupe espaço disponível */
+    justify-content: center; /* Centraliza os botões de aba se houver espaço */
+    margin: 0 10px; /* Ajuste de margem se necessário */
+}
+
+/* REMOVIDO: Estilos .weather-info, #weather-location, etc. (clima de 1 dia no header) */
+
+
+/* START: NOVOS ESTILOS PARA PREVISÃO DO TEMPO DETALHADA */
+.weather-forecast-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap; 
+}
+
+.weather-forecast-input-container label {
+    margin-bottom: 0; 
+    flex-shrink: 0;
+}
+
+.weather-forecast-input-container input[type="text"] {
+    flex-grow: 1; 
+    min-width: 200px;
+}
+
+.forecast-results {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.forecast-day-card {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.forecast-day-card h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    color: #0056b3;
+}
+
+.forecast-day-card img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 5px;
+}
+
+.forecast-day-card .temperatures {
+    font-size: 1em;
+    margin-bottom: 8px;
+}
+
+.forecast-day-card .temperatures .temp-max {
+    font-weight: bold;
+}
+
+.forecast-day-card .temp-min {
+    color: #555;
+}
+
+.forecast-day-card .description {
+    font-size: 0.9em;
+    color: #666;
+    min-height: 3em; /* Ajuda a alinhar cartões com descrições de tamanhos diferentes */
+}
+/* END: NOVOS ESTILOS PARA PREVISÃO DO TEMPO DETALHADA */
+
+/* ... (restante dos estilos inalterado) ... */
+
 /* Navegação por Abas */
 .tab-navigation {
     display: flex; /* Alinha botões horizontalmente */
