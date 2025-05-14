@@ -1,283 +1,117 @@
-/* Aplica estilos a todo o corpo (<body>) do documento HTML */
+CSS
+
+/**
+ * style.css - Folha de Estilos para Garagem Inteligente v4.1 - Tema Pastel Aconchegante
+ */
+
+/* --- Variáveis de Cores CSS (Tema Pastel Aconchegante) --- */
+:root {
+    --cor-fundo-principal: #fdf6f0; /* Creme muito claro, quase branco */
+    --cor-fundo-secundario: #f8eadd; /* Creme um pouco mais escuro/rosado */
+    --cor-fundo-painel: #ffffff;    /* Branco puro para painéis */
+    --cor-texto-principal: #5d544f; /* Marrom acinzentado escuro para texto principal */
+    --cor-texto-secundario: #8c7e76; /* Marrom acinzentado mais claro */
+    --cor-destaque-primario: #f5a9bc; /* Rosa pastel suave */
+    --cor-destaque-secundario: #a2d2ff; /* Azul bebê pastel */
+    --cor-sucesso: #b0e0e6;        /* Azul esverdeado pastel (Powder Blue) */
+    --cor-aviso: #ffe084;          /* Amarelo pastel suave */
+    --cor-erro: #ffb3ba;           /* Rosa avermelhado pastel */
+    --cor-borda: #e0d8d0;          /* Cinza claro com tom de bege para bordas */
+
+    --sombra-suave: 0 3px 8px rgba(93, 84, 79, 0.1); /* Sombra bem suave com tom do texto */
+    --sombra-media: 0 5px 15px rgba(93, 84, 79, 0.12);
+    --raio-borda: 10px; /* Bordas mais arredondadas para um look "fofo" */
+    --raio-borda-pequeno: 6px;
+}
+
+/* --- Estilos Globais e Reset Básico --- */
 body {
-    font-family: sans-serif;
-    line-height: 1.6;
-    margin: 0; /* Removido margin padrão para header ocupar largura total */
-    padding-top: 100px; /* Adiciona espaço no topo para compensar header fixo (ajustar altura conforme necessário) */
-    background-color: #f4f4f4;
-    transition: opacity 0.3s ease-in-out; /* Suaviza a transição de opacidade do loading */
-}
-
-/* Estilo para feedback de carregamento da API */
-body.api-loading {
-    cursor: wait !important; /* Mostra cursor de espera (importante para sobrescrever outros cursores) */
-    opacity: 0.9; /* Leve opacidade para indicar bloqueio */
-}
-
-body.api-loading::after {
-    content: 'Carregando da API...';
-    position: fixed; /* Fixo na tela */
-    bottom: 15px;
-    right: 15px;
-    background-color: rgba(0, 86, 179, 0.85); /* Azul escuro com transparência */
-    color: white;
-    padding: 8px 15px;
-    border-radius: 15px; /* Bordas mais arredondadas */
-    font-size: 0.9em;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    z-index: 1001; /* Garante que fique acima de outros elementos */
-    animation: pulse 1.5s infinite ease-in-out; /* Animação sutil */
-    pointer-events: none; /* Não interfere com cliques */
-}
-
-/* Animação de pulso para o indicador de loading */
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.7; transform: scale(1.03); }
-}
-
-/* Garante que botões desabilitados durante o loading tenham aparência clara */
-body.api-loading button:disabled,
-body.api-loading input:disabled,
-body.api-loading select:disabled,
-body.api-loading textarea:disabled {
-    cursor: wait !important; /* Cursor de espera também nos elementos */
-    opacity: 0.5 !important; /* Mais opacidade para indicar inatividade */
-    /* filter: grayscale(50%); */ /* Opcional: Deixar cinza */
-}
-
-/* Cabeçalho Principal */
-.main-header {
-    background-color: #333; /* Fundo escuro para o cabeçalho */
-    color: #fff; /* Texto branco */
-    padding: 10px 20px; /* Padding interno */
-    position: fixed; /* Fixa o cabeçalho no topo */
-    top: 0;
-    left: 0;
-    width: 100%; /* Ocupa toda a largura */
-    z-index: 1000; /* Garante que fique acima do conteúdo */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Sombra sutil */
-    display: flex; /* Usa flexbox para alinhar itens */
-    justify-content: space-between; /* Espaça itens (título à esquerda, resto à direita) */
-    align-items: center; /* Alinha itens verticalmente */
-    box-sizing: border-box; /* Inclui padding na largura total */
-    min-height: 60px; /* Altura mínima para o header */
-}
-
-.main-header h1 {
-    margin: 0; /* Remove margens do H1 */
-    font-size: 1.5em; /* Tamanho da fonte do título */
-    white-space: nowrap; /* Evita quebra de linha */
-}
-
-/* ... (estilos existentes) ... */
-
-/* MODIFICAÇÕES PONTUAIS NO HEADER (se necessário para acomodar a nova aba) */
-.main-header {
-    /* ... (propriedades existentes) ... */
-    flex-wrap: wrap; /* Permite que os itens quebrem linha se não couberem */
-    gap: 10px; /* Espaçamento entre os grupos de itens no header */
-}
-
-.tab-navigation {
-    /* ... (propriedades existentes) ... */
-    flex-grow: 1; /* Permite que a navegação ocupe espaço disponível */
-    justify-content: center; /* Centraliza os botões de aba se houver espaço */
-    margin: 0 10px; /* Ajuste de margem se necessário */
-}
-
-/* REMOVIDO: Estilos .weather-info, #weather-location, etc. (clima de 1 dia no header) */
-
-
-/* START: NOVOS ESTILOS PARA PREVISÃO DO TEMPO DETALHADA */
-.weather-forecast-input-container {
+    font-family: 'Nunito Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte mais arredondada e amigável */
+    line-height: 1.65;
+    margin: 0;
+    padding: 20px;
+    background-color: var(--cor-fundo-principal);
+    color: var(--cor-texto-principal);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap; 
 }
 
-.weather-forecast-input-container label {
-    margin-bottom: 0; 
-    flex-shrink: 0;
+.app-wrapper {
+    width: 100%;
+    max-width: 1000px; /* Um pouco menor para um feel mais contido */
 }
 
-.weather-forecast-input-container input[type="text"] {
-    flex-grow: 1; 
-    min-width: 200px;
+/* --- Estilos de Layout e Contêineres --- */
+.container { /* Se usado para seções específicas */
+    max-width: 850px;
+    margin: 20px auto;
+    background: var(--cor-fundo-painel); /* Painéis brancos */
+    padding: 20px;
+    border-radius: var(--raio-borda);
+    box-shadow: var(--sombra-suave);
 }
 
-.forecast-results {
-    margin-top: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 15px;
-}
-
-.forecast-day-card {
-    background-color: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.forecast-day-card h4 {
+/* --- Estilos de Tipografia --- */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--cor-texto-principal);
     margin-top: 0;
+    margin-bottom: 12px; /* Margem inferior um pouco menor */
+    font-weight: 700; /* Um pouco mais de peso para destaque */
+}
+
+h1 {
+    font-size: 2em; /* Um pouco menor */
+    color: var(--cor-destaque-primario); /* Título principal em rosa pastel */
+    text-align: center;
+    padding-bottom: 8px;
+    border-bottom: 2px dashed var(--cor-destaque-primario); /* Borda tracejada "fofa" */
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-size: 1.6em;
+    color: var(--cor-destaque-secundario); /* H2 em azul bebê */
+}
+
+h3 {
+    font-size: 1.3em;
+    border-bottom: 1px solid var(--cor-borda);
+    padding-bottom: 6px;
+    font-weight: 600;
+}
+
+p {
     margin-bottom: 10px;
-    font-size: 1.1em;
-    color: #0056b3;
+    color: var(--cor-texto-secundario);
 }
 
-.forecast-day-card img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 5px;
+a {
+    color: var(--cor-destaque-primario);
+    text-decoration: none;
+    font-weight: 600;
+}
+a:hover {
+    color: #e58ca0; /* Rosa um pouco mais escuro no hover */
+    text-decoration: underline;
 }
 
-.forecast-day-card .temperatures {
-    font-size: 1em;
-    margin-bottom: 8px;
-}
-
-.forecast-day-card .temperatures .temp-max {
-    font-weight: bold;
-}
-
-.forecast-day-card .temp-min {
-    color: #555;
-}
-
-.forecast-day-card .description {
-    font-size: 0.9em;
-    color: #666;
-    min-height: 3em; /* Ajuda a alinhar cartões com descrições de tamanhos diferentes */
-}
-/* END: NOVOS ESTILOS PARA PREVISÃO DO TEMPO DETALHADA */
-
-/* ... (restante dos estilos inalterado) ... */
-
-/* Navegação por Abas */
-.tab-navigation {
-    display: flex; /* Alinha botões horizontalmente */
-    gap: 5px; /* Espaço entre botões */
-    margin: 0 20px; /* Margens laterais */
-}
-
-.tab-button {
-    padding: 8px 15px;
-    border: none;
-    border-radius: 5px 5px 0 0; /* Cantos arredondados apenas no topo */
-    background-color: #555; /* Cor de fundo inativa */
-    color: #ccc; /* Cor do texto inativo */
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s; /* Transição suave */
-    font-size: 0.95em;
-}
-
-.tab-button:hover:not(:disabled) {
-    background-color: #777; /* Cor ao passar o mouse */
-    color: #fff;
-}
-
-.tab-button.active {
-    background-color: #f4f4f4; /* Cor de fundo ativa (mesma do body) */
-    color: #333; /* Cor do texto ativo */
-    font-weight: bold;
-    position: relative;
-    top: 1px; /* Leve deslocamento para conectar com o painel */
-}
-
-.tab-button:disabled {
-    background-color: #444; /* Cor de fundo desabilitado */
-    color: #888; /* Cor do texto desabilitado */
-    cursor: not-allowed; /* Cursor indicando não permitido */
-}
-
-/* Controle de Volume */
-.volume-control {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.volume-control label {
-    font-size: 0.9em;
-    color: #ccc;
-}
-
-.volume-control input[type="range"] {
-    cursor: pointer;
-    width: 100px; /* Largura do slider */
-}
-
-/* Área Principal de Conteúdo das Abas */
-.tab-content-area {
-    max-width: 900px; /* Largura máxima do conteúdo */
-    margin: 20px auto; /* Centraliza e adiciona margem abaixo do header */
-    padding: 0 20px; /* Padding lateral */
-}
-
-/* Painéis das Abas */
-.tab-pane {
-    display: none; /* Esconde abas inativas */
-    background-color: #fff; /* Fundo branco */
-    padding: 25px; /* Padding interno */
-    border: 1px solid #ccc; /* Borda sutil */
-    border-top: none; /* Remove borda superior (conecta com botão ativo) */
-    border-radius: 0 0 8px 8px; /* Cantos arredondados apenas embaixo */
-    box-shadow: 0 3px 6px rgba(0,0,0,0.08); /* Sombra suave */
-    animation: fadeIn 0.5s ease-in-out; /* Animação de entrada */
-}
-
-.tab-pane.active {
-    display: block; /* Mostra aba ativa */
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.painel h2 {
-    margin-top: 0; /* Remove margem superior do H2 dentro do painel */
-    color: #0056b3; /* Cor azul para títulos de seção */
-    border-bottom: 2px solid #eee; /* Linha separadora abaixo do título */
-    padding-bottom: 10px;
+/* --- Estilos de Componentes Comuns --- */
+.painel {
+    background-color: var(--cor-fundo-painel); /* Painéis brancos */
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-borda);
+    padding: 20px;
     margin-bottom: 20px;
+    box-shadow: var(--sombra-suave);
 }
 
-.painel h3 {
-    margin-top: 25px;
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 1.2em;
-}
-
-.painel h4 {
-    margin-top: 15px;
-    margin-bottom: 8px;
-    color: #555;
-    font-size: 1.05em;
-}
-
-/* Formulários dentro dos painéis */
-.form-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Grid responsivo */
-    gap: 15px 20px; /* Espaçamento entre linhas e colunas */
-    margin-bottom: 20px;
-}
-
+/* --- Estilos de Formulários --- */
 form label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-    font-size: 0.9em;
-    color: #555;
+    margin-bottom: 6px;
+    font-weight: 600; /* Labels mais destacados */
+    color: var(--cor-texto-principal); /* Labels com cor de texto principal */
 }
 
 form input[type="text"],
@@ -286,479 +120,638 @@ form input[type="date"],
 form input[type="color"],
 form select,
 form textarea {
-    width: 100%; /* Ocupa toda a largura da célula do grid */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1em;
-    box-sizing: border-box; /* Inclui padding e borda na largura total */
-    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    background-color: var(--cor-fundo-secundario); /* Fundo dos inputs em creme suave */
+    color: var(--cor-texto-principal);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-borda-pequeno); /* Bordas um pouco menos arredondadas que os painéis */
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
 form input[type="color"] {
-    padding: 5px; /* Padding menor para input color */
-    height: 40px; /* Altura consistente */
-    cursor: pointer;
+    padding: 4px;
+    min-height: 40px;
 }
 
 form input:focus,
 form select:focus,
 form textarea:focus {
-    border-color: #007bff; /* Borda azul ao focar */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); /* Sombra azul suave */
-    outline: none; /* Remove outline padrão */
+    outline: none;
+    border-color: var(--cor-destaque-primario);
+    box-shadow: 0 0 0 2px rgba(245, 169, 188, 0.3); /* Sombra de foco rosa pastel */
+    background-color: #fff; /* Fundo branco no foco para clareza */
 }
 
-form textarea {
-    resize: vertical; /* Permite redimensionar apenas verticalmente */
-    min-height: 60px;
-}
-
-/* Estilos de Botões */
-button {
+/* Botões com estilo base */
+button, .botao-principal, .botao-secundario, .botao-perigo {
     padding: 10px 18px;
     border: none;
-    border-radius: 5px;
+    border-radius: var(--raio-borda); /* Bordas bem arredondadas */
     cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    font-size: 0.95em;
+    font-weight: 700; /* Botões mais bold */
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    color: var(--cor-texto-principal); /* Texto escuro para botões com fundo claro */
+    box-shadow: var(--sombra-suave);
+}
+button:hover, .botao-principal:hover, .botao-secundario:hover, .botao-perigo:hover {
+    filter: brightness(95%); /* Escurece levemente no hover para fundos claros */
+    box-shadow: var(--sombra-media);
+}
+button:active, .botao-principal:active, .botao-secundario:active, .botao-perigo:active {
+    transform: scale(0.97) translateY(1px);
+    box-shadow: 0 1px 3px rgba(93, 84, 79, 0.15);
 }
 
-button:hover:not(:disabled) {
-    transform: translateY(-1px); /* Leve efeito de elevação */
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+/* Estilo específico para botões de formulário (submit) */
+form button[type="submit"], .botao-principal {
+    background-color: var(--cor-destaque-primario);
+    color: white; /* Texto branco para contraste com rosa */
+}
+form button[type="submit"]:hover, .botao-principal:hover {
+    background-color: #e58ca0; /* Rosa mais escuro */
 }
 
-button:active:not(:disabled) {
-    transform: translateY(0px); /* Remove elevação ao clicar */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+.botao-secundario {
+    background-color: var(--cor-destaque-secundario);
+    color: white; /* Texto branco para contraste com azul bebê */
+}
+.botao-secundario:hover {
+    background-color: #8cbce0; /* Azul bebê mais escuro */
 }
 
-button:disabled {
-    background-color: #ccc !important; /* Fundo cinza claro para desabilitado */
-    color: #888 !important; /* Texto cinza */
+.botao-perigo {
+    background-color: var(--cor-erro);
+    color: white;
+}
+.botao-perigo:hover {
+    background-color: #f0909d; /* Rosa erro mais escuro */
+}
+
+/* Botões desabilitados */
+button:disabled, .botao-principal:disabled, .botao-secundario:disabled, .botao-perigo:disabled {
+    background-color: #e0e0e0; /* Cinza claro */
+    color: #a0a0a0; /* Cinza médio */
     cursor: not-allowed;
     box-shadow: none;
     transform: none;
+    filter: none;
 }
 
-.botao-principal {
-    background-color: #28a745; /* Verde */
-    color: white;
-}
-.botao-principal:hover:not(:disabled) { background-color: #218838; }
 
-.botao-secundario {
-    background-color: #6c757d; /* Cinza */
-    color: white;
-}
-.botao-secundario:hover:not(:disabled) { background-color: #5a6268; }
-
-.botao-perigo {
-    background-color: #dc3545; /* Vermelho */
-    color: white;
-}
-.botao-perigo:hover:not(:disabled) { background-color: #c82333; }
-
-/* Campo específico de capacidade (inicialmente oculto) */
-.hidden { display: none; }
-
-/* Aba "Minha Garagem" */
+/* --- Estilos da Exibição da Garagem (Lista de Veículos) --- */
 #listaVeiculosGaragem {
-    margin-top: 15px;
-    display: flex; /* Usa flexbox para os botões/cards */
-    flex-wrap: wrap; /* Permite quebrar linha */
-    gap: 10px; /* Espaçamento entre itens */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Um pouco menor */
+    gap: 12px;
 }
-
-#listaVeiculosGaragem button { /* Estilo se usar botões */
+#listaVeiculosGaragem button {
+    background-color: #fff;
+    color: var(--cor-texto-principal);
+    border: 1px solid var(--cor-borda);
+    text-align: left;
+    padding: 10px 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    background-color: #e9ecef;
-    color: #333;
-    border: 1px solid #ced4da;
-    font-weight: normal;
-    text-align: left;
+    border-radius: var(--raio-borda-pequeno);
 }
-
-#listaVeiculosGaragem button:hover:not(:disabled) {
-    background-color: #dde2e6;
-    border-color: #adb5bd;
+#listaVeiculosGaragem button:hover {
+    border-color: var(--cor-destaque-primario);
+    background-color: var(--cor-fundo-secundario);
+    box-shadow: var(--sombra-suave);
 }
-
 #listaVeiculosGaragem button.selecionado {
-    background-color: #007bff;
+    background-color: var(--cor-destaque-primario);
     color: white;
-    border-color: #0056b3;
-    font-weight: bold;
+    border-color: var(--cor-destaque-primario);
 }
-
-#listaVeiculosGaragem button.highlight-add {
-    animation: highlight 1.5s ease-out;
-}
-
-@keyframes highlight {
-  0% { box-shadow: 0 0 10px 3px rgba(40, 167, 69, 0.7); } /* Verde */
-  100% { box-shadow: none; }
-}
-
 .color-swatch-list {
     display: inline-block;
-    width: 18px;
-    height: 18px;
-    border-radius: 3px;
-    border: 1px solid rgba(0,0,0,0.2);
-    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    border-radius: var(--raio-borda-pequeno);
+    margin-right: 8px;
+    border: 1px solid rgba(0,0,0,0.05);
 }
 
-/* Aba "Detalhes" */
+/* --- Estilos da Seção de Detalhes do Veículo --- */
 .details-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+}
+.details-header h2 {
+    margin-bottom: 0;
 }
 
 .info-box {
-    background-color: #f8f9fa; /* Fundo ligeiramente diferente */
-    padding: 20px;
-    border-radius: 5px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 20px;
-    position: relative; /* Para posicionar elementos internos se necessário */
-}
-
-.info-box p {
-    margin: 8px 0;
-    line-height: 1.5;
-}
-
-.info-box strong {
-    color: #495057;
-}
-
-.info-box small {
-    font-size: 0.8em;
-    color: #6c757d;
-    word-break: break-all; /* Quebra IDs longos */
-}
-
-.info-box .color-swatch {
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border-radius: 50%; /* Círculo */
-    border: 1px solid rgba(0,0,0,0.2);
-    vertical-align: middle;
-    margin-right: 5px;
-    position: relative;
-    top: -1px;
-}
-
-.veiculo-imagem {
-    max-width: 120px; /* Limita tamanho da imagem */
-    height: auto;
-    float: right; /* Flutua imagem à direita */
-    margin-left: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-}
-
-.status-ligado, .status-desligado {
-    font-weight: bold;
-    display: inline-flex; /* Alinha indicador e texto */
-    align-items: center;
-    gap: 6px;
-}
-
-.status-indicator {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    animation: pulseStatus 2s infinite ease-in-out;
-}
-
-.status-ligado .status-indicator { background-color: #28a745; box-shadow: 0 0 5px #28a745;}
-.status-desligado .status-indicator { background-color: #dc3545; animation: none; } /* Sem pulsar desligado */
-
-.status-ligado span:last-child { color: #28a745; }
-.status-desligado span:last-child { color: #dc3545; }
-
-@keyframes pulseStatus {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.7; }
-}
-
-.velocimetro {
-    width: 100%;
-    background-color: #e9ecef;
-    border-radius: 15px;
-    margin-top: 15px;
-    height: 25px; /* Altura da barra */
-    position: relative; /* Para texto absoluto */
-    overflow: hidden; /* Esconde excesso da barra interna */
-    border: 1px solid #ced4da;
-}
-
-.velocimetro-barra {
-    height: 100%;
-    background-color: #007bff; /* Azul */
-    border-radius: 15px 0 0 15px; /* Arredonda só à esquerda */
-    transition: width 0.5s ease-out; /* Animação suave da largura */
-    text-align: right;
-    position: relative;
-    z-index: 1;
-    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
-	background-size: 1rem 1rem;
-}
-/* Adapta cor da barra para esportivo/caminhão se desejado */
-/* .carro-esportivo .velocimetro-barra { background-color: #ffc107; } */ /* Amarelo para esportivo */
-/* .caminhao .velocimetro-barra { background-color: #17a2b8; } */ /* Ciano para caminhão */
-
-.velocimetro-texto {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: #333; /* Cor do texto que contrasta com a barra e o fundo */
-    font-weight: bold;
-    font-size: 0.9em;
-    z-index: 2;
-    text-shadow: 0 0 2px rgba(255,255,255,0.7); /* Sombra clara para legibilidade */
-}
-
-
-/* Controles de Ação */
-.acoes-container {
-    display: flex;
-    flex-wrap: wrap; /* Quebra linha se não couber */
-    gap: 10px; /* Espaçamento entre botões/controles */
-    margin-top: 15px;
+    background-color: var(--cor-fundo-secundario); /* Fundo suave para a caixa de info */
+    padding: 15px;
+    border-radius: var(--raio-borda-pequeno);
     margin-bottom: 15px;
 }
+.info-box p {
+    margin: 4px 0;
+}
+.info-box strong {
+    color: var(--cor-texto-principal);
+    font-weight: 600;
+}
+.status-ligado .status-indicator { background-color: #a6d9a3; /* Verde pastel */ }
+.status-desligado .status-indicator { background-color: #ffc0cb; /* Rosa claro */ }
+.status-indicator {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+}
+.color-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: var(--raio-borda-pequeno);
+    margin-right: 4px;
+    vertical-align: middle;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+
+.acoes-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+.acoes-container button {
+    padding: 8px 12px; /* Mantido */
+    font-size: 0.9em; /* Mantido */
+    background-color: #fff;
+    border: 1px solid var(--cor-borda);
+}
+.acoes-container button:hover {
+    background-color: var(--cor-fundo-secundario);
+    border-color: var(--cor-destaque-secundario); /* Destaque azul bebê no hover */
+}
+#btnAtivarTurbo { background-color: var(--cor-sucesso); color: var(--cor-texto-principal);}
+#btnAtivarTurbo:hover { background-color: #9bcdd0; }
+
 
 .controles-especificos {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px;
-    border: 1px dashed #ccc; /* Borda tracejada para destacar */
-    border-radius: 5px;
-    background-color: #f8f9fa;
+    background-color: var(--cor-fundo-secundario);
+    border-radius: var(--raio-borda-pequeno);
 }
+.controles-especificos.hidden { display: none; }
 
-.controles-especificos label {
-    margin-bottom: 0; /* Remove margem do label */
-    font-size: 0.9em;
-}
 
-.controles-especificos input[type="number"] {
-    width: 80px; /* Largura menor para input de carga */
-    padding: 5px 8px;
-    margin-bottom: 0;
-}
-
-.controles-especificos button {
-    font-size: 0.9em;
-    padding: 6px 12px;
-}
-
-/* Seção de Manutenção */
+/* --- Manutenção --- */
 .manutencao-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 2 colunas se couber, senão 1 */
-    gap: 30px; /* Espaço entre formulário e histórico */
-    margin-top: 15px;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+.form-manutencao h4, .historico-agendamento h4 {
+    font-size: 1.1em; /* Um pouco menor */
+    color: var(--cor-destaque-primario); /* Títulos em rosa */
+    margin-bottom: 8px;
+    font-weight: 700;
 }
 
-.form-manutencao, .historico-agendamento {
-    /* background-color: #f8f9fa; */ /* Opcional: fundo leve */
-    /* padding: 15px; */
-    /* border-radius: 5px; */
-}
-
-.historico-agendamento ul {
-    list-style: none; /* Remove marcadores de lista */
-    padding: 0;
-    margin: 0;
-    max-height: 250px; /* Altura máxima com scroll */
-    overflow-y: auto; /* Adiciona scroll vertical se necessário */
-    border: 1px solid #eee;
-    border-radius: 4px;
-}
-
-.historico-agendamento li {
-    padding: 10px 12px;
-    margin-bottom: -1px; /* Sobrepõe bordas */
-    border-bottom: 1px solid #eee;
-    font-size: 0.9em;
-    transition: background-color 0.2s;
-    background-color: #fff; /* Fundo branco padrão */
-}
-.historico-agendamento li:last-child {
-    border-bottom: none; /* Remove borda do último item */
-}
-
-.historico-agendamento li:hover {
-    background-color: #f8f9fa; /* Fundo leve ao passar mouse */
-}
-
-#historicoLista li {
-    color: #333; /* Cor padrão para histórico */
+#historicoLista li, #agendamentosLista li {
+    background-color: var(--cor-fundo-secundario);
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: var(--raio-borda-pequeno);
+    font-size: 0.85em;
+    list-style: none;
+    border-left: 3px solid var(--cor-borda);
 }
 
 #agendamentosLista li {
-    color: #0056b3; /* Cor azul para agendamentos */
-    font-weight: 500; /* Levemente mais forte */
+    border-left-color: var(--cor-destaque-secundario); /* Agendamentos com borda azul bebê */
 }
-
 #agendamentosLista li.agendamento-hoje {
-    background-color: #fff3cd; /* Fundo amarelo para hoje */
-    color: #856404;
-    font-weight: bold;
-    border-left: 4px solid #ffc107; /* Marcação lateral */
+    border-left-color: var(--cor-aviso);
+    background-color: rgba(255, 224, 132, 0.3); /* Fundo amarelo pastel suave */
 }
-
 #agendamentosLista li.agendamento-amanha {
-    background-color: #d1ecf1; /* Fundo azul claro para amanhã */
-    color: #0c5460;
-    font-weight: bold;
-    border-left: 4px solid #17a2b8; /* Marcação lateral */
+    border-left-color: var(--cor-sucesso);
 }
 
-.placeholder-text {
-    font-style: italic;
-    color: #888;
-    padding: 20px;
-    text-align: center;
-}
 
-.error-text {
-    color: #dc3545; /* Vermelho */
-    font-weight: bold;
-    padding: 10px;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
+/* --- Previsão do Tempo (Tema Pastel) --- */
+#weather-forecast-container {
+    background-color: var(--cor-fundo-painel);
+    padding: 18px;
+    margin-bottom: 20px;
+    border-radius: var(--raio-borda);
+    box-shadow: var(--sombra-media);
+    border: 1px solid var(--cor-borda);
 }
+/* ... (Seu CSS do Tema Pastel Aconchegante) ... */
 
-/* Container de Notificações */
-.notificacoes-container {
-    position: fixed; /* Fixo na tela */
-    top: 80px; /* Abaixo do header */
-    right: 20px;
-    width: 300px; /* Largura máxima das notificações */
-    z-index: 1050; /* Acima de quase tudo */
+/* --- Previsão do Tempo (Tema Pastel) --- */
+/* ... (estilos existentes da previsão do tempo, incluindo os .filter-btn) ... */
+
+/* Controles de Destaque */
+.weather-highlight-controls {
     display: flex;
-    flex-direction: column; /* Notificações empilhadas */
-    gap: 10px; /* Espaço entre notificações */
+    flex-wrap: wrap; /* Para quebrar linha em telas menores */
+    align-items: center;
+    gap: 10px 15px; /* Espaçamento vertical e horizontal */
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--cor-fundo-secundario);
+    border-radius: var(--raio-borda-pequeno);
 }
 
-.notificacao {
-    background-color: rgba(51, 51, 51, 0.9); /* Fundo escuro semi-transparente */
-    color: #fff; /* Texto branco */
-    padding: 12px 40px 12px 15px; /* Padding (espaço extra à direita para botão fechar) */
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    opacity: 0; /* Inicialmente invisível */
-    transform: translateX(100%); /* Começa fora da tela à direita */
-    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; /* Animação suave */
-    font-size: 0.95em;
-    position: relative; /* Para posicionar o botão fechar */
-    word-wrap: break-word; /* Quebra palavras longas */
+.weather-highlight-controls > span { /* O título "Destaques:" */
+    font-size: 0.9em;
+    color: var(--cor-texto-secundario);
+    margin-right: 5px;
+    font-weight: 600;
 }
 
-.notificacao.show {
-    opacity: 1; /* Torna visível */
-    transform: translateX(0); /* Move para a posição final */
-}
-
-/* Estilos por tipo de notificação */
-.notificacao.sucesso { background-color: rgba(40, 167, 69, 0.9); } /* Verde */
-.notificacao.erro { background-color: rgba(220, 53, 69, 0.9); } /* Vermelho */
-.notificacao.aviso { background-color: rgba(255, 193, 7, 0.9); color: #333; } /* Amarelo */
-.notificacao.info { background-color: rgba(23, 162, 184, 0.9); } /* Ciano */
-
-.notificacao-close {
-    position: absolute; /* Posicionamento absoluto dentro da notificação */
-    top: 5px;
-    right: 8px;
-    background: none; /* Sem fundo */
-    border: none; /* Sem borda */
-    color: inherit; /* Herda a cor do texto da notificação */
-    font-size: 1.4em;
-    font-weight: bold;
-    line-height: 1;
+.highlight-toggle {
+    display: inline-flex; /* Para alinhar o checkbox e o texto */
+    align-items: center;
     cursor: pointer;
-    padding: 0 5px;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    box-shadow: none; /* Remove sombra padrão de botão */
-}
-
-.notificacao-close:hover {
-    opacity: 1;
-    transform: none; /* Impede efeito hover do botão geral */
-}
-
-/* Rodapé */
-.main-footer-credits {
-    text-align: center;
-    margin-top: 30px;
-    padding: 15px;
     font-size: 0.85em;
-    color: #6c757d; /* Cinza */
-    border-top: 1px solid #e0e0e0; /* Linha separadora */
+    color: var(--cor-texto-principal);
+    padding: 5px 8px;
+    border-radius: var(--raio-borda-pequeno);
+    background-color: #fff;
+    border: 1px solid var(--cor-borda);
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Barra de Carga do Caminhão */
-.carga-barra-container {
-    width: 100%;
-    height: 18px;
-    background-color: #e9ecef;
-    border-radius: 10px;
-    margin-top: 5px;
+.highlight-toggle:hover {
+    border-color: var(--cor-destaque-primario);
+}
+
+.highlight-toggle input[type="checkbox"] {
+    appearance: none; /* Remove o estilo padrão do checkbox */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--cor-borda);
+    border-radius: 4px;
+    margin-right: 8px;
+    cursor: pointer;
+    position: relative; /* Para o pseudo-elemento do "check" */
+    outline: none; /* Remove o outline padrão no foco */
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.highlight-toggle input[type="checkbox"]:checked {
+    background-color: var(--cor-destaque-primario); /* Rosa quando checado */
+    border-color: var(--cor-destaque-primario);
+}
+
+/* Adiciona um "check" visual quando o checkbox está marcado */
+.highlight-toggle input[type="checkbox"]:checked::before {
+    content: '✔'; /* Símbolo de check */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    color: white;
+    line-height: 1;
+}
+
+/* Estilos para os cards de previsão destacados */
+.weather-item.highlight-rain {
+    background-color: #cfe7fa; /* Azul bem clarinho para chuva */
+    border-left: 4px solid var(--cor-destaque-secundario); /* Borda azul bebê */
+}
+
+.weather-item.highlight-cold {
+    background-color: #e0f2f7; /* Ciano bem clarinho para frio */
+    border-left: 4px solid #67c1d5; /* Ciano mais forte */
+}
+
+.weather-item.highlight-hot {
+    background-color: #fff0e1; /* Laranja bem clarinho para calor */
+    border-left: 4px solid #ffc078; /* Laranja pastel */
+}
+
+/* Se houver múltiplos destaques, a última borda definida pode prevalecer,
+   ou você pode adicionar mais complexidade para combinar (ex: ícones) */
+
+
+/* ... (resto dos estilos da previsão do tempo e demais estilos) ... */
+/* Removido o H3 fixo, mas se precisar estilizar, pode ser aqui ou comentado */
+/* #weather-forecast-container > h3 {
+    display: none;
+    font-size: 1.2em;
+    color: var(--cor-texto-principal);
     margin-bottom: 10px;
-    overflow: hidden;
-    border: 1px solid #ced4da;
-    position: relative;
+    border-bottom: none;
+    padding-bottom: 0;
+    font-weight: 700;
+} */
+
+/* ================================================================ */
+/* ================================================================ */
+
+
+.weather-forecast-items { /* Este já existe no seu CSS */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+    gap: 12px;
 }
 
-.carga-barra {
-    height: 100%;
-    background-color: #ffc107; /* Amarelo para carga */
-    border-radius: 10px 0 0 10px;
-    transition: width 0.5s ease-out;
-    text-align: center;
-    color: #333;
+.weather-item { /* Este já existe no seu CSS */
+    background-color: #fff; /* Itens da previsão em branco */
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-borda-pequeno);
+    padding: 12px;
+    box-shadow: var(--sombra-suave);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.weather-item {
+    background-color: #fff; /* Itens da previsão em branco */
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio-borda-pequeno);
+    padding: 12px;
+    box-shadow: var(--sombra-suave);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.weather-item:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-media);
+    border-color: var(--cor-destaque-secundario); /* Borda azul bebê no hover */
+}
+.weather-item img {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 6px;
+}
+.weather-item .date {
+    font-weight: 600;
+    font-size: 0.9em;
+    color: var(--cor-destaque-primario); /* Data em rosa */
+}
+.weather-item .temp {
+    font-size: 1.1em;
+    font-weight: 700; /* Temperatura mais bold */
+    color: var(--cor-texto-principal);
+}
+.weather-item .desc {
+    font-size: 0.75em;
+    color: var(--cor-texto-secundario);
+    min-height: 2em;
+}
+
+.forecast-details-expanded {
     font-size: 0.8em;
-    line-height: 18px; /* Centraliza texto verticalmente */
-    font-weight: bold;
-    white-space: nowrap;
+    text-align: left;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed #d1c7bf; /* Borda tracejada um pouco mais escura */
+    color: var(--cor-texto-secundario);
 }
-/* Adiciona um pseudo-elemento para mostrar a % dentro da barra */
-.carga-barra::after {
-    content: attr(style); /* Truque para pegar o width, mas precisa de JS para formatar */
-    /* Em vez disso, o JS já calcula e podemos exibir no title ou num elemento separado */
+.forecast-details-expanded p {
+    margin: 2px 0;
+}
+.forecast-details-expanded strong {
+    color: var(--cor-texto-principal);
+    font-weight: 600;
 }
 
-/* Placeholder Content (quando detalhes está vazio) */
-.placeholder-content {
+/* Placeholder e Textos de Erro */
+.placeholder-text, .error-text {
+    width: 100%;
+    text-align: center;
+    color: var(--cor-texto-secundario);
+    padding: 12px;
+    font-style: italic;
+    background-color: var(--cor-fundo-secundario);
+    border-radius: var(--raio-borda-pequeno);
+}
+.error-text {
+    color: var(--cor-texto-principal); /* Texto escuro para melhor contraste com fundo de erro pastel */
+    background-color: var(--cor-erro);
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* --- Navegação por Abas --- */
+.tab-navigation {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+.tab-button {
+    padding: 9px 16px;
+    background-color: #fff;
+    color: var(--cor-texto-secundario);
+    border: 1px solid var(--cor-borda);
+    border-bottom-width: 2px;
+    border-bottom-color: transparent;
+    border-radius: var(--raio-borda-pequeno) var(--raio-borda-pequeno) 0 0; /* Arredondado em cima */
+    font-weight: 600;
+}
+.tab-button:hover {
+    color: var(--cor-destaque-primario);
+    border-bottom-color: var(--cor-destaque-primario);
+    background-color: var(--cor-fundo-secundario);
+}
+.tab-button.active {
+    background-color: var(--cor-fundo-painel); /* Mesmo fundo do painel ativo */
+    color: var(--cor-destaque-primario);
+    border-color: var(--cor-borda);
+    border-bottom-color: var(--cor-fundo-painel); /* "Esconde" a borda inferior da aba ativa */
+    position: relative;
+    top: 1px; /* Pequeno ajuste para "fundir" com o painel */
+    font-weight: 700;
+}
+.tab-button:disabled {
+    background-color: #f0f0f0; /* Cinza bem claro */
+    color: #b0b0b0;
+    border-bottom-color: transparent;
+    cursor: not-allowed;
+}
+
+/* Conteúdo das Abas */
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+
+/* --- Controle de Volume --- */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 8px auto 18px auto;
+}
+.volume-control label {
+    color: var(--cor-texto-secundario);
+    font-size: 0.85em;
+}
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 130px;
+    height: 6px;
+    background: var(--cor-fundo-secundario);
+    outline: none;
+    border-radius: 3px;
+    border: 1px solid var(--cor-borda);
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--cor-destaque-secundario); /* Thumb azul bebê */
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #fff; /* Borda branca no thumb */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--cor-destaque-secundario);
+    cursor: pointer;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* --- Notificações --- */
+.notificacoes-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1000;
+    width: 300px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 150px; /* Altura mínima */
-    text-align: center;
-    opacity: 0.7;
+    gap: 8px;
 }
-.placeholder-icon {
-    max-width: 80px;
-    margin-bottom: 15px;
-    opacity: 0.5;
+.notificacao {
+    padding: 12px 18px;
+    border-radius: var(--raio-borda-pequeno); /* Bordas das notificações mais suaves */
+    color: var(--cor-texto-principal); /* Texto escuro para fundos pastel claros */
+    box-shadow: var(--sombra-media);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+    position: relative;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+.notificacao.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+.notificacao.info { background-color: var(--cor-destaque-secundario); color:white; }
+.notificacao.sucesso { background-color: var(--cor-sucesso); }
+.notificacao.aviso { background-color: var(--cor-aviso); }
+.notificacao.erro { background-color: var(--cor-erro); }
+
+.notificacao-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.4em;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.6;
+}
+.notificacao-close:hover { opacity: 1; }
+
+
+/* --- Rodapé --- */
+.main-footer-credits {
+    text-align: center;
+    padding: 15px;
+    margin-top: 25px;
+    font-size: 0.8em;
+    color: var(--cor-texto-secundario);
+    border-top: 1px solid var(--cor-borda);
+    width: 100%;
+}
+
+/* --- Ajustes Responsivos --- */
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+    h1 { font-size: 1.7em; }
+    h2 { font-size: 1.4em; }
+
+    .manutencao-container {
+        grid-template-columns: 1fr;
+    }
+    #listaVeiculosGaragem {
+        grid-template-columns: 1fr;
+    }
+    .weather-city-input-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .weather-city-input-container input[type="text"] {
+        width: 100%;
+    }
+    .weather-forecast-items {
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    }
+    .notificacoes-container {
+        width: calc(100% - 30px);
+        left: 15px;
+        right: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-header .tab-navigation {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .tab-button {
+        text-align: center;
+        border-radius: var(--raio-borda-pequeno); /* Abas totalmente arredondadas quando empilhadas */
+    }
+    .tab-button.active {
+        top: 0; /* Resetar ajuste da aba ativa */
+    }
+
+    #current-weather-display {
+        flex-direction: column;
+        text-align: center;
+    }
+    .app-wrapper {
+        max-width: 100%; /* Permitir que o conteúdo ocupe mais espaço */
+    }
+}
+
+/* Efeito de highlight sutil para veículo adicionado */
+#listaVeiculosGaragem button.highlight-add {
+    animation: highlight-pulse 1.5s ease-out;
+}
+@keyframes highlight-pulse {
+    0% { background-color: var(--cor-sucesso); transform: scale(1); }
+    30% { transform: scale(1.03); }
+    100% { background-color: #fff; transform: scale(1); }
 }
 
