@@ -1,8 +1,13 @@
-CSS
+
 
 /**
  * style.css - Folha de Estilos para Garagem Inteligente v4.1 - Tema Pastel Aconchegante
  */
+ *{
+    padding:0;
+    margin:0;
+    
+ }
 
 /* --- Variáveis de Cores CSS (Tema Pastel Aconchegante) --- */
 :root {
