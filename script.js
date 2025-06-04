@@ -461,7 +461,7 @@ console.log("Elementos do DOM selecionados.");
 // --- Variáveis Globais de Estado da Aplicação ---
 let garagem = {}; // Objeto para armazenar os veículos, usando ID como chave
 let veiculoAtual = null; // Referência ao objeto do veículo atualmente selecionado
-const OPENWEATHERMAP_API_KEY = '189d11b2569e9dc749b6bd952cbdf02f'; // Sua chave da API OpenWeatherMap
+//const OPENWEATHERMAP_API_KEY = '189d11b2569e9dc749b6bd952cbdf02f'; // Sua chave da API OpenWeatherMap
 let idVeiculoAtual = null; // ID do veículo atualmente selecionado
 let alertaTimeout = null; // Para controlar o timeout do alerta
 let volumeAtual = 0.5; // Volume inicial dos sons
@@ -786,39 +786,44 @@ function carregarGaragem() {
 
 // --- FUNÇÕES DE PREVISÃO DO TEMPO (NOVAS) ---
 
+// --- FUNÇÕES DE PREVISÃO DO TEMPO (ALTERADA PARA USAR O BACKEND) ---
 /**
- * Busca a previsão do tempo detalhada (5 dias / 3 horas) da API OpenWeatherMap.
+ * Busca a previsão do tempo detalhada através do nosso servidor backend.
  * @param {string} cidade - Nome da cidade.
  * @returns {Promise<object|null>} Uma Promise que resolve com os dados da previsão ou null/objeto de erro.
  */
 async function buscarPrevisaoDetalhada(cidade) {
-    if (OPENWEATHERMAP_API_KEY === 'SUA_CHAVE_API_AQUI' || OPENWEATHERMAP_API_KEY === '') {
-        console.error("Chave da API OpenWeatherMap não configurada!");
-        if (previsaoTempoResultadoEl) previsaoTempoResultadoEl.innerHTML = `<p class="api-erro">Erro: A chave da API de previsão do tempo não foi configurada no script.js.</p>`;
-        return { error: true, message: "Chave da API não configurada." };
-    }
-
     if (!cidade) {
         console.warn("buscarPrevisaoDetalhada chamada sem nome da cidade.");
         return { error: true, message: "Nome da cidade não fornecido." };
     }
 
-    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(cidade)}&appid=${OPENWEATHERMAP_API_KEY}&units=metric&lang=pt_br`;
+    
+    // URL do seu endpoint no backend que buscará os dados do clima.
+    // Exemplo: o backend está rodando na porta 3000 localmente.
+    //const backendUrl = `/api/weather?cidade=${encodeURIComponent(cidade)}`;
+    // Se seu backend estiver em outra porta ou domínio em produção, ajuste a URL:
+     const backendUrl = `http://localhost:3000/api/weather?cidade=${encodeURIComponent(cidade)}`;
 
     try {
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await fetch(backendUrl); // Chama o seu backend
+        const data = await response.json(); // O backend deve retornar um JSON
 
         if (!response.ok) {
+            // A mensagem de erro agora virá do seu backend
             const errorMessage = data.message || `Erro ${response.status}: ${response.statusText}`;
-            console.error(`Erro da API OpenWeatherMap (${cidade}): ${errorMessage}`);
+            console.error(`Erro do nosso backend ao buscar clima para (${cidade}): ${errorMessage}`);
+            // Se o backend retornar um JSON com uma propriedade de erro específica, use-a.
+            // Ex: if (data.error) throw new Error(data.error);
             throw new Error(errorMessage);
         }
-        console.log("Dados brutos da previsão:", data);
-        return data;
+        console.log("Dados brutos da previsão (via backend):", data);
+        return data; // Retorna os dados que seu backend processou e enviou
     } catch (error) {
-        console.error("Erro ao buscar previsão do tempo detalhada:", error);
-        return { error: true, message: `Falha ao carregar previsão: ${error.message}` };
+        console.error("Erro ao buscar previsão do tempo via backend:", error);
+        
+        // Mensagem de erro pode ser mais genérica ou específica do erro de conexão/parsing
+        return { error: true, message: `Falha ao comunicar com o servidor para obter previsão: ${error.message}` };
     }
 }
 
@@ -1061,34 +1066,34 @@ function verificarAgendamentosProximos(veiculo) {
 
 // --- FUNÇÕES DA API SIMULADA (DETALHES DO VEÍCULO) ---
 async function buscarDetalhesVeiculoAPI(identificadorVeiculo) {
+    console.log("buscarDetalhesVeiculoAPI chamada com ID:", identificadorVeiculo);
     if (!identificadorVeiculo) {
         console.warn("buscarDetalhesVeiculoAPI chamado sem identificador.");
         return null;
     }
     // Simula um pequeno atraso da API
     await new Promise(resolve => setTimeout(resolve, 700));
-
-    try {
-        // Supondo que 'dados_veiculos_api.json' está na raiz do projeto ou um caminho acessível
+     try {
         const response = await fetch('./dados_veiculos_api.json');
+        console.log("Fetch response status:", response.status); // MUITO IMPORTANTE
         if (!response.ok) {
+            console.error("Erro na API (fetch):", response.status, response.statusText);
             throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         }
         const data = await response.json();
+        console.log("Dados da API carregados:", data);
+    
 
-        if (data && data.identificadores_veiculos && data.identificadores_veiculos[identificadorVeiculo]) {
-            return data.identificadores_veiculos[identificadorVeiculo];
-        } else {
-            return null; // Não encontrado
-        }
     } catch (error) {
         console.error("Erro ao buscar detalhes na API simulada:", error);
+       
         // Retorna um objeto de erro para tratamento na UI
         return { error: true, message: `Falha ao carregar dados da API: ${error.message}. Verifique se o arquivo 'dados_veiculos_api.json' existe e está acessível.` };
     }
 }
 
 async function lidarComBuscaApiDetalhes() {
+    console.log("lidarComBuscaApiDetalhes chamada. Veículo atual:", idVeiculoAtual, veiculoAtual);
     if (!veiculoAtual || !idVeiculoAtual) {
         mostrarAlerta("Nenhum veículo selecionado para buscar detalhes.", "erro");
         return;
@@ -1222,7 +1227,11 @@ if (volumeControl) {
 }
 
 if (btnBuscarApiDetalhes) {
-    btnBuscarApiDetalhes.addEventListener('click', lidarComBuscaApiDetalhes);
+      btnBuscarApiDetalhes.addEventListener('click', () => { // Adicione um console.log aqui
+        console.log("Botão 'Ver Detalhes Extras' clicado!");
+        lidarComBuscaApiDetalhes();
+    });
+    
 }
 
 // NOVO EVENT LISTENER para o botão de verificar clima

@@ -1,103 +1,74 @@
 // server.js
 
-// Carrega variáveis de ambiente do arquivo .env para process.env
-require('dotenv').config();
+// 1. Importar as dependências
+require('dotenv').config(); // Carrega as variáveis do arquivo .env para process.env
+const express = require('express');
+const axios = require('axios');
+const cors = require('cors'); // Importa o pacote CORS
 
-// Importa os módulos necessários
-const express = require('express'); // Framework web para Node.js
-const axios = require('axios');   // Cliente HTTP para fazer requisições do backend
-
-// Cria uma instância da aplicação Express
+// 2. Inicializar o aplicativo Express
 const app = express();
+const PORT = process.env.PORT || 3001; // Usa a porta do .env ou 3001 como padrão
 
-// Define a porta do servidor. Usa a variável de ambiente PORT ou 3000 como padrão.
-const PORT = process.env.PORT || 3000;
+// 3. Configurar Middlewares
+app.use(cors()); // Habilita o CORS para todas as rotas. Para produção, configure origens específicas.
+app.use(express.json()); // Para parsear JSON no corpo das requisições (útil para POSTs, não usado neste exemplo GET)
 
-// Obtém a chave da API OpenWeatherMap do arquivo .env
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
+// 4. Definir a Rota para a Previsão do Tempo
+app.get('/api/weather', async (req, res) => {
+    const cidade = req.query.cidade; // Pega o parâmetro 'cidade' da URL (ex: /api/weather?cidade=Londres)
+    const apiKey = process.env.OPENWEATHER_API_KEY;
 
-// URLs base da API OpenWeatherMap
-const OPENWEATHER_BASE_URL_FORECAST = 'https://api.openweathermap.org/data/2.5/forecast';
-const OPENWEATHER_BASE_URL_CURRENT = 'https://api.openweathermap.org/data/2.5/weather';
+    if (!cidade) {
+        return res.status(400).json({ message: "Parâmetro 'cidade' é obrigatório." });
+    }
 
-// Verifica se a chave da API está configurada. Se não, encerra o servidor com erro.
-if (!OPENWEATHER_API_KEY || OPENWEATHER_API_KEY === "SUA_CHAVE_OPENWEATHERMAP_AQUI") {
-    console.error("ERRO CRÍTICO: A chave da API OpenWeatherMap (OPENWEATHER_API_KEY) não está configurada corretamente no arquivo .env!");
-    console.error("Por favor, adicione sua chave ao arquivo .env e reinicie o servidor.");
-    process.exit(1); // Encerra o processo com código de erro
-}
+    if (!apiKey) {
+        console.error("Chave da API OpenWeatherMap não encontrada no .env");
+        return res.status(500).json({ message: "Erro interno do servidor: Configuração da API ausente." });
+    }
 
-// Middleware para logar cada requisição recebida pelo servidor (útil para debugging)
-app.use((req, res, next) => {
-    console.log(`[${new Date().toLocaleString('pt-BR')}] Requisição recebida: ${req.method} ${req.url}`);
-    next(); // Passa a requisição para o próximo middleware ou rota
-});
+    const openWeatherUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(cidade)}&appid=${apiKey}&units=metric&lang=pt_br`;
 
-// Rota para o endpoint /api/forecast (Proxy para a previsão de 5 dias)
-app.get('/api/forecast', async (req, res) => {
     try {
-        // Extrai os query parameters da requisição do cliente (frontend)
-        // Ex: /api/forecast?q=Sao%20Paulo&units=metric
-        const clientParams = req.query;
+        console.log(`Backend: Buscando previsão para ${cidade} na URL: ${openWeatherUrl}`);
+        const weatherResponse = await axios.get(openWeatherUrl);
 
-        console.log('Backend: Recebida requisição para /api/forecast com params:', clientParams);
+        // Envia a resposta da API OpenWeatherMap diretamente para o cliente
+        // O frontend já tem a lógica para processar 'weatherResponse.data'
+        res.json(weatherResponse.data);
 
-        // Faz a requisição para a API OpenWeatherMap usando axios
-        const response = await axios.get(OPENWEATHER_BASE_URL_FORECAST, {
-            params: {
-                ...clientParams,             // Repassa os parâmetros do cliente (cidade, unidades, etc.)
-                appid: OPENWEATHER_API_KEY,  // Adiciona a chave da API de forma segura aqui no backend
-                lang: clientParams.lang || 'pt_br' // Garante um idioma padrão se não fornecido
-            }
-        });
-
-        // Envia a resposta da OpenWeatherMap de volta para o cliente (frontend)
-        res.json(response.data);
     } catch (error) {
-        // Trata erros que podem ocorrer durante a chamada à API OpenWeatherMap
-        console.error("Erro no backend ao buscar previsão (/api/forecast):", error.response?.data || error.message);
-        res.status(error.response?.status || 500).json({
-            message: "Erro ao buscar previsão do tempo no servidor.",
-            details: error.response?.data || { message: error.message } // Envia detalhes do erro se disponíveis
-        });
+        console.error("Backend: Erro ao buscar dados da OpenWeatherMap:", error.response ? error.response.data : error.message);
+        
+        if (error.response) {
+            // Se o erro veio da API OpenWeatherMap (ex: cidade não encontrada, chave inválida)
+            res.status(error.response.status).json({
+                message: error.response.data.message || "Erro ao buscar previsão do tempo.",
+                details: error.response.data
+            });
+        } else {
+            // Outros erros (ex: problema de rede no servidor backend)
+            res.status(500).json({ message: "Erro interno do servidor ao processar a requisição de clima." });
+        }
     }
 });
 
-// Rota para o endpoint /api/current-weather (Proxy para o tempo atual)
-app.get('/api/current-weather', async (req, res) => {
-    try {
-        // Extrai os query parameters da requisição do cliente
-        const clientParams = req.query;
+// 5. Opcional: Servir os arquivos estáticos do frontend (HTML, CSS, JS da Garagem)
+// Isso permite que você acesse sua aplicação inteira (frontend + backend) pela porta do backend.
+// Se você estiver usando o Live Server do VS Code ou similar para o frontend,
+// e o backend rodar em outra porta, o CORS já configurado acima é essencial.
+// Se quiser servir tudo pelo Node.js:
+// Crie uma pasta chamada 'public' e mova index.html, script.js, css/, sounds/, dados_veiculos_api.json para dentro dela.
+// Então, descomente a linha abaixo:
+// app.use(express.static('public'));
+// Se seus arquivos estáticos estão na raiz (como no exemplo original), use:
+app.use(express.static(__dirname)); // Serve arquivos da raiz do projeto (index.html, script.js, etc.)
+                                    // CUIDADO: Isso também pode expor server.js, .env se não forem devidamente protegidos
+                                    // A melhor prática é usar uma pasta 'public' dedicada.
 
-        console.log('Backend: Recebida requisição para /api/current-weather com params:', clientParams);
-
-        // Faz a requisição para a API OpenWeatherMap
-        const response = await axios.get(OPENWEATHER_BASE_URL_CURRENT, {
-            params: {
-                ...clientParams,
-                appid: OPENWEATHER_API_KEY,
-                lang: clientParams.lang || 'pt_br'
-            }
-        });
-        // Envia a resposta para o cliente
-        res.json(response.data);
-    } catch (error) {
-        console.error("Erro no backend ao buscar tempo atual (/api/current-weather):", error.response?.data || error.message);
-        res.status(error.response?.status || 500).json({
-            message: "Erro ao buscar tempo atual no servidor.",
-            details: error.response?.data || { message: error.message }
-        });
-    }
-});
-
-// Middleware para servir arquivos estáticos (HTML, CSS, JS, imagens da sua pasta do projeto)
-// '.' significa que o Express servirá arquivos da pasta raiz do projeto.
-// Se seu frontend (index.html, css/, images/, script.js) estiver em uma subpasta como 'public',
-// você mudaria para: app.use(express.static('public'));
-app.use(express.static('.'));
-
-// Inicia o servidor Express para escutar na porta definida
+// 6. Iniciar o Servidor
 app.listen(PORT, () => {
-    console.log(`Servidor da "Garagem Inteligente" rodando em http://localhost:${PORT}`);
-    console.log(`Frontend principal deve estar acessível em http://localhost:${PORT}/index.html (ou apenas /)`);
+    console.log(`Servidor backend rodando na porta ${PORT}`);
+    console.log(`Frontend acessível em http://localhost:${PORT} (se servindo arquivos estáticos)`);
 });
