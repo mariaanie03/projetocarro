@@ -218,7 +218,7 @@ class Caminhao extends Veiculo {
 }
 
 
-// --- Seleção de Elementos do DOM ---
+// --- SELETORES DO DOM (CORRIGIDOS E COMPLETOS) ---
 const botoesVeiculoContainer = document.getElementById('botoes-veiculo');
 const nomeVeiculoSelecionadoEl = document.getElementById('nome-veiculo-selecionado');
 const alertaContainer = document.getElementById('alerta-container');
@@ -246,11 +246,11 @@ const filtroDiasPrevisaoSelect = document.getElementById('filtro-dias-previsao')
 const destaqueChuvaCheckbox = document.getElementById('destaque-chuva');
 const destaqueTempBaixaCheckbox = document.getElementById('destaque-temp-baixa');
 const destaqueTempAltaCheckbox = document.getElementById('destaque-temp-alta');
-// --- Seletores para Dicas de Manutenção ---
 const dicasManutencaoContainerEl = document.getElementById('dicas-manutencao-container');
 const btnBuscarDicas = document.getElementById('btn-buscar-dicas');
 const dicasLoadingEl = document.getElementById('dicas-loading');
 const dicasResultadoEl = document.getElementById('dicas-resultado');
+
 
 // --- Variáveis Globais de Estado ---
 let garagem = {};
@@ -260,93 +260,125 @@ let alertaTimeout = null;
 let volumeAtual = 0.5;
 let dadosPrevisaoCompletos = null;
 
-// --- FUNÇÕES DE API ---
+// --- FUNÇÕES DE API E CARREGAMENTO DE CONTEÚDO ---
 
-async function buscarPrevisaoDetalhada(cidade) {
-    if (!cidade) return { error: true, message: "Nome da cidade não fornecido." };
-    const backendUrl = `/api/weather?cidade=${encodeURIComponent(cidade)}`;
+async function buscarApi(endpoint) {
     try {
-        const response = await fetch(backendUrl);
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Erro do servidor');
-        return data;
+        const server="http://localhost";
+        const port="3000";
+
+        const response = await fetch(server+":"+port+endpoint);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Erro na API: ${response.statusText}`);
+        }
+
+        console.log(response);
+
+        return await response.json();
     } catch (error) {
-        return { error: true, message: `Falha ao comunicar com o servidor: ${error.message}` };
+        console.error(`Falha ao buscar dados de ${endpoint}:`, error);
+        throw error;
     }
 }
 
-async function buscarDetalhesVeiculoAPI(identificadorVeiculo) {
-    if (!identificadorVeiculo) return null;
-    await new Promise(resolve => setTimeout(resolve, 500));
+async function carregarVeiculosDestaque() {
+    const container = document.getElementById('cards-veiculos-destaque');
+    container.innerHTML = '<p>Carregando destaques...</p>';
     try {
-        const response = await fetch('./dados_veiculos_api.json');
-        if (!response.ok) throw new Error(`Erro ${response.status}`);
-        const data = await response.json();
-        return data[identificadorVeiculo] || null;
+        const veiculos = await buscarApi('/api/garagem/veiculos-destaque');
+
+        container.innerHTML = '';
+        if (!veiculos || veiculos.length === 0) {
+            container.innerHTML = '<p>Nenhum veículo em destaque no momento.</p>';
+            return;
+        }
+
+        veiculos.forEach(veiculo => {
+            const card = document.createElement('div');
+            card.className = 'veiculo-card';
+            card.innerHTML = `
+                <img src="${veiculo.imagemUrl || 'images/placeholder.jpg'}" alt="${veiculo.modelo}">
+                <h3>${veiculo.modelo} (${veiculo.ano})</h3>
+                <p><strong>Destaque:</strong> ${veiculo.destaque}</p>
+            `;
+            container.appendChild(card);
+        });
     } catch (error) {
-        return { error: true, message: `Falha ao carregar dados da API: ${error.message}` };
+        container.innerHTML = `<p class="api-erro">Falha ao carregar veículos em destaque.</p>`;
     }
 }
 
-// =================================================================================
-// INÍCIO DA IMPLEMENTAÇÃO DA FASE 3
-// =================================================================================
+async function carregarServicosGaragem() {
+    const lista = document.getElementById('lista-servicos-oferecidos');
+    lista.innerHTML = '<li>Carregando serviços...</li>';
+    try {
+        const servicos = await buscarApi('/api/garagem/servicos-oferecidos');
 
-/**
- * REQUISITO: "Crie Novas Funções fetch no Frontend"
- * Esta função `async` chama os DOIS novos endpoints do backend de uma vez só.
- * - Chama GET /api/dicas-manutencao
- * - Chama GET /api/dicas-manutencao/:tipoVeiculo
- * Usar `Promise.all` é mais eficiente do que fazer duas chamadas separadas.
- */
+        lista.innerHTML = '';
+        if (!servicos || servicos.length === 0) {
+            lista.innerHTML = '<li>Nenhum serviço oferecido no momento.</li>';
+            return;
+        }
+
+        servicos.forEach(servico => {
+            const item = document.createElement('li');
+            item.innerHTML = `
+                <strong>${servico.nome}</strong> - ${servico.precoEstimado}<br>
+                <small>${servico.descricao}</small>
+            `;
+            lista.appendChild(item);
+        });
+    } catch (error) {
+        lista.innerHTML = `<li class="api-erro">Falha ao carregar serviços.</li>`;
+    }
+}
+
+async function buscarPrevisaoDetalhada() {
+    const cidade = cidadeDestinoInput.value.trim();
+    if (!cidade) {
+        mostrarAlerta("Por favor, insira o nome da cidade.", "erro");
+        return;
+    }
+    climaLoadingEl.style.display = 'block';
+    previsaoTempoResultadoEl.innerHTML = '';
+    verificarClimaBtn.disabled = true;
+
+    try {
+        const dados = await buscarApi(`/api/weather?cidade=${encodeURIComponent(cidade)}`);
+        dadosPrevisaoCompletos = processarDadosForecast(dados);
+        renderizarPrevisaoComFiltros();
+    } catch (error) {
+        mostrarAlerta(error.message, 'erro');
+    } finally {
+        climaLoadingEl.style.display = 'none';
+        verificarClimaBtn.disabled = false;
+    }
+}
+
 async function buscarDicasManutencaoAPI() {
     if (!veiculoAtual) {
         mostrarAlerta("Selecione um veículo primeiro.", "erro");
         return;
     }
-
-    // Gerencia o estado da UI para dar feedback ao usuário
     dicasLoadingEl.style.display = 'block';
     dicasResultadoEl.innerHTML = '';
     btnBuscarDicas.disabled = true;
-
     try {
         const tipoParaAPI = veiculoAtual.constructor.name.toLowerCase();
-
-        // Chamadas em paralelo para os dois endpoints
-        const [resGeral, resEspecifica] = await Promise.all([
-            fetch('/api/dicas-manutencao'),
-            fetch(`/api/dicas-manutencao/${tipoParaAPI}`)
+        const [dicasGerais, dicasEspecificas] = await Promise.all([
+            buscarApi('/api/dicas-manutencao'),
+            buscarApi(`/api/dicas-manutencao/${tipoParaAPI}`)
         ]);
-
-        // Tratamento de erro para a chamada principal
-        if (!resGeral.ok) throw new Error('Falha ao buscar dicas gerais.');
-        
-        const dicasGerais = await resGeral.json();
-        // A chamada para dicas específicas pode falhar (ex: tipo 'moto' não existe),
-        // então tratamos isso de forma segura.
-        const dicasEspecificas = resEspecifica.ok ? await resEspecifica.json() : [];
-        
-        // Chama a função que vai exibir os dados na tela
         renderizarDicasManutencao({ gerais: dicasGerais, especificas: dicasEspecificas });
-
     } catch (error) {
-        // REQUISITO: "Exibir erro na UI"
-        console.error("Erro ao buscar dicas de manutenção:", error);
-        dicasResultadoEl.innerHTML = `<p class="api-erro">Falha ao buscar dicas. Verifique a conexão com o servidor.</p>`;
+        dicasResultadoEl.innerHTML = `<p class="api-erro">Falha ao buscar dicas. Verifique a conexão.</p>`;
     } finally {
-        // Garante que a UI volte ao estado normal, mesmo que ocorra um erro
         dicasLoadingEl.style.display = 'none';
         btnBuscarDicas.disabled = false;
     }
 }
 
-/**
- * REQUISITO: "Crie Funções para Exibir os Novos Dados na UI"
- * Esta função, `renderizarDicasManutencao`, pega os dados recebidos do backend
- * e os transforma em HTML (listas <ul> e <li>) para serem inseridos no DOM.
- * @param {object} dados - Objeto contendo { gerais: [], especificas: [] }
- */
 function renderizarDicasManutencao(dados) {
     let html = '<h4>Dicas Gerais</h4>';
     if (dados.gerais && dados.gerais.length > 0) {
@@ -366,10 +398,6 @@ function renderizarDicasManutencao(dados) {
 
     dicasResultadoEl.innerHTML = html;
 }
-
-// =================================================================================
-// FIM DA IMPLEMENTAÇÃO DA FASE 3
-// =================================================================================
 
 // --- Funções Auxiliares e de UI ---
 
@@ -392,8 +420,6 @@ function tocarSomVeiculo(acao) {
     }
 }
 
-// --- Função Principal de Atualização da Interface ---
-// ... (código de atualizarDisplayVeiculo, interagir, garagem, etc. omitido para brevidade, permanece o mesmo) ...
 function atualizarDisplayVeiculo() {
     const semVeiculo = !veiculoAtual || !idVeiculoAtual;
 
@@ -412,7 +438,7 @@ function atualizarDisplayVeiculo() {
     dicasManutencaoContainerEl.style.display = semVeiculo ? 'none' : 'block';
     
     if (semVeiculo) {
-        historicoManutencaoEl.innerHTML = '';
+        historicoManutencaoEl.innerHTML = '<p>Selecione um veículo para ver o histórico de manutenção.</p>';
         apiResultadoEl.innerHTML = '';
         dicasResultadoEl.innerHTML = '';
         previsaoTempoResultadoEl.innerHTML = '';
@@ -595,29 +621,17 @@ function exibirPrevisaoDetalhada(previsaoDiaria) {
     });
 }
 
-async function lidarComVerificarClima() {
-    const cidade = cidadeDestinoInput.value.trim();
-    if (!cidade) { mostrarAlerta("Por favor, insira o nome da cidade.", "erro"); return; }
-    climaLoadingEl.style.display = 'block';
-    previsaoTempoResultadoEl.innerHTML = '';
-    verificarClimaBtn.disabled = true;
-    const dados = await buscarPrevisaoDetalhada(cidade);
-    if (dados.error) {
-        mostrarAlerta(dados.message, 'erro');
-    } else {
-        dadosPrevisaoCompletos = processarDadosForecast(dados);
-        renderizarPrevisaoComFiltros();
-    }
-    climaLoadingEl.style.display = 'none';
-    verificarClimaBtn.disabled = false;
-}
-
 // --- Event Listeners ---
 document.addEventListener('DOMContentLoaded', () => {
     carregarGaragem();
     criarBotoesSelecaoVeiculo();
     selecionarVeiculo(Object.keys(garagem)[0]);
 
+    // Carregamento do conteúdo global da vitrine da garagem
+    carregarVeiculosDestaque();
+    carregarServicosGaragem();
+
+    // Adiciona todos os outros event listeners
     controlesVeiculoEl.addEventListener('click', e => e.target.dataset.acao && interagir(e.target.dataset.acao));
     
     formAddVeiculo.addEventListener('submit', e => {
@@ -640,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const novoId = adicionarVeiculoNaGaragem(novoVeiculo);
         if (novoId) {
             mostrarAlerta(`${tipo} "${modelo}" adicionado!`, "info");
-            formAddVeiculo.reset();
+            e.target.reset();
             selecionarVeiculo(novoId);
         }
     });
@@ -654,7 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const desc = e.target.elements['descricao-manutencao'].value;
         if (veiculoAtual.adicionarManutencao(new Manutencao(data, tipo, custo, desc))) {
             mostrarAlerta("Manutenção registrada!", "info");
-            formAddManutencao.reset();
+            e.target.reset();
         }
     });
 
@@ -668,33 +682,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!idVeiculoAtual) return;
         apiLoadingEl.style.display = 'block';
         apiResultadoEl.innerHTML = '';
-        const detalhes = await buscarDetalhesVeiculoAPI(idVeiculoAtual);
-        apiLoadingEl.style.display = 'none';
-        if (!detalhes) {
-            apiResultadoEl.innerHTML = `<p class="api-nao-encontrado">Nenhum detalhe adicional encontrado.</p>`;
-        } else if (detalhes.error) {
-            apiResultadoEl.innerHTML = `<p class="api-erro">${detalhes.message}</p>`;
-        } else {
-            apiResultadoEl.innerHTML = `<h4>${detalhes.nomeCompleto} (${detalhes.anoFabricacao})</h4>
-                <p><strong>Valor FIPE:</strong> ${detalhes.valorFipeEstimado}</p>
-                <p style="color:${detalhes.recallPendente ? 'red' : 'green'};">
-                    <strong>${detalhes.recallPendente ? '🔴 RECALL PENDENTE' : '✅ Sem recalls pendentes'}</strong>
-                    ${detalhes.recallPendente ? `: ${detalhes.recallDetalhe}` : ''}
+        try {
+            const detalhes = await buscarApi(`./dados_veiculos_api.json`);
+            const detalheVeiculo = detalhes[idVeiculoAtual];
+            if (!detalheVeiculo) throw new Error("Detalhes não encontrados para este veículo.");
+            
+            apiResultadoEl.innerHTML = `<h4>${detalheVeiculo.nomeCompleto} (${detalheVeiculo.anoFabricacao})</h4>
+                <p><strong>Valor FIPE:</strong> ${detalheVeiculo.valorFipeEstimado}</p>
+                <p style="color:${detalheVeiculo.recallPendente ? 'red' : 'green'};">
+                    <strong>${detalheVeiculo.recallPendente ? '🔴 RECALL PENDENTE' : '✅ Sem recalls pendentes'}</strong>
+                    ${detalheVeiculo.recallPendente ? `: ${detalheVeiculo.recallDetalhe}` : ''}
                 </p>
-                <p><strong>Dica Avançada:</strong> ${detalhes.dicaManutencaoAvancada}</p>
-                <p><strong>Curiosidade:</strong> ${detalhes.curiosidade}</p>`;
+                <p><strong>Dica Avançada:</strong> ${detalheVeiculo.dicaManutencaoAvancada}</p>
+                <p><strong>Curiosidade:</strong> ${detalheVeiculo.curiosidade}</p>`;
+        } catch(error) {
+             apiResultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
+        } finally {
+            apiLoadingEl.style.display = 'none';
         }
     });
 
-    verificarClimaBtn.addEventListener('click', lidarComVerificarClima);
+    verificarClimaBtn.addEventListener('click', buscarPrevisaoDetalhada);
+    
     [filtroDiasPrevisaoSelect, destaqueChuvaCheckbox, destaqueTempBaixaCheckbox, destaqueTempAltaCheckbox].forEach(el => {
         el.addEventListener('change', renderizarPrevisaoComFiltros);
     });
 
-    /**
-     * REQUISITO: "Adicione Elementos HTML e Event Listeners"
-     * Este é o event listener que conecta o botão "Ver Dicas" (cujo ID é 'btn-buscar-dicas')
-     * à função `buscarDicasManutencaoAPI`. Quando o botão é clicado, a função é executada.
-     */
     btnBuscarDicas.addEventListener('click', buscarDicasManutencaoAPI);
 });

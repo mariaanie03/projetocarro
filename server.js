@@ -35,10 +35,25 @@ const dicasPorTipo = {
     ]
 };
 
+// Dados do "Arsenal da Garagem"
+const veiculosDestaque = [
+    { id: 10, modelo: "Maverick Híbrido", ano: 2024, destaque: "Economia e Estilo", imagemUrl: "images/maverick.jpg" },
+    { id: 11, modelo: "Kombi Elétrica ID.Buzz", ano: 2025, destaque: "Nostalgia Eletrificada", imagemUrl: "images/idbuzz.jpg" },
+    { id: 12, modelo: "Ferrari 296 GTB", ano: 2023, destaque: "O Futuro V6 Híbrido", imagemUrl: "images/ferrari296.jpg" }
+];
+
+const servicosGaragem = [
+    { id: "svc001", nome: "Diagnóstico Eletrônico Completo", descricao: "Verificação de todos os sistemas eletrônicos do veículo.", precoEstimado: "R$ 250,00" },
+    { id: "svc002", nome: "Alinhamento e Balanceamento 3D", descricao: "Para uma direção perfeita e maior durabilidade dos pneus.", precoEstimado: "R$ 180,00" },
+    { id: "svc003", nome: "Polimento Técnico e Vitrificação", descricao: "Proteção e brilho para a pintura do seu carro.", precoEstimado: "R$ 800,00" }
+];
+
+
 // 4. Configurar Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+
 
 // 5. ROTAS DA API
 app.get('/api/weather', async (req, res) => {
@@ -54,7 +69,7 @@ app.get('/api/weather', async (req, res) => {
     }
 
     const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
-    
+
     console.log(`[BACKEND] Buscando clima para '${cidade}'.`);
 
     try {
@@ -62,15 +77,29 @@ app.get('/api/weather', async (req, res) => {
         res.json(response.data);
     } catch (error) {
         if (error.response) {
-            console.error(`[BACKEND] Erro da API OpenWeather (status ${error.response.status}):`, error.response.data.message);
-            if (error.response.status === 404) {
+            // Este erro veio da API OpenWeather (ela respondeu com 4xx ou 5xx)
+            const status = error.response.status;
+            const data = error.response.data;
+            // Verificação segura da mensagem de erro da API
+            const apiMessage = (data && data.message) ? data.message : 'A API de clima retornou uma resposta inesperada.';
+
+            console.error(`[BACKEND] Erro da API OpenWeather (status ${status}):`, apiMessage);
+
+            if (status === 404) {
                 return res.status(404).json({ message: `Cidade '${cidade}' não encontrada. Verifique o nome e tente novamente.` });
             }
-            return res.status(error.response.status).json({ message: error.response.data.message });
+            if (status === 401) {
+                // Mensagem de erro mais útil para o desenvolvedor
+                return res.status(500).json({ message: 'A chave da API de clima é inválida ou não foi ativada. Verifique o arquivo .env no servidor.' });
+            }
+            // Para outros erros da API (ex: 429 Too Many Requests)
+            return res.status(status).json({ message: apiMessage });
         }
-        console.error("[BACKEND] Erro genérico ao tentar contatar a API OpenWeather:", error.message);
-        res.status(500).json({ message: "Erro ao conectar com o serviço de previsão do tempo." });
     }
+    // Este é um erro genérico de rede (ex: DNS, timeout, servidor sem internet)
+    console.error("[BACKEND] Erro genérico ao tentar contatar a API OpenWeather:", error.message);
+    res.status(500).json({ message: "Erro ao conectar com o serviço de previsão do tempo. Verifique a conexão do servidor." });
+    // --- FIM DA CORREÇÃO ---
 });
 
 app.get('/api/dicas-manutencao', (req, res) => {
@@ -91,6 +120,32 @@ app.get('/api/dicas-manutencao/:tipoVeiculo', (req, res) => {
         res.json([]);
     }
 });
+
+// NOVAS ROTAS DO "ARSENAL DA GARAGEM"
+app.get('/api/garagem/veiculos-destaque', (req, res) => {
+    console.log("[BACKEND] Requisição para /api/garagem/veiculos-destaque");
+    res.json(veiculosDestaque);
+});
+
+app.get('/api/garagem/servicos-oferecidos', (req, res) => {
+    console.log("[BACKEND] Requisição para /api/garagem/servicos-oferecidos");
+    res.json(servicosGaragem);
+});
+
+// ROTA OPCIONAL com parâmetro :idServico
+app.get('/api/garagem/servicos-oferecidos/:idServico', (req, res) => {
+    const { idServico } = req.params;
+    console.log(`[BACKEND] Requisição para serviço específico. ID: ${idServico}`);
+
+    const servico = servicosGaragem.find(s => s.id === idServico);
+
+    if (servico) {
+        res.json(servico);
+    } else {
+        res.status(404).json({ message: `Serviço com ID '${idServico}' não encontrado.` });
+    }
+});
+
 
 // 6. Rota principal para servir o index.html (fallback)
 app.get('*', (req, res) => {
