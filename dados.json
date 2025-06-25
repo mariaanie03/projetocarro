@@ -1,0 +1,29 @@
+{
+  "carro1": {
+    "nomeCompleto": "Volkswagen Fusca 1300",
+    "anoFabricacao": 1975,
+    "valorFipeEstimado": "R$ 15.250,00",
+    "recallPendente": false,
+    "recallDetalhe": null,
+    "dicaManutencaoAvancada": "Verificar e regular o platinado a cada 10.000 km para garantir a melhor performance do motor.",
+    "curiosidade": "O Fusca foi o carro mais vendido do mundo por décadas, com mais de 21 milhões de unidades produzidas."
+  },
+  "esportivo1": {
+    "nomeCompleto": "Ferrari F40",
+    "anoFabricacao": 1987,
+    "valorFipeEstimado": "R$ 12.500.000,00",
+    "recallPendente": true,
+    "recallDetalhe": "Substituição preventiva do tanque de combustível de borracha devido ao risco de ressecamento.",
+    "dicaManutencaoAvancada": "A troca da correia dentada deve ser feita rigorosamente a cada 3 anos ou 20.000 km, o que ocorrer primeiro.",
+    "curiosidade": "A F40 foi o último carro pessoalmente aprovado por Enzo Ferrari antes de sua morte."
+  },
+  "caminhao1": {
+    "nomeCompleto": "Scania R450 Highline",
+    "anoFabricacao": 2020,
+    "valorFipeEstimado": "R$ 650.000,00",
+    "recallPendente": false,
+    "recallDetalhe": null,
+    "dicaManutencaoAvancada": "Realizar a calibragem dos sensores do sistema de freios eletrônicos (EBS) anualmente.",
+    "curiosidade": "O motor do Scania R450 é conhecido por seu alto torque em baixas rotações, otimizando o consumo de combustível."
+  }
+}

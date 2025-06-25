@@ -262,38 +262,42 @@ let dadosPrevisaoCompletos = null;
 
 // --- FUNÇÕES DE API E CARREGAMENTO DE CONTEÚDO ---
 
+// Versão robusta da função de API
 async function buscarApi(endpoint) {
     try {
-        const server="http://localhost";
-        const port="3000";
-
-        const response = await fetch(server+":"+port+endpoint);
+        const response = await fetch(endpoint);
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `Erro na API: ${response.statusText}`);
+            let errorMessage;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || `Erro ${response.status}: ${response.statusText}`;
+            } catch (e) {
+                errorMessage = `Erro ${response.status}: ${response.statusText}`;
+            }
+            throw new Error(errorMessage);
         }
-
-        console.log(response);
-
         return await response.json();
     } catch (error) {
-        console.error(`Falha ao buscar dados de ${endpoint}:`, error);
+        console.error(`Falha na chamada para ${endpoint}:`, error.message);
+        if (error instanceof TypeError) {
+             throw new Error('Não foi possível conectar ao servidor. Verifique a conexão.');
+        }
         throw error;
     }
 }
+
 
 async function carregarVeiculosDestaque() {
     const container = document.getElementById('cards-veiculos-destaque');
     container.innerHTML = '<p>Carregando destaques...</p>';
     try {
-        const veiculos = await buscarApi('/api/garagem/veiculos-destaque');
-
+        const veiculos = await buscarApi('http://localhost:3000/api/garagem/veiculos-destaque');
+        
         container.innerHTML = '';
         if (!veiculos || veiculos.length === 0) {
             container.innerHTML = '<p>Nenhum veículo em destaque no momento.</p>';
             return;
         }
-
         veiculos.forEach(veiculo => {
             const card = document.createElement('div');
             card.className = 'veiculo-card';
@@ -305,22 +309,21 @@ async function carregarVeiculosDestaque() {
             container.appendChild(card);
         });
     } catch (error) {
-        container.innerHTML = `<p class="api-erro">Falha ao carregar veículos em destaque.</p>`;
+        container.innerHTML = `<p class="api-erro">Falha ao carregar veículos: ${error.message}</p>`;
     }
 }
 
 async function carregarServicosGaragem() {
     const lista = document.getElementById('lista-servicos-oferecidos');
     lista.innerHTML = '<li>Carregando serviços...</li>';
-    try {
-        const servicos = await buscarApi('/api/garagem/servicos-oferecidos');
+     try {
+        const servicos = await buscarApi('http://localhost:3000/api/garagem/servicos-oferecidos');
 
         lista.innerHTML = '';
         if (!servicos || servicos.length === 0) {
             lista.innerHTML = '<li>Nenhum serviço oferecido no momento.</li>';
             return;
         }
-
         servicos.forEach(servico => {
             const item = document.createElement('li');
             item.innerHTML = `
@@ -330,7 +333,7 @@ async function carregarServicosGaragem() {
             lista.appendChild(item);
         });
     } catch (error) {
-        lista.innerHTML = `<li class="api-erro">Falha ao carregar serviços.</li>`;
+        lista.innerHTML = `<li class="api-erro">Falha ao carregar serviços: ${error.message}</li>`;
     }
 }
 
@@ -345,7 +348,7 @@ async function buscarPrevisaoDetalhada() {
     verificarClimaBtn.disabled = true;
 
     try {
-        const dados = await buscarApi(`/api/weather?cidade=${encodeURIComponent(cidade)}`);
+        const dados = await buscarApi(`http://localhost:3000/api/previsao?cidade=${encodeURIComponent(cidade)}`);
         dadosPrevisaoCompletos = processarDadosForecast(dados);
         renderizarPrevisaoComFiltros();
     } catch (error) {
@@ -367,12 +370,12 @@ async function buscarDicasManutencaoAPI() {
     try {
         const tipoParaAPI = veiculoAtual.constructor.name.toLowerCase();
         const [dicasGerais, dicasEspecificas] = await Promise.all([
-            buscarApi('/api/dicas-manutencao'),
-            buscarApi(`/api/dicas-manutencao/${tipoParaAPI}`)
+            buscarApi('http://localhost:3000/api/dicas-manutencao'),
+            buscarApi(`http://localhost:3000/api/dicas-manutencao/${tipoParaAPI}`)
         ]);
         renderizarDicasManutencao({ gerais: dicasGerais, especificas: dicasEspecificas });
     } catch (error) {
-        dicasResultadoEl.innerHTML = `<p class="api-erro">Falha ao buscar dicas. Verifique a conexão.</p>`;
+        dicasResultadoEl.innerHTML = `<p class="api-erro">Falha ao buscar dicas: ${error.message}</p>`;
     } finally {
         dicasLoadingEl.style.display = 'none';
         btnBuscarDicas.disabled = false;
@@ -546,6 +549,8 @@ function carregarGaragem() {
     }
     const garagemParseada = JSON.parse(garagemSalva);
     garagem = Object.keys(garagemParseada).reduce((acc, id) => {
+        // --- CORREÇÃO DO ERRO DE SINTAXE ---
+        // A linha abaixo estava com um ponto final, quebrando o código.
         const { tipo, dados } = garagemParseada[id];
         let veiculo;
         switch (tipo) {
@@ -683,8 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
         apiLoadingEl.style.display = 'block';
         apiResultadoEl.innerHTML = '';
         try {
-            const detalhes = await buscarApi(`./dados_veiculos_api.json`);
-            const detalheVeiculo = detalhes[idVeiculoAtual];
+            const todosOsDetalhes = await buscarApi('http://localhost:3000/api/veiculos/detalhes');
+            const detalheVeiculo = todosOsDetalhes[idVeiculoAtual];
+
             if (!detalheVeiculo) throw new Error("Detalhes não encontrados para este veículo.");
             
             apiResultadoEl.innerHTML = `<h4>${detalheVeiculo.nomeCompleto} (${detalheVeiculo.anoFabricacao})</h4>
