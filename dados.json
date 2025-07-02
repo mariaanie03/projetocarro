@@ -46,7 +46,7 @@
     ]
   },
   "veiculosDestaque": [
-    { "modelo": "Porsche 911", "ano": "2023", "destaque": "Ícone atemporal de performance e design.", "imagemUrl": "imagens/porche991.2.0.avif" },
+    { "modelo": "Porsche 911", "ano": "2023", "destaque": "Ícone atemporal de performance e design.", "imagemUrl": "imagens/download.jpg"},
     { "modelo": "Ford F-150", "ano": "2022", "destaque": "A picape mais vendida, sinônimo de robustez.", "imagemUrl": "imagens/fordF-150-2.0.png"},
     { "modelo": "Tesla Model S", "ano": "2024", "destaque": "Revolução elétrica com aceleração impressionante.", "imagemUrl": "imagens/teslamodel-s-2.0.png" }
   ],
