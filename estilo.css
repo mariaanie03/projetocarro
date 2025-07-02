@@ -3,8 +3,9 @@
 *{
     margin: 0;
     padding: 0;
-
+    box-sizing: border-box; /* Adiciona box-sizing global para facilitar o layout */
 }
+
 /* ========================== */
 /* Estilos Gerais e Reset     */
 /* ========================== */
@@ -44,10 +45,6 @@ hr {
 /* ========================== */
 .container {
     display: grid; /* Habilita o layout de grid */
-    /* Define 3 colunas com larguras relativas:
-       1fr (seleção) - ocupa 1 fração do espaço disponível
-       2fr (display) - ocupa 2 frações
-       1.5fr (manutenção) - ocupa 1.5 frações */
     grid-template-columns: 1fr 2fr 1.5fr;
     gap: 25px; /* Espaçamento entre as células do grid */
     max-width: 1400px; /* Largura máxima do container */
@@ -146,7 +143,6 @@ form textarea {
     border: 1px solid #ced4da; /* Borda cinza */
     border-radius: 4px; /* Bordas arredondadas */
     font-size: 1em; /* Tamanho da fonte igual ao do corpo */
-    box-sizing: border-box; /* Inclui padding e border na largura total (width: 100%) */
     transition: border-color 0.2s ease, box-shadow 0.2s ease; /* Transição suave */
 }
 /* Efeito de foco nos campos */
@@ -186,8 +182,6 @@ form button[type="submit"]:hover {
     font-size: 0.9em; /* Tamanho um pouco menor */
     vertical-align: middle; /* Alinha com o texto do H2 */
 }
-
-/* ÁREA DE ESTILOS DA IMAGEM REMOVIDA */
 
 /* Área de informações do veículo */
 #informacoes-veiculo {
@@ -478,7 +472,7 @@ form button[type="submit"]:hover {
 /* ========================== */
 /* Estilos para Detalhes API  */
 /* ========================== */
-#api-detalhes-container {
+#api-detalhes-container, #dicas-manutencao-container {
     padding-top: 20px;
     border-top: 1px solid #e0e4e8;
 }
@@ -494,24 +488,43 @@ form button[type="submit"]:hover {
     background-color: #732d91;
 }
 
-#api-resultado {
+#api-resultado, #dicas-resultado {
     font-size: 0.9em;
     line-height: 1.6;
     color: #333;
+    padding: 10px 15px;
+    margin-top: 10px;
+    border-radius: 4px;
+}
+
+#api-resultado {
     border-left: 3px solid #8e44ad;
+    background-color: #f3e5f5;
+}
+#dicas-resultado {
+    border-left: 3px solid #00796b;
+    background-color: #e0f2f1;
 }
 
-#api-resultado strong {
-    color: #5e3370; /* Tom de roxo mais escuro para os rótulos */
+#api-resultado strong, #dicas-resultado strong {
+    color: #5e3370;
 }
+#dicas-resultado ul { list-style: circle; padding-left: 20px; margin-top: 10px; }
+#dicas-resultado h4 { color: #004d40; }
 
-#api-resultado .api-erro {
-    color: #c0392b; /* Vermelho para erros */
-    font-style: italic;
+
+.api-erro {
+    color: #c0392b;
+    font-weight: 500;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 10px;
+    border-radius: 4px;
+    text-align: center;
 }
 
 #api-resultado .api-nao-encontrado {
-    color: #7f8c8d; /* Cinza para não encontrado */
+    color: #7f8c8d;
     font-style: italic;
 }
 
@@ -650,7 +663,7 @@ form button[type="submit"]:hover {
 
 .dia-previsao.expandido .detalhes-hora {
     max-height: 500px; /* Altura suficiente para mostrar os detalhes */
-   padding-top: 5px;
+    padding-top: 5px;
     padding-bottom: 5px;
 }
 
@@ -668,33 +681,107 @@ form button[type="submit"]:hover {
 }
 
 
+/* ======================================= */
+/* Estilos da Vitrine da Garagem (Seção 4) */
+/* ======================================= */
 
-/* ========================== */
-/* Responsividade             */
-/* ========================== */
-/* ... (media queries existentes) ... */
-@media (max-width: 768px) {
-    /* ... (estilos responsivos existentes) ... */
-      #btn-buscar-api-detalhes { /* Ajuste do botão da API para responsividade */
-        width: 100%;
-    }
-    #planejador-viagem-container input[type="text"] {
-        width: calc(100% - 110px); /* Ajusta para caber com o botão */
-        margin-bottom: 10px;
-    }
-    #verificar-clima-btn {
-       width: 100px; /* Largura fixa para o botão */
-        padding: 10px 12px; /* Ajusta padding */
-    }
-    .dia-previsao {
-        padding: 10px;
-         flex: 1 1 100%; /* Ocupa a largura toda em telas pequenas */
-    }
-    .filtro-grupo label.checkbox-label {
-         display: block; /* Checkboxes um abaixo do outro em telas pequenas */
-         margin-bottom: 5px;
+/* Container que envolve as seções de destaque e serviços */
+.container-showcase {
+    max-width: 1400px; /* Mesma largura máxima do container principal */
+    margin: 40px auto 20px auto; /* Espaçamento vertical e centralização */
+    padding: 0 10px; /* Adiciona um pequeno padding lateral */
 }
+
+/* Estilo para a seção de veículos em destaque */
+#secao-veiculos-destaque {
+    margin-bottom: 25px; /* Espaço abaixo da seção de destaques */
 }
+
+/* Container para os cards dos veículos */
+.cards-container {
+    display: grid;
+    /* Cria 3 colunas de largura igual, com no mínimo 280px */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px; /* Espaçamento entre os cards */
+}
+
+/* Estilo individual de cada card de veículo */
+.veiculo-card {
+    background-color: #fff;
+    border: 1px solid #e0e4e8;
+    border-radius: 8px;
+    overflow: hidden; /* Garante que a imagem não ultrapasse as bordas arredondadas */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column; /* Organiza o conteúdo do card em coluna */
+}
+
+/* Efeito de hover para o card */
+.veiculo-card:hover {
+    transform: translateY(-5px); /* Levanta o card um pouco */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilização da imagem dentro do card */
+.veiculo-card img {
+    width: 100%; /* Imagem ocupa toda a largura do card */
+    height: 200px; /* Altura fixa para todas as imagens */
+    object-fit: cover; /* ESSENCIAL: Redimensiona a imagem para preencher o espaço sem distorcer. Corta o excesso. */
+    border-bottom: 1px solid #eee;
+    background-color: #f8f9fa; /* Cor de fundo caso a imagem demore a carregar */
+}
+
+/* Estilização do conteúdo de texto dentro do card */
+.veiculo-card h3 {
+    font-size: 1.25em;
+    color: #2c3e50;
+    margin: 15px 20px 5px 20px; /* Espaçamento (top, right, bottom, left) */
+}
+
+.veiculo-card p {
+    font-size: 0.95em;
+    color: #555;
+    margin: 0 20px 15px 20px;
+    flex-grow: 1; /* Faz com que o parágrafo ocupe o espaço restante, alinhando os rodapés */
+}
+
+.veiculo-card p strong {
+    color: #34495e;
+}
+
+
+/* Estilos para a seção de serviços */
+#secao-servicos {
+    background-color: #f8f9fa; /* Fundo ligeiramente diferente para destacar */
+}
+
+#lista-servicos-oferecidos {
+    list-style: none; /* Remove marcadores da lista */
+    padding: 0;
+}
+
+#lista-servicos-oferecidos li {
+    padding: 15px 0;
+    border-bottom: 1px dashed #dce1e6;
+    font-size: 1.05em;
+}
+
+#lista-servicos-oferecidos li:last-child {
+    border-bottom: none; /* Remove a borda do último item */
+}
+
+#lista-servicos-oferecidos li strong {
+    color: #16a085; /* Verde-azulado para o nome do serviço */
+}
+
+#lista-servicos-oferecidos li small {
+    display: block; /* Faz a descrição ocupar uma nova linha */
+    color: #777;
+    margin-top: 4px;
+    font-size: 0.9em;
+}
+
 /* ========================== */
 /* Responsividade             */
 /* ========================== */
@@ -703,12 +790,11 @@ form button[type="submit"]:hover {
 @media (max-width: 1200px) {
     .container {
         /* Muda para 2 colunas, empilhando a manutenção abaixo */
-        grid-template-columns: 1fr 1.8fr; /* Ajusta proporção */
+        grid-template-columns: 1fr 1.8fr;
         grid-template-areas:
             "selecao display"
-            "manutencao manutencao"; /* Define áreas nomeadas */
+            "manutencao manutencao";
     }
-    /* Associa as divs às áreas nomeadas */
     .selecao-veiculo { grid-area: selecao; }
     .display-veiculo { grid-area: display; }
     .manutencao-veiculo { grid-area: manutencao; }
@@ -717,80 +803,93 @@ form button[type="submit"]:hover {
 /* Telas pequenas (ex: smartphones) */
 @media (max-width: 768px) {
     body {
-        padding: 10px; /* Reduz padding geral */
+        padding: 10px;
     }
     h1 {
-        font-size: 1.8em; /* Reduz tamanho do título */
+        font-size: 1.8em;
         margin-bottom: 20px;
     }
     .container {
-        /* Muda para 1 coluna, empilhando todas as seções */
         grid-template-columns: 1fr;
         grid-template-areas:
             "selecao"
             "display"
             "manutencao";
-        gap: 20px; /* Reduz espaçamento */
+        gap: 20px;
     }
     .section-box {
-        padding: 15px; /* Reduz padding das seções */
+        padding: 15px;
     }
 
-    /* Ajusta o velocímetro para telas pequenas */
-     #velocimetro-container {
-        flex-wrap: wrap; /* Permite que os itens quebrem linha */
-        justify-content: space-between; /* Espaça label e texto */
-     }
-     #velocimetro {
-        order: 1; /* Coloca a barra de progresso abaixo */
-        width: 100%; /* Ocupa toda a largura */
-        margin-top: 8px; /* Espaço acima da barra */
-     }
-     #velocidade-texto {
-         order: 0; /* Texto vem antes da barra */
-     }
-     #velocimetro-container label {
-         order: 0; /* Label também vem antes */
-     }
+    #velocimetro-container {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    #velocimetro {
+        order: 1;
+        width: 100%;
+        margin-top: 8px;
+    }
+    #velocidade-texto,
+    #velocimetro-container label {
+        order: 0;
+    }
 
-     /* Ajusta controles de áudio */
-     .audio-controls {
-         position: static; /* Tira da posição fixa */
-         margin-top: 25px; /* Adiciona espaço acima */
-         text-align: center; /* Centraliza */
-         background: none; /* Remove fundo */
-         box-shadow: none; /* Remove sombra */
-         padding: 0; /* Remove padding */
-         width: 100%; /* Ocupa largura total */
-         justify-content: center; /* Centraliza itens no flex */
-     }
-     .audio-controls label {
-         color: #333; /* Cor normal do texto */
-     }
-
-     /* Melhora a aparência dos formulários */
-     form select, form input, form textarea {
-        padding: 12px; /* Aumenta um pouco o padding para toque */
-     }
-     form button[type="submit"] {
-        padding: 14px;
-     }
-     /* Ajusta controles de carga do caminhão */
-     .acao-caminhao {
-        display: block; /* Ocupa linha inteira */
-        margin-left: 0; /* Remove margem */
-        margin-top: 10px; /* Adiciona espaço acima */
+    .audio-controls {
+        position: static;
+        margin-top: 25px;
         text-align: center;
-     }
-      .acao-caminhao input[type="number"] {
-        width: calc(50% - 10px); /* Ajusta largura */
-        margin-right: 5px;
-      }
-      .acao-caminhao button {
+        background: none;
+        box-shadow: none;
+        padding: 0;
+        width: 100%;
+        justify-content: center;
+    }
+    .audio-controls label {
+        color: #333;
+    }
+
+    form select, form input, form textarea {
+        padding: 12px;
+    }
+    form button[type="submit"] {
+        padding: 14px;
+    }
+
+    .acao-caminhao {
+        display: block;
+        margin-left: 0;
+        margin-top: 10px;
+        text-align: center;
+    }
+    .acao-caminhao input[type="number"] {
         width: calc(50% - 10px);
-        margin: 5px 2px 0 2px; /* Adiciona margem superior */
-      }
-      #btn-buscar-api-detalhes { /* Ajuste do botão da API para responsividade */
-        width: 100%; 
+        margin-right: 5px;
+    }
+    .acao-caminhao button {
+        width: calc(50% - 10px);
+        margin: 5px 2px 0 2px;
+    }
+
+    #btn-buscar-api-detalhes {
+        width: 100%;
+    }
+
+    #planejador-viagem-container input[type="text"] {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    #verificar-clima-btn {
+       width: 100%;
+    }
+
+    .filtro-grupo label.checkbox-label {
+         display: block;
+         margin-bottom: 5px;
+    }
+
+    .container-showcase {
+        padding: 0;
     }
 }

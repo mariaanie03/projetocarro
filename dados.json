@@ -25,5 +25,34 @@
     "recallDetalhe": null,
     "dicaManutencaoAvancada": "Realizar a calibragem dos sensores do sistema de freios eletrônicos (EBS) anualmente.",
     "curiosidade": "O motor do Scania R450 é conhecido por seu alto torque em baixas rotações, otimizando o consumo de combustível."
-  }
+  },
+  "dicasManutencao": {
+    "geral": [
+      { "id": "g1", "dica": "Verifique a pressão dos pneus semanalmente." },
+      { "id": "g2", "dica": "Confira o nível do óleo do motor a cada 1.000 km." },
+      { "id": "g3", "dica": "Mantenha o nível do fluido de arrefecimento sempre entre o mínimo e o máximo." }
+    ],
+    "carro": [
+      { "id": "c1", "dica": "Faça o rodízio dos pneus a cada 10.000 km para um desgaste uniforme." },
+      { "id": "c2", "dica": "Troque o filtro de ar do motor a cada 15.000 km." }
+    ],
+    "esportivo": [
+      { "id": "e1", "dica": "Utilize sempre óleo de motor sintético de alta performance." },
+      { "id": "e2", "dica": "Verifique o estado dos discos e pastilhas de freio com mais frequência devido ao uso intenso." }
+    ],
+    "caminhao": [
+      { "id": "t1", "dica": "Inspecione o sistema de freios a ar diariamente antes de iniciar a viagem." },
+      { "id": "t2", "dica": "Realize a lubrificação do chassi (quinta roda, pinos, etc.) conforme especificado no manual." }
+    ]
+  },
+  "veiculosDestaque": [
+    { "modelo": "Porsche 911", "ano": "2023", "destaque": "Ícone atemporal de performance e design.", "imagemUrl": "imagens/porche991.2.0.avif" },
+    { "modelo": "Ford F-150", "ano": "2022", "destaque": "A picape mais vendida, sinônimo de robustez.", "imagemUrl": "imagens/fordF-150-2.0.png"},
+    { "modelo": "Tesla Model S", "ano": "2024", "destaque": "Revolução elétrica com aceleração impressionante.", "imagemUrl": "imagens/teslamodel-s-2.0.png" }
+  ],
+  "servicosOferecidos": [
+    { "nome": "Alinhamento e Balanceamento 3D", "descricao": "Tecnologia de ponta para garantir a estabilidade e a vida útil dos pneus.", "precoEstimado": "R$ 250,00" },
+    { "nome": "Troca de Óleo e Filtros Premium", "descricao": "Utilizamos apenas lubrificantes e filtros recomendados pela montadora.", "precoEstimado": "A partir de R$ 350,00" },
+    { "nome": "Diagnóstico Eletrônico Completo", "descricao": "Análise computadorizada de todos os módulos eletrônicos do veículo.", "precoEstimado": "R$ 180,00" }
+  ]
 }
