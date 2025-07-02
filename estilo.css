@@ -726,7 +726,7 @@ form button[type="submit"]:hover {
 /* Estilização da imagem dentro do card */
 .veiculo-card img {
     width: 100%; /* Imagem ocupa toda a largura do card */
-    height: 200px; /* Altura fixa para todas as imagens */
+    height: 150px; /* Altura fixa para todas as imagens */
     object-fit: cover; /* ESSENCIAL: Redimensiona a imagem para preencher o espaço sem distorcer. Corta o excesso. */
     border-bottom: 1px solid #eee;
     background-color: #f8f9fa; /* Cor de fundo caso a imagem demore a carregar */
@@ -738,6 +738,7 @@ form button[type="submit"]:hover {
     color: #2c3e50;
     margin: 15px 20px 5px 20px; /* Espaçamento (top, right, bottom, left) */
 }
+    
 
 .veiculo-card p {
     font-size: 0.95em;
