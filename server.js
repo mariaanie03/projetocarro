@@ -7,6 +7,8 @@ import axios from 'axios';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import path from 'path';
+// ADICIONADO: Importação do Mongoose para interagir com o MongoDB
+import mongoose from 'mongoose';
 
 // Configuração para obter o __dirname em módulos ES
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +16,55 @@ const __dirname = path.dirname(__filename);
 
 // Carrega variáveis de ambiente do arquivo .env
 dotenv.config();
+
+// ADICIONADO: ---- Início da Lógica de Conexão com MongoDB ----
+
+// Pega a string de conexão das variáveis de ambiente
+const mongoUriCrud = process.env.MONGO_URI_CRUD;
+
+// Função de conexão robusta com o Mongoose
+async function connectCrudDB() {
+    // Se já estiver conectado, não tenta conectar novamente
+    if (mongoose.connections[0].readyState) {
+        console.log("[Mongoose] Conexão já estabelecida.");
+        return;
+    }
+
+    // Validação essencial: verifica se a string de conexão foi definida
+    if (!mongoUriCrud) {
+        console.error("[Mongoose ERRO FATAL] A variável de ambiente MONGO_URI_CRUD não foi definida! A aplicação não pode se conectar ao banco de dados.");
+        return;
+    }
+
+    try {
+        // Opções de conexão para maior robustez
+        const options = {
+            serverSelectionTimeoutMS: 5000, // Timeout para selecionar um servidor (5s)
+            connectTimeoutMS: 10000,        // Timeout para a conexão inicial (10s)
+        };
+
+        // Tenta conectar ao banco de dados
+        await mongoose.connect(mongoUriCrud, options);
+
+        console.log("🚀 [Mongoose] Conectado com sucesso ao MongoDB Atlas (CRUD)!");
+
+        // Opcional: Listeners para eventos de conexão para monitoramento contínuo
+        mongoose.connection.on('disconnected', () => console.warn("⚠️ [Mongoose] Desconectado do MongoDB!"));
+        mongoose.connection.on('error', (err) => console.error("❌ [Mongoose] Erro de conexão:", err));
+
+    } catch (err) {
+        console.error("❌ [Mongoose ERRO FATAL] Falha ao conectar ao MongoDB (CRUD):", err.message);
+        console.error("-> Verifique sua MONGO_URI_CRUD (no .env local e nas variáveis de ambiente do Render).");
+        console.error("-> Verifique o acesso de rede (IP Whitelist) no painel do Atlas.");
+        console.error("-> Verifique as credenciais do usuário do banco de dados.");
+    }
+}
+
+// Chama a função para iniciar a conexão com o banco de dados assim que o servidor carrega
+connectCrudDB();
+
+// ADICIONADO: ---- Fim da Lógica de Conexão com MongoDB ----
+
 
 // Carrega os dados do nosso arquivo JSON
 let dados = {};
@@ -28,21 +79,20 @@ try {
 
 // Inicializa o aplicativo Express
 const app = express();
-const port = process.env.PORT || 3000; // Alterado para porta 3000 para corresponder ao JS do cliente
+const port = process.env.PORT || 3000;
 
 // MELHORIA DE SEGURANÇA: Carrega a chave de API de forma segura
 const apiKey = process.env.OPENWEATHER_API_KEY;
 
 if (!apiKey) {
     console.error('[Servidor ERRO] A variável de ambiente OPENWEATHER_API_KEY não foi definida no arquivo .env.');
-    process.exit(1);
+    // Não encerra o processo para permitir que o resto da aplicação funcione sem clima.
+    // process.exit(1); 
+} else {
+    console.log('[Servidor] Chave de API da OpenWeatherMap carregada.');
 }
-console.log('[Servidor] Chave de API da OpenWeatherMap carregada.');
 
-// =========================================================================================
-// CORREÇÃO PRINCIPAL: Servir arquivos estáticos da pasta raiz do projeto, não da 'public'.
-// Isso permitirá que o index.html, css e js sejam encontrados e carregados.
-// =========================================================================================
+// Servir arquivos estáticos da pasta raiz do projeto
 app.use(express.static(__dirname));
 
 // Middleware para permitir CORS (Cross-Origin Resource Sharing)
@@ -61,12 +111,16 @@ const handleApiError = (error, res, location) => {
 };
 
 // =========================================================
-// ----- ENDPOINTS DA API DE CLIMA (Proxy) - JÁ CORRETOS -----
+// ----- ENDPOINTS DA API DE CLIMA (Proxy) -----
 // =========================================================
 app.get('/api/previsao', async (req, res) => {
     const { cidade, lat, lon } = req.query;
     let url;
     let locationIdentifier;
+
+    if (!apiKey) {
+         return res.status(503).json({ error: "O serviço de clima está temporariamente indisponível.", message: "A chave da API não foi configurada no servidor." });
+    }
 
     if (cidade) {
         locationIdentifier = cidade;
@@ -88,13 +142,12 @@ app.get('/api/previsao', async (req, res) => {
 });
 
 // =======================================================
-// ----- ENDPOINTS DA GARAGEM INTELIGENTE - COMPLETOS -----
+// ----- ENDPOINTS DA GARAGEM INTELIGENTE (lendo de dados.json) -----
 // =======================================================
 
-// Endpoint para detalhes de veículos (já presente no dados.json)
+// Endpoint para detalhes de veículos
 app.get('/api/veiculos/detalhes', (req, res) => {
     console.log('[Servidor] Requisição recebida para /api/veiculos/detalhes');
-    // Retorna apenas os dados de veículos, excluindo outras chaves
     const detalhesVeiculos = {
         carro1: dados.carro1,
         esportivo1: dados.esportivo1,
@@ -121,7 +174,6 @@ app.get('/api/dicas-manutencao', (req, res) => {
 app.get('/api/dicas-manutencao/:tipoVeiculo', (req, res) => {
     const { tipoVeiculo } = req.params;
     console.log(`[Servidor] Requisição recebida para /api/dicas-manutencao/${tipoVeiculo}`);
-
     const mapeamentoTipos = {
         'carro': 'carro',
         'carroesportivo': 'esportivo',
@@ -137,9 +189,7 @@ app.get('/api/dicas-manutencao/:tipoVeiculo', (req, res) => {
     }
 });
 
-// =================================================================
-// ADIÇÃO: Endpoints que estavam faltando para a Vitrine da Garagem
-// =================================================================
+// Endpoints para a Vitrine da Garagem
 app.get('/api/garagem/veiculos-destaque', (req, res) => {
     console.log('[Servidor] Requisição recebida para /api/garagem/veiculos-destaque');
     if (dados.veiculosDestaque) {

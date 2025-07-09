@@ -550,7 +550,7 @@ function carregarGaragem() {
     const garagemParseada = JSON.parse(garagemSalva);
     garagem = Object.keys(garagemParseada).reduce((acc, id) => {
         // --- CORREÇÃO DO ERRO DE SINTAXE ---
-        // A linha abaixo estava com um ponto final, quebrando o código.
+        // A linha abaixo estava com um ponto final, quebrando o código. Foi removido.
         const { tipo, dados } = garagemParseada[id];
         let veiculo;
         switch (tipo) {
