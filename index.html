@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garagem Virtual Interativa</title>
-    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="stylesheet" href="ccs/estilo.css">
 </head>
 <body>
     <h1>Garagem Virtual Interativa</h1>
@@ -16,26 +16,27 @@
         <div class="selecao-veiculo section-box">
             <h2>Garagem</h2>
             <div id="botoes-veiculo">
-                <p>Carregando veículos...</p>
+                <p>Carregando veículos do banco de dados...</p>
             </div>
             <hr>
             <h2>Adicionar Novo Veículo</h2>
+            <!-- FORMULÁRIO MODIFICADO -->
             <form id="form-add-veiculo">
-                <label for="tipo-veiculo">Tipo:</label>
-                <select id="tipo-veiculo" required>
-                    <option value="" disabled selected>Selecione o Tipo</option>
-                    <option value="Carro">Carro</option>
-                    <option value="CarroEsportivo">Carro Esportivo</option>
-                    <option value="Caminhao">Caminhão</option>
-                </select>
+                <label for="placa-veiculo">Placa:</label>
+                <input type="text" id="placa-veiculo" placeholder="Ex: ABC1D23" required>
+                
+                <label for="marca-veiculo">Marca:</label>
+                <input type="text" id="marca-veiculo" placeholder="Ex: Volkswagen, Ferrari" required>
+
                 <label for="modelo-veiculo">Modelo:</label>
-                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca, Ferrari F40" required>
+                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca, F40" required>
+                
+                <label for="ano-veiculo">Ano:</label>
+                <input type="number" id="ano-veiculo" placeholder="Ex: 1975" required>
+                
                 <label for="cor-veiculo">Cor:</label>
-                <input type="text" id="cor-veiculo" placeholder="Ex: Azul, Vermelho" required>
-                <div id="campo-capacidade" style="display: none;">
-                    <label for="capacidade-veiculo">Capacidade de Carga (kg):</label>
-                    <input type="number" id="capacidade-veiculo" placeholder="Ex: 25000" min="1">
-                </div>
+                <input type="text" id="cor-veiculo" placeholder="Ex: Azul, Vermelho">
+                
                 <button type="submit">Adicionar à Garagem</button>
             </form>
         </div>
@@ -48,13 +49,13 @@
             <div id="informacoes-veiculo">
                 <p>Selecione um veículo na garagem para ver os detalhes e interagir.</p>
             </div>
-            <div id="velocimetro-container">
+            <div id="velocimetro-container" style="display: none;"> <!-- Escondido inicialmente -->
                 <label for="velocimetro">Velocidade:</label>
                 <progress id="velocimetro" value="0" max="100">0%</progress>
                 <span id="velocidade-texto">0 km/h</span>
             </div>
             <div id="alerta-container"></div>
-            <div id="controles-veiculo" style="display: none;">
+            <div id="controles-veiculo" style="display: none;"> <!-- Escondido inicialmente -->
                 <h3>Ações do Veículo:</h3>
                 <button data-acao="ligar" title="Ligar o motor do veículo">Ligar</button>
                 <button data-acao="desligar" title="Desligar o motor (somente se parado)">Desligar</button>
@@ -165,7 +166,7 @@
 
 
     <!-- Controles de Áudio Globais -->
-    <div class="audio-controls">
+    <div class="audio-controls" style="display: none;"> <!-- Escondido inicialmente -->
         <label for="volume-control">Volume:</label>
         <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5" title="Ajustar volume dos efeitos sonoros">
         
