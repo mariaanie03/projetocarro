@@ -4,144 +4,95 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Garagem Virtual Interativa</title>
-    <link rel="stylesheet" href="ccs/estilo.css">
+    <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
     <h1>Garagem Virtual Interativa</h1>
 
     <div class="container">
-        <!-- ====================================================== -->
-        <!-- Seção 1: Seleção e Adição de Veículos                 -->
-        <!-- ====================================================== -->
+        <!-- SEÇÃO 1: GARAGEM E FORMULÁRIO -->
         <div class="selecao-veiculo section-box">
-            <h2>Garagem</h2>
-            <div id="botoes-veiculo">
-                <p>Carregando veículos do banco de dados...</p>
-            </div>
+            <h2>Veículos na Garagem</h2>
+            <div id="botoes-veiculo"></div>
             <hr>
             <h2>Adicionar Novo Veículo</h2>
-            <!-- FORMULÁRIO MODIFICADO -->
             <form id="form-add-veiculo">
+                <label for="tipo-veiculo">Tipo:</label>
+                <select id="tipo-veiculo" required>
+                    <option value="" disabled selected>Selecione</option>
+                    <option value="Carro">Carro</option>
+                    <option value="CarroEsportivo">Carro Esportivo</option>
+                    <option value="Caminhao">Caminhão</option>
+                </select>
                 <label for="placa-veiculo">Placa:</label>
                 <input type="text" id="placa-veiculo" placeholder="Ex: ABC1D23" required>
-                
                 <label for="marca-veiculo">Marca:</label>
-                <input type="text" id="marca-veiculo" placeholder="Ex: Volkswagen, Ferrari" required>
-
+                <input type="text" id="marca-veiculo" placeholder="Ex: Volkswagen" required>
                 <label for="modelo-veiculo">Modelo:</label>
-                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca, F40" required>
-                
+                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca" required>
                 <label for="ano-veiculo">Ano:</label>
                 <input type="number" id="ano-veiculo" placeholder="Ex: 1975" required>
-                
                 <label for="cor-veiculo">Cor:</label>
-                <input type="text" id="cor-veiculo" placeholder="Ex: Azul, Vermelho">
-                
+                <input type="text" id="cor-veiculo" placeholder="Ex: Azul" required>
                 <button type="submit">Adicionar à Garagem</button>
             </form>
         </div>
 
-        <!-- ====================================================== -->
-        <!-- Seção 2: Display do Veículo Selecionado e Controles   -->
-        <!-- ====================================================== -->
+        <!-- SEÇÃO 2: DISPLAY E INTERAÇÃO -->
         <div class="display-veiculo section-box">
             <h2>Veículo Selecionado: <span id="nome-veiculo-selecionado">Nenhum</span></h2>
+            <div id="alerta-container" style="display: none;"></div>
             <div id="informacoes-veiculo">
-                <p>Selecione um veículo na garagem para ver os detalhes e interagir.</p>
+                <p>Selecione um veículo na garagem.</p>
             </div>
-            <div id="velocimetro-container" style="display: none;"> <!-- Escondido inicialmente -->
+            <div id="velocimetro-container">
                 <label for="velocimetro">Velocidade:</label>
-                <progress id="velocimetro" value="0" max="100">0%</progress>
+                <progress id="velocimetro" value="0" max="100"></progress>
                 <span id="velocidade-texto">0 km/h</span>
             </div>
-            <div id="alerta-container"></div>
-            <div id="controles-veiculo" style="display: none;"> <!-- Escondido inicialmente -->
-                <h3>Ações do Veículo:</h3>
-                <button data-acao="ligar" title="Ligar o motor do veículo">Ligar</button>
-                <button data-acao="desligar" title="Desligar o motor (somente se parado)">Desligar</button>
-                <button data-acao="acelerar" title="Aumentar a velocidade do veículo">Acelerar</button>
-                <button data-acao="frear" title="Diminuir a velocidade do veículo">Frear</button>
-                <button data-acao="buzinar" title="Tocar a buzina do veículo">Buzinar</button>
-                <button data-acao="ativarTurbo" class="acao-esportivo" style="display: none;" title="Ativar o turbo">Ativar Turbo</button>
-                <button data-acao="desativarTurbo" class="acao-esportivo" style="display: none;" title="Desativar o turbo">Desativar Turbo</button>
-                <div class="acao-caminhao" style="display: none;">
-                    <label for="peso-carga">Peso (kg):</label>
-                    <input type="number" id="peso-carga" placeholder="Ex: 500" min="1">
-                    <button data-acao="carregar" title="Carregar caminhão">Carregar</button>
-                    <button data-acao="descarregar" title="Descarregar caminhão">Descarregar</button>
-                </div>
-            </div>
-            <div id="api-detalhes-container" style="display: none; margin-top: 20px;">
-                <h3>Detalhes Adicionais (API)</h3>
-                <button id="btn-buscar-api-detalhes" title="Buscar informações adicionais">Ver Detalhes Extras</button>
-                <div id="api-loading" style="display: none; margin-top: 10px;">
-                    <p><em>Carregando detalhes...</em> ⏳</p>
-                </div>
-                <div id="api-resultado" class="api-box"></div>
-            </div>
-            <div id="planejador-viagem-container" style="display: none; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e0e4e8;">
-                <h3>Planejador de Viagem: Previsão do Tempo</h3>
-                <div>
-                    <label for="cidade-destino">Cidade de Destino:</label>
-                    <input type="text" id="cidade-destino" placeholder="Ex: Paris, Londres">
-                    <button id="verificar-clima-btn" title="Verificar previsão do tempo">Verificar Clima</button>
-                </div>
-                <div id="filtros-previsao-container" style="margin-top: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc;">
-                    <h4>Opções de Visualização:</h4>
-                    <div class="filtro-grupo">
-                        <label for="filtro-dias-previsao">Mostrar previsão para:</label>
-                        <select id="filtro-dias-previsao">
-                            <option value="1">Hoje</option>
-                            <option value="3">Próximos 3 dias</option>
-                            <option value="5" selected>Próximos 5 dias</option>
-                        </select>
-                    </div>
-                    <div class="filtro-grupo" style="margin-top: 10px;">
-                        <label>Destaques:</label>
-                        <label for="destaque-chuva" class="checkbox-label">
-                            <input type="checkbox" id="destaque-chuva" name="destaques" value="chuva"> Chuva
-                        </label>
-                        <label for="destaque-temp-baixa" class="checkbox-label">
-                            <input type="checkbox" id="destaque-temp-baixa" name="destaques" value="temp-baixa"> Temp. Baixa (< 5°C)
-                        </label>
-                        <label for="destaque-temp-alta" class="checkbox-label">
-                            <input type="checkbox" id="destaque-temp-alta" name="destaques" value="temp-alta"> Temp. Alta (> 30°C)
-                        </label>
-                    </div>
-                </div>
-                <div id="clima-loading" style="display: none; margin-top: 10px;">
-                    <p><em>Carregando previsão do tempo...</em> 🌦️</p>
-                </div>
-                <div id="previsao-tempo-resultado" style="margin-top: 15px;"></div>
+            <div id="controles-veiculo" style="display: none;">
+                <h3>Ações:</h3>
+                <button data-acao="ligar">Ligar</button>
+                <button data-acao="desligar">Desligar</button>
+                <button data-acao="acelerar">Acelerar</button>
+                <button data-acao="frear">Frear</button>
+                <button data-acao="buzinar">Buzinar</button>
+                <button data-acao="ativarTurbo" class="acao-esportivo" style="display: none;">Ativar Turbo</button>
+                <button data-acao="desativarTurbo" class="acao-esportivo" style="display: none;">Desativar Turbo</button>
             </div>
         </div>
 
-        <!-- ====================================================== -->
-        <!-- Seção 3: Manutenção do Veículo                        -->
-        <!-- ====================================================== -->
+        <!-- SEÇÃO 3: MANUTENÇÃO E EXTRAS (COMPLETO) -->
         <div class="manutencao-veiculo section-box">
-            <h2>Manutenção</h2>
+            <h2>Manutenção & Extras</h2>
+
+            <!-- CONTAINER PARA EXIBIR O HISTÓRICO -->
             <div id="historico-manutencao">
-                <p>Selecione um veículo para ver o histórico de manutenção.</p>
+                 <p>Selecione um veículo para ver o histórico.</p>
             </div>
-            <hr>
-            <h3>Agendar / Registrar Manutenção</h3>
-            <form id="form-add-manutencao" style="display: none;">
-                <label for="data-manutencao">Data:</label>
-                <input type="date" id="data-manutencao" required>
-                <label for="tipo-servico">Tipo de Serviço:</label>
-                <input type="text" id="tipo-servico" placeholder="Ex: Troca de óleo, Revisão de freios" required>
-                <label for="custo-manutencao">Custo (R$):</label>
-                <input type="number" id="custo-manutencao" placeholder="Ex: 150.50" min="0" step="0.01" required>
-                <label for="descricao-manutencao">Descrição (Opcional):</label>
-                <textarea id="descricao-manutencao" placeholder="Detalhes do serviço realizado ou a realizar"></textarea>
-                <button type="submit">Agendar/Registrar</button>
-            </form>
-            <p id="manutencao-sem-veiculo" style="display: block;">Selecione um veículo para gerenciar a manutenção.</p>
             
-            <div id="dicas-manutencao-container" style="display: none; margin-top: 20px;">
+            <hr>
+
+            <!-- FORMULÁRIO PARA ADICIONAR MANUTENÇÃO (RESTAURADO) -->
+            <div id="form-manutencao-container" style="display: none;">
+                <h3>Agendar / Registrar Manutenção</h3>
+                <form id="form-add-manutencao">
+                    <label for="data-manutencao">Data:</label>
+                    <input type="date" id="data-manutencao" required>
+                    <label for="tipo-servico">Tipo de Serviço:</label>
+                    <input type="text" id="tipo-servico" placeholder="Ex: Troca de óleo" required>
+                    <label for="custo-manutencao">Custo (R$):</label>
+                    <input type="number" id="custo-manutencao" placeholder="Ex: 150.50" min="0" step="0.01" required>
+                    <label for="descricao-manutencao">Descrição (Opcional):</label>
+                    <textarea id="descricao-manutencao" placeholder="Detalhes do serviço"></textarea>
+                    <button type="submit">Registrar Manutenção</button>
+                </form>
+            </div>
+
+            <!-- SEÇÃO DE DICAS RESTAURADA -->
+            <div id="dicas-manutencao-container" style="display: none;">
                 <h3>Dicas de Manutenção (API)</h3>
-                <button id="btn-buscar-dicas" title="Buscar dicas de manutenção para este tipo de veículo">Ver Dicas</button>
+                <button id="btn-buscar-dicas">Ver Dicas</button>
                 <div id="dicas-loading" style="display: none; margin-top: 10px;">
                     <p><em>Buscando dicas...</em> 🔧</p>
                 </div>
@@ -150,33 +101,16 @@
         </div>
     </div>
 
-    <!-- ====================================================== -->
-    <!-- Seção 4: Vitrine da Garagem (Conteúdo Global)         -->
-    <!-- ====================================================== -->
-    <div class="container-showcase">
-        <section id="secao-veiculos-destaque" class="section-box">
-            <h2>Veículos em Destaque na Garagem</h2>
-            <div id="cards-veiculos-destaque" class="cards-container"></div>
-        </section>
-        <section id="secao-servicos" class="section-box">
-            <h2>Nossos Serviços</h2>
-            <ul id="lista-servicos-oferecidos"></ul>
-        </section>
-    </div>
-
-
-    <!-- Controles de Áudio Globais -->
-    <div class="audio-controls" style="display: none;"> <!-- Escondido inicialmente -->
+    <!-- ÁUDIO E SCRIPTS (sem alterações) -->
+    <audio id="som-ligar" src="sounds/car_start.mp3" preload="auto"></audio>
+    <audio id="som-desligar" src="sounds/car_stop.mp3" preload="auto"></audio>
+    <audio id="som-acelerar" src="sounds/car_accelerate.mp3" preload="auto"></audio>
+    <audio id="som-frear" src="sounds/car_brake.mp3" preload="auto"></audio>
+    <audio id="som-buzina" src="sounds/car_horn.mp3" preload="auto"></audio>
+    <div class="audio-controls">
         <label for="volume-control">Volume:</label>
-        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5" title="Ajustar volume dos efeitos sonoros">
-        
-        <audio id="som-ligar" src="sounds/car_start.mp3" preload="auto"></audio>
-        <audio id="som-desligar" src="sounds/car_stop.mp3" preload="auto"></audio>
-        <audio id="som-acelerar" src="sounds/car_accelerate.mp3" preload="auto"></audio>
-        <audio id="som-frear" src="sounds/car_brake.mp3" preload="auto"></audio>
-        <audio id="som-buzina" src="sounds/car_horn.mp3" preload="auto"></audio>
+        <input type="range" id="volume-control" min="0" max="1" step="0.1" value="0.5">
     </div>
-
     <script src="script.js"></script>
 </body>
 </html>
