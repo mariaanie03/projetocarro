@@ -10,6 +10,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import axios from 'axios';
 import Veiculo from './models/Veiculo.js';
 
 // =======================================================
@@ -29,6 +30,7 @@ mongoose.connect(process.env.MONGO_URI_CRUD).then(() => {
     console.log("🚀 [Mongoose] Conectado com sucesso ao MongoDB Atlas!");
 }).catch(err => {
     console.error("❌ [Mongoose ERRO FATAL] Falha ao conectar:", err.message);
+    process.exit(1);
 });
 
 // =======================================================
@@ -52,106 +54,87 @@ try {
 // =======================================================
 
 // --- ROTAS CRUD PARA VEÍCULOS (DO MONGODB) ---
-app.post('/api/veiculos', async (req, res) => {
-    try {
-        const veiculoCriado = await Veiculo.create(req.body);
-        res.status(201).json(veiculoCriado);
-    } catch (error) {
-        if (error.code === 11000) return res.status(409).json({ message: 'Placa já existe.' });
-        if (error.name === 'ValidationError') return res.status(400).json({ message: Object.values(error.errors).map(e => e.message).join(', ') });
-        res.status(500).json({ message: 'Erro interno do servidor.' });
-    }
-});
+app.post('/api/veiculos', async (req, res) => { try { const veiculoCriado = await Veiculo.create(req.body); res.status(201).json(veiculoCriado); } catch (error) { if (error.code === 11000) return res.status(409).json({ message: 'Placa já existe.' }); if (error.name === 'ValidationError') return res.status(400).json({ message: Object.values(error.errors).map(e => e.message).join(', ') }); res.status(500).json({ message: 'Erro interno do servidor ao criar veículo.' }); } });
+app.get('/api/veiculos', async (req, res) => { try { const todosOsVeiculos = await Veiculo.find({}).sort({ createdAt: -1 }); res.status(200).json(todosOsVeiculos); } catch (error) { res.status(500).json({ message: 'Erro ao buscar veículos.' }); } });
+app.put('/api/veiculos/:id', async (req, res) => { try { const { id } = req.params; const novosDados = req.body; const veiculoAtualizado = await Veiculo.findByIdAndUpdate(id, novosDados, { new: true, runValidators: true }); if (!veiculoAtualizado) { return res.status(404).json({ message: "Veículo não encontrado para atualização." }); } res.status(200).json(veiculoAtualizado); } catch (error) { if (error.code === 11000) return res.status(409).json({ message: 'Essa placa já pertence a outro veículo.' }); if (error.name === 'ValidationError') return res.status(400).json({ message: Object.values(error.errors).map(e => e.message).join(', ') }); res.status(500).json({ message: 'Erro interno do servidor ao atualizar veículo.' }); } });
+app.delete('/api/veiculos/:id', async (req, res) => { try { const { id } = req.params; const resultado = await Veiculo.findByIdAndDelete(id); if (!resultado) { return res.status(404).json({ message: "Veículo não encontrado." }); } res.status(200).json({ message: `Veículo ${resultado.placa} deletado.` }); } catch (error) { res.status(500).json({ message: 'Erro ao deletar veículo.' }); } });
+app.post('/api/veiculos/:id/manutencao', async (req, res) => { try { const veiculo = await Veiculo.findById(req.params.id); if (!veiculo) { return res.status(404).json({ message: "Veículo não encontrado para adicionar manutenção." }); } veiculo.historicoManutencao.push(req.body); const veiculoAtualizado = await veiculo.save(); res.status(201).json(veiculoAtualizado); } catch (error) { if (error.name === 'ValidationError') { return res.status(400).json({ message: "Dados de manutenção inválidos." }); } res.status(500).json({ message: "Erro interno do servidor ao adicionar manutenção." }); } });
 
-app.get('/api/veiculos', async (req, res) => {
-    try {
-        const todosOsVeiculos = await Veiculo.find({}).sort({ createdAt: -1 }); // Ordena pelos mais recentes
-        res.status(200).json(todosOsVeiculos);
-    } catch (error) {
-        res.status(500).json({ message: 'Erro ao buscar veículos.' });
-    }
-});
-
-app.delete('/api/veiculos/:id', async (req, res) => {
-    try {
-        const resultado = await Veiculo.findByIdAndDelete(req.params.id);
-        if (!resultado) return res.status(404).json({ message: "Veículo não encontrado." });
-        res.status(200).json({ message: `Veículo ${resultado.placa} deletado.` });
-    } catch (error) {
-        res.status(500).json({ message: 'Erro ao deletar veículo.' });
-    }
-});
-
-// server.js -> Adicione esta rota
-
-/**
- * @route   POST /api/veiculos/:id/manutencao
- * @desc    Adiciona um novo registro de manutenção a um veículo específico.
- */
-app.post('/api/veiculos/:id/manutencao', async (req, res) => {
-    try {
-        const idDoVeiculo = req.params.id;
-        const dadosManutencao = req.body;
-
-        // Encontra o veículo pelo ID
-        const veiculo = await Veiculo.findById(idDoVeiculo);
-
-        if (!veiculo) {
-            return res.status(404).json({ message: "Veículo não encontrado para adicionar manutenção." });
-        }
-
-        // Adiciona o novo registro de manutenção ao array 'historicoManutencao'
-        veiculo.historicoManutencao.push(dadosManutencao);
-
-        // Salva o documento do veículo inteiro com a nova manutenção
-        const veiculoAtualizado = await veiculo.save();
-
-        res.status(201).json(veiculoAtualizado);
-    } catch (error) {
-        console.error("Erro ao adicionar manutenção:", error);
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: "Dados de manutenção inválidos." });
-        }
-        res.status(500).json({ message: "Erro interno do servidor ao adicionar manutenção." });
-    }
-});
-
-// --- ROTAS PARA DICAS DE MANUTENÇÃO (DO dados.json) ---
-
-// ROTA PARA DICAS GERAIS
-app.get('/api/dicas-manutencao', (req, res) => {
-    if (dados.dicasManutencao && dados.dicasManutencao.geral) {
-        return res.json(dados.dicasManutencao.geral);
-    }
-    return res.status(404).json({ message: "Dicas gerais não encontradas." });
-});
-
-// **ROTA CORRIGIDA E COMPLETA PARA DICAS POR TIPO**
+// --- ROTA PARA DICAS DE MANUTENÇÃO (DO dados.json) ---
 app.get('/api/dicas-manutencao/:tipoVeiculo', (req, res) => {
-    const { tipoVeiculo } = req.params; // ex: "carroesportivo"
-
-    // Mapeamento que traduz o tipo da URL para a chave do JSON
-    const mapeamentoTipos = {
-        'carro': 'carro',
-        'carroesportivo': 'esportivo', // Traduz 'carroesportivo' para 'esportivo'
-        'caminhao': 'caminhao'
-    };
-
+    const { tipoVeiculo } = req.params;
+    const mapeamentoTipos = { 'carro': 'carro', 'carroesportivo': 'esportivo', 'caminhao': 'caminhao' };
     const chaveJson = mapeamentoTipos[tipoVeiculo.toLowerCase()];
-
     if (chaveJson && dados.dicasManutencao && dados.dicasManutencao[chaveJson]) {
-        // Se encontrou a chave e os dados existem, retorna as dicas
         return res.json(dados.dicasManutencao[chaveJson]);
     } else {
-        // Se não, retorna o erro 404
         return res.status(404).json({ message: `Nenhuma dica encontrada para o tipo: ${tipoVeiculo}` });
     }
 });
 
 // --- ROTA PARA PREVISÃO DO TEMPO (Proxy) ---
 app.get('/api/previsao', async (req, res) => {
-    // ... (o código da previsão do tempo, que pode ou não funcionar dependendo da chave de API)
-    // Deixamos ele aqui para o futuro
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+    const { cidade } = req.query; // Pega a cidade da query, agora é obrigatória
+
+    if (!apiKey) {
+        return res.status(500).json({ message: "Chave da API de previsão do tempo não configurada." });
+    }
+    if (!cidade) {
+        return res.status(400).json({ message: "O nome da cidade é obrigatório." });
+    }
+
+    // Novo URL para a previsão de 5 dias / 3 horas
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${cidade}&appid=${apiKey}&units=metric&lang=pt_br`;
+
+    try {
+        const response = await axios.get(url);
+        
+        const nomeCidade = response.data.city.name;
+        const listaPrevisoes = response.data.list;
+
+        // Processar os dados para agrupar por dia
+        const previsoesPorDia = {};
+        listaPrevisoes.forEach(item => {
+            const dia = new Date(item.dt * 1000).toLocaleDateString('pt-BR', { weekday: 'long' });
+            if (!previsoesPorDia[dia]) {
+                previsoesPorDia[dia] = {
+                    diaSemana: dia.charAt(0).toUpperCase() + dia.slice(1),
+                    temps: [],
+                    descricoes: {},
+                    icones: {}
+                };
+            }
+            previsoesPorDia[dia].temps.push(item.main.temp);
+            previsoesPorDia[dia].descricoes[item.weather[0].description] = (previsoesPorDia[dia].descricoes[item.weather[0].description] || 0) + 1;
+            previsoesPorDia[dia].icones[item.weather[0].icon] = (previsoesPorDia[dia].icones[item.weather[0].icon] || 0) + 1;
+        });
+
+        // Montar o resultado final com mín, máx e a condição do tempo mais comum
+        const resultadoFinal = Object.values(previsoesPorDia).map(diaInfo => {
+            const temp_min = Math.min(...diaInfo.temps);
+            const temp_max = Math.max(...diaInfo.temps);
+            const descricaoMaisComum = Object.keys(diaInfo.descricoes).reduce((a, b) => diaInfo.descricoes[a] > diaInfo.descricoes[b] ? a : b);
+            const iconeMaisComum = Object.keys(diaInfo.icones).reduce((a, b) => diaInfo.icones[a] > diaInfo.icones[b] ? a : b);
+            
+            return {
+                dia: diaInfo.diaSemana,
+                temp_min: Math.round(temp_min),
+                temp_max: Math.round(temp_max),
+                descricao: descricaoMaisComum.charAt(0).toUpperCase() + descricaoMaisComum.slice(1),
+                icone: `http://openweathermap.org/img/wn/${iconeMaisComum}.png`
+            };
+        });
+
+        res.status(200).json({ cidade: nomeCidade, previsoes: resultadoFinal });
+
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            return res.status(404).json({ message: `Cidade "${cidade}" não encontrada.` });
+        }
+        console.error("Erro ao buscar previsão do tempo:", error.message);
+        res.status(500).json({ message: "Não foi possível obter a previsão do tempo." });
+    }
 });
 
 // =======================================================

@@ -118,7 +118,8 @@ form label {
 form select,
 form input[type="text"],
 form input[type="number"],
-form input[type="date"] {
+form input[type="date"] 
+#cidade-previsao-select{
     display: block;
     width: 100%;
     margin-bottom: 18px;
@@ -248,4 +249,241 @@ form button[type="submit"] {
         grid-template-columns: 1fr;
         grid-template-areas: "selecao" "display" "manutencao";
     }
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    
+    /* Regras para esconder o modal corretamente */
+    opacity: 0;
+    visibility: hidden; /* Isso impede a interação com o elemento */
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.visivel {
+    /* Regras para mostrar o modal */
+    opacity: 1;
+    visibility: visible; /* Torna o elemento visível e interativo */
+}
+
+.modal-content {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.visivel .modal-content {
+    transform: scale(1);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    color: #888;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+    background-color: transparent;
+}
+.lista-veiculos-db li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.veiculo-actions button {
+    margin-left: 8px;
+    padding: 6px 12px;
+    font-size: 0.85em;
+}
+
+.btn-edit {
+    background-color: #f39c12; /* Laranja */
+    border-bottom-color: #e67e22;
+}
+.btn-edit:hover {
+    background-color: #e67e22;
+}
+
+/* Estilos do Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.modal-overlay.visivel {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    color: #888;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+    background-color: transparent; /* Garante que não pegue o hover do botão padrão */
+}
+
+
+
+#previsao-tempo-container .api-box {
+    padding: 10px 15px;
+}
+
+#previsao-resultado .previsao-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+#previsao-resultado .previsao-header img {
+    width: 45px;
+    height: 45px;
+    background-color: #e0f0ff;
+    border-radius: 50%;
+}
+
+#previsao-resultado .previsao-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+#previsao-resultado .previsao-info strong {
+    font-size: 1.15em;
+    color: var(--cor-texto-titulo);
+}
+
+#previsao-resultado .previsao-info span {
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+#form-buscar-previsao {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#form-buscar-previsao input {
+    flex-grow: 1; /* Faz o input ocupar o espaço disponível */
+    margin-bottom: 0;
+}
+
+#form-buscar-previsao button {
+    white-space: nowrap; /* Impede que o texto do botão quebre linha */
+}
+
+/* Estilos para a lista de previsão de 5 dias */
+#previsao-resultado h4 {
+    text-align: center;
+    margin-bottom: 15px;
+    color: var(--cor-texto-titulo);
+}
+
+.lista-previsao-dias {
+    list-style: none;
+    padding: 0;
+}
+
+.lista-previsao-dias li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--cor-borda);
+}
+
+.lista-previsao-dias li:last-child {
+    border-bottom: none;
+}
+
+.lista-previsao-dias img {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+}
+
+.lista-previsao-dias .dia-info {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.lista-previsao-dias .dia-info strong {
+    font-weight: 600;
+}
+
+.lista-previsao-dias .dia-info span {
+    font-size: 0.9em;
+    color: #7f8c8d;
+}
+
+.lista-previsao-dias .dia-temp {
+    text-align: right;
+}
+
+.lista-previsao-dias .dia-temp strong {
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.lista-previsao-dias .dia-temp span {
+    margin-left: 8px;
+    color: #7f8c8d;
 }
