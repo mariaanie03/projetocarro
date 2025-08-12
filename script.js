@@ -123,14 +123,20 @@ function atualizarDisplayVeiculo() {
     document.getElementById('dicas-resultado').innerHTML = '';
     document.querySelectorAll('.acao-esportivo').forEach(el => el.style.display = (veiculoAtual instanceof CarroEsportivo) ? 'inline-block' : 'none');
     
+    // LÓGICA ATUALIZADA PARA EXIBIR O HISTÓRICO DE MANUTENÇÃO
     if (veiculoAtual.historicoManutencao && veiculoAtual.historicoManutencao.length > 0) {
-        historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><ul>' +
-            veiculoAtual.historicoManutencao.slice().sort((a,b) => new Date(b.data) - new Date(a.data)).map(m => {
-                const custoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
-                return `<li><strong>${m.tipo}</strong> em ${new Date(m.data).toLocaleDateString()} - ${custoFormatado}</li>`;
-            }).join('') + '</ul>';
+        const listaHtml = veiculoAtual.historicoManutencao.map(m => {
+            const custoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
+            const dataFormatada = new Date(m.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+            const kmFormatado = m.quilometragem ? ` - ${m.quilometragem.toLocaleString('pt-BR')} km` : '';
+            return `<li>
+                        <strong>${m.descricaoServico}</strong><br>
+                        <small>Data: ${dataFormatada} | Custo: ${custoFormatado}${kmFormatado}</small>
+                    </li>`;
+        }).join('');
+        historicoManutencaoEl.innerHTML = `<h4>Histórico de Manutenção</h4><ul class="lista-manutencao">${listaHtml}</ul>`;
     } else {
-        historicoManutencaoEl.innerHTML = '<p>Nenhum registro de manutenção para este veículo.</p>';
+        historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p>Nenhum registro de manutenção para este veículo.</p>';
     }
 }
 
@@ -164,37 +170,22 @@ function tocarSomVeiculo(acao) {
     }
 }
 
-// --- FUNÇÃO ATUALIZADA PARA EXIBIR A PREVISÃO DE 5 DIAS ---
 function exibirPrevisaoEstendida(dados) {
     const resultadoEl = document.getElementById('previsao-resultado');
     resultadoEl.innerHTML = `<h4>Previsão para ${dados.cidade}</h4>`;
-
     const listaDiasEl = document.createElement('ul');
     listaDiasEl.className = 'lista-previsao-dias';
-
-    dados.previsoes.slice(0, 5).forEach(previsaoDia => { // Limita a 5 dias
+    dados.previsoes.slice(0, 5).forEach(previsaoDia => {
         const itemDia = document.createElement('li');
-        itemDia.innerHTML = `
-            <img src="${previsaoDia.icone}" alt="${previsaoDia.descricao}">
-            <div class="dia-info">
-                <strong>${previsaoDia.dia}</strong>
-                <span>${previsaoDia.descricao}</span>
-            </div>
-            <div class="dia-temp">
-                <strong>${previsaoDia.temp_max}°</strong>
-                <span>${previsaoDia.temp_min}°</span>
-            </div>
-        `;
+        itemDia.innerHTML = `<img src="${previsaoDia.icone}" alt="${previsaoDia.descricao}"><div class="dia-info"><strong>${previsaoDia.dia}</strong><span>${previsaoDia.descricao}</span></div><div class="dia-temp"><strong>${previsaoDia.temp_max}°</strong><span>${previsaoDia.temp_min}°</span></div>`;
         listaDiasEl.appendChild(itemDia);
     });
-
     resultadoEl.appendChild(listaDiasEl);
 }
 
 function abrirModalEdicao(veiculoId) {
     const veiculo = garagemDB.find(v => v._id === veiculoId);
     if (!veiculo) return;
-
     document.getElementById('edit-veiculo-id').value = veiculo._id;
     document.getElementById('edit-tipo-veiculo').value = veiculo.tipo;
     document.getElementById('edit-placa-veiculo').value = veiculo.placa;
@@ -202,7 +193,6 @@ function abrirModalEdicao(veiculoId) {
     document.getElementById('edit-modelo-veiculo').value = veiculo.modelo;
     document.getElementById('edit-ano-veiculo').value = veiculo.ano;
     document.getElementById('edit-cor-veiculo').value = veiculo.cor;
-
     document.getElementById('modal-editar').classList.add('visivel');
 }
 
@@ -210,28 +200,19 @@ function fecharModalEdicao() {
     document.getElementById('modal-editar').classList.remove('visivel');
 }
 
-
 // =================================================================================
 // --- PONTO DE ENTRADA E EVENT LISTENERS ---
 // =================================================================================
 document.addEventListener('DOMContentLoaded', () => {
     buscarEExibirVeiculos();
 
-    // --- LÓGICA PARA O FORMULÁRIO DE PREVISÃO DO TEMPO ---
-    const formPrevisao = document.getElementById('form-buscar-previsao');
-    formPrevisao.addEventListener('submit', async (e) => {
+    document.getElementById('form-buscar-previsao').addEventListener('submit', async (e) => {
         e.preventDefault();
         const inputCidade = document.getElementById('cidade-input');
         const cidade = inputCidade.value.trim();
         const resultadoEl = document.getElementById('previsao-resultado');
-
-        if (!cidade) {
-            mostrarAlerta('Por favor, digite o nome de uma cidade.', 'erro');
-            return;
-        }
-
+        if (!cidade) return mostrarAlerta('Por favor, digite o nome de uma cidade.', 'erro');
         resultadoEl.innerHTML = `<p><em>Buscando previsão para ${cidade}...</em> 🌍</p>`;
-
         try {
             const dadosPrevisao = await buscarApi(`/api/previsao?cidade=${encodeURIComponent(cidade)}`);
             exibirPrevisaoEstendida(dadosPrevisao);
@@ -239,24 +220,31 @@ document.addEventListener('DOMContentLoaded', () => {
             resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
         }
     });
-    // --- FIM DA LÓGICA DE PREVISÃO ---
 
-    document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => { e.preventDefault(); const novoVeiculo = { tipo: document.getElementById('tipo-veiculo').value, placa: document.getElementById('placa-veiculo').value, marca: document.getElementById('marca-veiculo').value, modelo: document.getElementById('modelo-veiculo').value, ano: document.getElementById('ano-veiculo').value, cor: document.getElementById('cor-veiculo').value, }; try { const response = await fetch('/api/veiculos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novoVeiculo), }); if (!response.ok) { const err = await response.json(); throw new Error(err.message); } mostrarAlerta('Veículo adicionado com sucesso!', 'info'); await buscarEExibirVeiculos(); e.target.reset(); } catch (error) { mostrarAlerta(error.message, 'erro'); } });
+    document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const novoVeiculo = { tipo: document.getElementById('tipo-veiculo').value, placa: document.getElementById('placa-veiculo').value, marca: document.getElementById('marca-veiculo').value, modelo: document.getElementById('modelo-veiculo').value, ano: document.getElementById('ano-veiculo').value, cor: document.getElementById('cor-veiculo').value };
+        try {
+            const response = await fetch('/api/veiculos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(novoVeiculo) });
+            if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
+            mostrarAlerta('Veículo adicionado com sucesso!', 'info');
+            await buscarEExibirVeiculos();
+            e.target.reset();
+        } catch (error) {
+            mostrarAlerta(error.message, 'erro');
+        }
+    });
 
     document.getElementById('botoes-veiculo').addEventListener('click', async (event) => {
         const target = event.target;
         const veiculoId = target.dataset.id;
-
         if (target.classList.contains('btn-delete')) {
-            if (confirm('Tem certeza que deseja excluir este veículo?')) { 
+            if (confirm('Tem certeza que deseja excluir este veículo?')) {
                 try {
                     const response = await fetch(`/api/veiculos/${veiculoId}`, { method: 'DELETE' });
                     if (!response.ok) throw new Error('Falha ao deletar o veículo.');
-                    
                     mostrarAlerta('Veículo excluído com sucesso.', 'info');
-                    if (veiculoAtual && veiculoAtual._id === veiculoId) {
-                        desselecionarVeiculo();
-                    }
+                    if (veiculoAtual && veiculoAtual._id === veiculoId) desselecionarVeiculo();
                     await buscarEExibirVeiculos();
                 } catch (error) {
                     mostrarAlerta(error.message, 'erro');
@@ -272,35 +260,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-edit-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('edit-veiculo-id').value;
-        const dadosAtualizados = {
-            tipo: document.getElementById('edit-tipo-veiculo').value,
-            placa: document.getElementById('edit-placa-veiculo').value,
-            marca: document.getElementById('edit-marca-veiculo').value,
-            modelo: document.getElementById('edit-modelo-veiculo').value,
-            ano: document.getElementById('edit-ano-veiculo').value,
-            cor: document.getElementById('edit-cor-veiculo').value,
-        };
-
+        const dadosAtualizados = { tipo: document.getElementById('edit-tipo-veiculo').value, placa: document.getElementById('edit-placa-veiculo').value, marca: document.getElementById('edit-marca-veiculo').value, modelo: document.getElementById('edit-modelo-veiculo').value, ano: document.getElementById('edit-ano-veiculo').value, cor: document.getElementById('edit-cor-veiculo').value };
         try {
-            const response = await fetch(`/api/veiculos/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dadosAtualizados)
-            });
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.message);
-            }
-            
+            const response = await fetch(`/api/veiculos/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosAtualizados) });
+            if (!response.ok) { const err = await response.json(); throw new Error(err.message); }
             fecharModalEdicao();
             mostrarAlerta('Veículo atualizado com sucesso!', 'info');
-            
             await buscarEExibirVeiculos();
-            
-            if (veiculoAtual && veiculoAtual._id === id) {
-                 selecionarVeiculo(id);
-            }
-            
+            if (veiculoAtual && veiculoAtual._id === id) selecionarVeiculo(id);
         } catch (error) {
             mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
         }
@@ -308,9 +275,50 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('controles-veiculo').addEventListener('click', (event) => { const acao = event.target.dataset.acao; if (acao) interagir(acao); });
     
-    document.getElementById('btn-buscar-dicas').addEventListener('click', async () => { if (!veiculoAtual) return mostrarAlerta("Selecione um veículo.", "erro"); const resultadoEl = document.getElementById('dicas-resultado'); resultadoEl.innerHTML = '<em>Buscando...</em>'; try { const tipoParaAPI = veiculoAtual.tipo.toLowerCase(); const dicas = await buscarApi(`/api/dicas-manutencao/${tipoParaAPI}`); resultadoEl.innerHTML = `<ul>${dicas.map(d => `<li>${d.dica}</li>`).join('')}</ul>`; } catch (error) { resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`; } });
+    document.getElementById('btn-buscar-dicas').addEventListener('click', async () => {
+        if (!veiculoAtual) return mostrarAlerta("Selecione um veículo.", "erro");
+        const resultadoEl = document.getElementById('dicas-resultado');
+        resultadoEl.innerHTML = '<em>Buscando...</em>';
+        try {
+            const tipoParaAPI = veiculoAtual.tipo.toLowerCase();
+            const dicas = await buscarApi(`/api/dicas-manutencao/${tipoParaAPI}`);
+            resultadoEl.innerHTML = `<ul>${dicas.map(d => `<li>${d.dica}</li>`).join('')}</ul>`;
+        } catch (error) {
+            resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
+        }
+    });
 
-    document.getElementById('form-add-manutencao').addEventListener('submit', async (e) => { e.preventDefault(); if (!veiculoAtual) return mostrarAlerta('Nenhum veículo selecionado.', 'erro'); const dadosManutencao = { data: document.getElementById('data-manutencao').value, tipo: document.getElementById('tipo-servico').value, custo: document.getElementById('custo-manutencao').value, descricao: document.getElementById('descricao-manutencao').value }; try { const response = await fetch(`/api/veiculos/${veiculoAtual._id}/manutencao`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosManutencao) }); const veiculoAtualizado = await response.json(); if (!response.ok) throw new Error(veiculoAtualizado.message); mostrarAlerta('Manutenção registrada com sucesso!', 'info'); e.target.reset(); const index = garagemDB.findIndex(v => v._id === veiculoAtualizado._id); if(index > -1) garagemDB[index] = veiculoAtualizado; selecionarVeiculo(veiculoAtualizado._id); } catch (error) { mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro'); } });
+    // LISTENER DO FORMULÁRIO DE MANUTENÇÃO ATUALIZADO
+    document.getElementById('form-add-manutencao').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!veiculoAtual) return mostrarAlerta('Nenhum veículo selecionado.', 'erro');
+
+        const dadosFormulario = {
+            data: document.getElementById('data-manutencao').value,
+            descricaoServico: document.getElementById('descricao-servico-input').value,
+            custo: parseFloat(document.getElementById('custo-manutencao').value),
+            quilometragem: parseInt(document.getElementById('quilometragem-manutencao').value, 10) || null
+        };
+
+        const veiculoId = veiculoAtual._id;
+        const url = `/api/veiculos/${veiculoId}/manutencoes`;
+
+        try {
+            const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dadosFormulario) });
+            const resultado = await response.json();
+            if (!response.ok) throw new Error(resultado.message || 'Falha ao registrar manutenção.');
+
+            mostrarAlerta('Manutenção registrada com sucesso!', 'info');
+            e.target.reset();
+            
+            // Atualiza a garagem e re-seleciona o veículo para mostrar a nova manutenção.
+            await buscarEExibirVeiculos();
+            selecionarVeiculo(veiculoId);
+            
+        } catch (error) {
+            mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro');
+        }
+    });
 
     document.getElementById('volume-control').addEventListener('input', e => { volumeAtual = parseFloat(e.target.value); });
 });
