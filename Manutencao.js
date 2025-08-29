@@ -1,5 +1,4 @@
 // models/Manutencao.js
-
 import mongoose from 'mongoose';
 
 const manutencaoSchema = new mongoose.Schema({
@@ -9,26 +8,27 @@ const manutencaoSchema = new mongoose.Schema({
     },
     data: {
         type: Date,
-        required: true,
-        default: Date.now // Define a data atual como padrão
+        required: [true, 'A data da manutenção é obrigatória.'],
+        default: Date.now
     },
     custo: {
         type: Number,
-        required: [true, 'O custo é obrigatório.'],
+        required: [true, 'O custo da manutenção é obrigatório.'],
         min: [0, 'O custo não pode ser negativo.']
     },
     quilometragem: {
         type: Number,
         min: [0, 'A quilometragem não pode ser negativa.'],
-        default: 0
+        default: null // Permitir que a quilometragem seja opcional
     },
-    // Este é o campo que cria o relacionamento com Veiculo
     veiculo: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Veiculo', // A referência para o modelo 'Veiculo'
-        required: true
+        ref: 'Veiculo',
+        required: [true, 'A manutenção deve estar associada a um veículo.']
     }
-}, { timestamps: true }); // timestamps adiciona createdAt e updatedAt automaticamente
+}, {
+    timestamps: true // Adiciona campos createdAt e updatedAt automaticamente
+});
 
 const Manutencao = mongoose.model('Manutencao', manutencaoSchema);
 

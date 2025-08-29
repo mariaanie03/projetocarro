@@ -14,7 +14,7 @@ import axios from 'axios';
 
 // Importação dos modelos do Mongoose
 import Veiculo from './models/Veiculo.js';
-import Manutencao from './models/Manutencao.js';
+import Manutencao from './models/Manutencao.js'; // <-- Importação do modelo Manutencao
 
 // =======================================================
 // ----- CONFIGURAÇÃO INICIAL -----
@@ -107,6 +107,7 @@ app.delete('/api/veiculos/:id', async (req, res) => {
         const resultado = await Veiculo.findByIdAndDelete(id);
         if (!resultado) return res.status(404).json({ message: "Veículo não encontrado." });
         
+        // Também deleta todas as manutenções associadas a este veículo
         await Manutencao.deleteMany({ veiculo: id });
         
         res.status(200).json({ message: `Veículo ${resultado.placa} e seu histórico foram deletados.` });
@@ -122,17 +123,24 @@ app.delete('/api/veiculos/:id', async (req, res) => {
 app.post('/api/veiculos/:veiculoId/manutencoes', async (req, res) => {
     try {
         const { veiculoId } = req.params;
+
+        // 1. Validar se o veículo existe
         const veiculoExistente = await Veiculo.findById(veiculoId);
         if (!veiculoExistente) {
             return res.status(404).json({ message: "Operação falhou: Veículo não encontrado." });
         }
+
+        // 2. Criar novo objeto de manutenção e associá-lo ao veículo
         const dadosNovaManutencao = { ...req.body, veiculo: veiculoId };
         const manutencaoCriada = await Manutencao.create(dadosNovaManutencao);
         
+        // 3. Adicionar a manutenção ao histórico do veículo e salvar o veículo
         veiculoExistente.historicoManutencao.push(manutencaoCriada._id);
         await veiculoExistente.save();
 
+        // 4. Retornar a manutenção criada
         res.status(201).json(manutencaoCriada);
+
     } catch (error) {
         if (error.name === 'ValidationError') {
             return res.status(400).json({ message: "Dados de manutenção inválidos.", details: error.message });
