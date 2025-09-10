@@ -11,6 +11,8 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import axios from 'axios';
+import rateLimit from 'express-rate-limit'; 
+import helmet from 'helmet'; 
 
 // Importação dos modelos do Mongoose
 import Veiculo from './models/Veiculo.js';
@@ -26,6 +28,14 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 const app = express();
 const port = process.env.PORT || 3000;
 
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // Janela de 15 minutos
+    max: 100, // Limita cada IP a 100 requisições por janela (por 15 min)
+    standardHeaders: true, // Retorna informações do limite nos headers `RateLimit-*`
+    legacyHeaders: false, // Desabilita os headers antigos `X-RateLimit-*`
+    message: 'Muitas requisições vindas deste IP, por favor, tente novamente em 15 minutos.'
+});
+
 // =======================================================
 // ----- CONEXÃO COM O BANCO DE DADOS -----
 // =======================================================
@@ -39,9 +49,11 @@ mongoose.connect(process.env.MONGO_URI_CRUD).then(() => {
 // =======================================================
 // ----- MIDDLEWARES E DADOS ESTÁTICOS -----
 // =======================================================
+app.use(helmet());
+app.use('/api/', limiter);
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); 
 
 // Carrega os dados do arquivo JSON para as dicas
 let dados = {};
@@ -53,7 +65,7 @@ try {
 }
 
 // =======================================================
-// ----- ROTAS DA API -----
+// ----- ROTAS DA API ------
 // =======================================================
 
 // --- ROTAS CRUD PARA VEÍCULOS ---
