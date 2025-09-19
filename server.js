@@ -57,12 +57,11 @@ mongoose.connect(process.env.MONGO_URI_CRUD).then(() => {
 // ----- MIDDLEWARES E DADOS ESTÁTICOS -----
 // =======================================================
 app.use(helmet()); // Para configurar cabeçalhos de segurança HTTP
+app.use('/api/', apiLimiter); // PRIMEIRO USO do apiLimiter (mantido)
 app.use(cors()); // Permite requisições de outras origens
 app.use(express.json({ limit: '10kb' })); // Permite o parsing de JSON no corpo da requisição, com limite de tamanho
 app.use(express.static(__dirname)); // Serve arquivos estáticos da pasta raiz
-
-// APLICAÇÃO DO API LIMITER (UMA ÚNICA VEZ)
-app.use('/api/', apiLimiter); // Aplica o limitador a todas as rotas que começam com /api/
+app.use('/api/', apiLimiter); // SEGUNDO USO do apiLimiter (mantido, conforme solicitado)
 
 // Carrega os dados do arquivo JSON para as dicas
 let dados = {};
@@ -151,7 +150,7 @@ app.put('/api/veiculos/:id',
             .trim()
             .toUpperCase(),
         body('marca', 'A marca é obrigatória e não pode estar vazia.').not().isEmpty().trim().escape(),
-        body('modelo', 'O modelo é obrigatório e não pode estar vazia.').not().isEmpty().trim().escape(),
+        body('modelo', 'O modelo é obrigatório e não pode estar vazio.').not().isEmpty().trim().escape(),
         body('ano', `O ano deve ser um número inteiro válido entre 1900 e ${new Date().getFullYear() + 2}.`)
             .isInt({ min: 1900, max: new Date().getFullYear() + 2 })
             .toInt(),
@@ -312,10 +311,10 @@ app.get('/api/previsao', async (req, res) => {
             if (!previsoesPorDia[dia]) {
                 previsoesPorDia[dia] = { diaSemana: dia.charAt(0).toUpperCase() + dia.slice(1), temps: [], descricoes: {}, icones: {} };
             }
-            previsoesPorDia[dia].temps.push(item.main.temp);
             // Conta as ocorrências de cada descrição para pegar a mais frequente
-            previsoesPorDia[dia].descricoes[item.weather[0].description] = (previsoesPorDia[dia].descricoes[item.weather[0].description] || 0) + 1;
+            previsoesPorDia[dia].temps.push(item.main.temp);
             // Conta as ocorrências de cada ícone
+            previsoesPorDia[dia].descricoes[item.weather[0].description] = (previsoesPorDia[dia].descricoes[item.weather[0].description] || 0) + 1;
             previsoesPorDia[dia].icones[item.weather[0].icon] = (previsoesPorDia[dia].icones[item.weather[0].icon] || 0) + 1;
         });
 
