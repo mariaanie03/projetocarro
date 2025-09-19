@@ -11,7 +11,7 @@ class Veiculo {
         this.ligado = false;
         this.velocidade = 0;
         this.velocidadeMaxima = this.definirVelocidadeMaxima();
-        this.historicoManutencao = []; // Adicionado historicoManutencao para consistência no frontend
+        this.historicoManutencao = [];
     }
 
     definirVelocidadeMaxima() {
@@ -51,9 +51,10 @@ class Veiculo {
         tocarSomVeiculo('buzina');
     }
 
-    exibirInformacoes() {
-        return `<p><strong>Placa:</strong> ${this.placa}</p><p><strong>Marca:</strong> ${this.marca}</p><p><strong>Tipo:</strong> ${this.tipo}</p><p><strong>Status:</strong> <span class="status-${this.ligado ? 'ligado' : 'desligado'}">${this.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span></p>`;
-    }
+    // REMOVIDO: O método exibirInformacoes não é mais usado diretamente, a lógica foi movida para atualizarDisplayVeiculo.
+    // exibirInformacoes() {
+    //     return `<p><strong>Placa:</strong> ${this.placa}</p><p><strong>Marca:</strong> ${this.marca}</p><p><strong>Tipo:</strong> ${this.tipo}</p><p><strong>Status:</strong> <span class="status-${this.ligado ? 'ligado' : 'desligado'}">${this.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span></p>`;
+    // }
 }
 
 class Carro extends Veiculo {
@@ -87,9 +88,10 @@ class CarroEsportivo extends Carro {
     acelerar(incBase = 15) {
         super.acelerar(this.turboAtivado ? incBase * 1.8 : incBase);
     }
-    exibirInformacoes() {
-        return `${super.exibirInformacoes()}<p><strong>Turbo:</strong> <span class="status-${this.turboAtivado ? 'ligado' : 'desligado'}">${this.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span></p>`;
-    }
+    // REMOVIDO: O método exibirInformacoes não é mais usado diretamente, a lógica foi movida para atualizarDisplayVeiculo.
+    // exibirInformacoes() {
+    //     return `${super.exibirInformacoes()}<p><strong>Turbo:</strong> <span class="status-${this.turboAtivado ? 'ligado' : 'desligado'}">${this.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span></p>`;
+    // }
 }
 
 class Caminhao extends Veiculo {
@@ -141,14 +143,30 @@ async function buscarEExibirVeiculos() {
         garagemDB.forEach(veiculoData => {
             const item = document.createElement('li');
             item.id = `veiculo-${veiculoData._id}`;
-            item.dataset.id = veiculoData._id;
-            item.innerHTML = `
-                <span class="veiculo-info" data-id="${veiculoData._id}"><strong>${veiculoData.placa}</strong> - ${veiculoData.marca} ${veiculoData.modelo}</span>
-                <div class="veiculo-actions">
-                    <button class="btn-edit" data-id="${veiculoData._id}">Editar</button>
-                    <button class="btn-delete" data-id="${veiculoData._id}">Excluir</button>
-                </div>
+            
+            const infoSpan = document.createElement('span');
+            infoSpan.className = 'veiculo-info';
+            infoSpan.dataset.id = veiculoData._id;
+            infoSpan.innerHTML = `<strong>${veiculoData.placa}</strong> - ${veiculoData.marca} ${veiculoData.modelo}`;
+            
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'veiculo-actions';
+            actionsDiv.innerHTML = `
+                <button class="btn-edit" data-id="${veiculoData._id}">Editar</button>
+                <button class="btn-delete" data-id="${veiculoData._id}">Excluir</button>
             `;
+            
+            item.appendChild(infoSpan);
+            item.appendChild(actionsDiv);
+
+            // Adiciona o listener de clique no item inteiro (para selecionar)
+            item.addEventListener('click', (event) => {
+                // Impede que o clique nos botões de ação selecione o veículo
+                if (!event.target.closest('button')) {
+                    selecionarVeiculo(veiculoData._id);
+                }
+            });
+
             lista.appendChild(item);
         });
         container.appendChild(lista);
@@ -157,11 +175,11 @@ async function buscarEExibirVeiculos() {
     }
 }
 
+
 async function selecionarVeiculo(veiculoId) {
     const veiculoData = garagemDB.find(v => v._id === veiculoId);
     if (!veiculoData) return;
 
-    // Instancia o veículo com base no tipo
     switch (veiculoData.tipo) {
         case 'Carro':
             veiculoAtual = new Carro(veiculoData.modelo, veiculoData.cor);
@@ -178,10 +196,7 @@ async function selecionarVeiculo(veiculoId) {
     // Copia as propriedades do objeto do banco de dados para a instância
     // Incluindo o historicoManutencao que já vem populado do backend
     Object.assign(veiculoAtual, veiculoData);
-
-    // Carrega e exibe o histórico de manutenções
     await carregarManutencoes(veiculoId);
-
     atualizarDisplayVeiculo();
 }
 
@@ -216,7 +231,34 @@ function atualizarDisplayVeiculo() {
     if (itemSelecionado) itemSelecionado.classList.add('selecionado');
 
     nomeVeiculoEl.textContent = `${veiculoAtual.marca} ${veiculoAtual.modelo}`;
-    infoVeiculoEl.innerHTML = veiculoAtual.exibirInformacoes();
+    
+    // --- INÍCIO DA VERSÃO SEGURA PARA EXIBIR INFORMAÇÕES (MANTIDA) ---
+    infoVeiculoEl.innerHTML = ''; // Limpa o conteúdo anterior
+
+    const criarInfoLinha = (label, value) => {
+        const p = document.createElement('p');
+        const strong = document.createElement('strong');
+        strong.textContent = `${label}: `;
+        p.appendChild(strong);
+        p.append(value);
+        infoVeiculoEl.appendChild(p);
+    };
+
+    criarInfoLinha('Placa', veiculoAtual.placa);
+    criarInfoLinha('Marca', veiculoAtual.marca);
+    criarInfoLinha('Tipo', veiculoAtual.tipo);
+
+    const pStatus = document.createElement('p');
+    pStatus.innerHTML = `<strong>Status: </strong><span class="status-${veiculoAtual.ligado ? 'ligado' : 'desligado'}">${veiculoAtual.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span>`;
+    infoVeiculoEl.appendChild(pStatus);
+
+    if (veiculoAtual instanceof CarroEsportivo) {
+        const pTurbo = document.createElement('p');
+        pTurbo.innerHTML = `<strong>Turbo: </strong><span class="status-${veiculoAtual.turboAtivado ? 'ligado' : 'desligado'}">${veiculoAtual.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span>`;
+        infoVeiculoEl.appendChild(pTurbo);
+    }
+    // --- FIM DA VERSÃO SEGURA ---
+
     velocimetro.value = veiculoAtual.velocidade;
     velocimetro.max = veiculoAtual.velocidadeMaxima;
     velocidadeTexto.textContent = `${veiculoAtual.velocidade} km/h`;
@@ -226,10 +268,6 @@ function atualizarDisplayVeiculo() {
     formManutencaoContainer.style.display = 'block';
     document.getElementById('dicas-resultado').innerHTML = '';
     document.querySelectorAll('.acao-esportivo').forEach(el => el.style.display = (veiculoAtual instanceof CarroEsportivo) ? 'inline-block' : 'none');
-
-    // O histórico de manutenção agora é atualizado por carregarManutencoes,
-    // então a lógica de renderização HTML foi removida daqui.
-    // Apenas garantimos que o container está visível (já feito acima).
 }
 
 async function carregarManutencoes(veiculoId) {
@@ -237,23 +275,13 @@ async function carregarManutencoes(veiculoId) {
     historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p><em>Carregando histórico...</em></p>';
 
     try {
-        // Fetch GET para /api/veiculos/${veiculoId}/manutencoes
         const manutenções = await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`);
-
         if (manutenções && manutenções.length > 0) {
             const listaHtml = manutenções.map(m => {
-                const custoFormatado = new Intl.NumberFormat('pt-BR', {
-                    style: 'currency',
-                    currency: 'BRL'
-                }).format(m.custo);
-                const dataFormatada = new Date(m.data).toLocaleDateString('pt-BR', {
-                    timeZone: 'UTC'
-                });
+                const custoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
+                const dataFormatada = new Date(m.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
                 const kmFormatado = m.quilometragem ? ` - ${m.quilometragem.toLocaleString('pt-BR')} km` : '';
-                return `<li>
-                            <strong>${m.descricaoServico}</strong><br>
-                            <small>Data: ${dataFormatada} | Custo: ${custoFormatado}${kmFormatado}</small>
-                        </li>`;
+                return `<li><strong>${m.descricaoServico}</strong><br><small>Data: ${dataFormatada} | Custo: ${custoFormatado}${kmFormatado}</small></li>`;
             }).join('');
             historicoManutencaoEl.innerHTML = `<h4>Histórico de Manutenção</h4><ul class="lista-manutencao">${listaHtml}</ul>`;
         } else {
@@ -265,7 +293,6 @@ async function carregarManutencoes(veiculoId) {
     }
 }
 
-
 function interagir(acao) {
     if (!veiculoAtual) return mostrarAlerta('Selecione um veículo!', 'erro');
     if (typeof veiculoAtual[acao] === 'function') {
@@ -276,24 +303,28 @@ function interagir(acao) {
 function mostrarAlerta(mensagem, tipo = 'info') {
     const alertaContainer = document.getElementById('alerta-container');
     if (alertaTimeout) clearTimeout(alertaTimeout);
+
     alertaContainer.textContent = mensagem;
-    alertaContainer.className = `alerta-${tipo}`;
-    alertaContainer.style.display = 'block';
-    alertaContainer.style.opacity = 1;
+    alertaContainer.className = `alerta-${tipo}`; // Define o tipo de estilo (info, erro)
+
+    // Adiciona a classe 'visivel' para iniciar a transição de entrada
+    alertaContainer.classList.add('visivel');
+
     alertaTimeout = setTimeout(() => {
-        alertaContainer.style.opacity = 0;
+        // Remove a classe 'visivel' para iniciar a transição de saída
+        alertaContainer.classList.remove('visivel');
+        // Após a transição de saída, limpa o texto
         setTimeout(() => {
-            alertaContainer.style.display = 'none';
-        }, 400);
-    }, 4000);
+            alertaContainer.textContent = '';
+        }, 400); // Deve ser o mesmo tempo da transição CSS
+    }, 4000); // Tempo que o alerta fica visível antes de começar a desaparecer
 }
 
 function tocarSomVeiculo(acao) {
     const som = document.getElementById(`som-${acao}`);
-    const volumeControl = document.getElementById('volume-control');
-    if (som && volumeControl) {
+    if (som) {
         som.currentTime = 0;
-        som.volume = parseFloat(volumeControl.value);
+        som.volume = volumeAtual;
         som.play().catch(e => console.warn("Erro ao tocar som:", e));
     }
 }
@@ -329,14 +360,48 @@ function fecharModalEdicao() {
 }
 
 // =================================================================================
+// --- FUNÇÕES DE LOGIN E CONTROLE DE USO (NOVAS) ---
+// =================================================================================
+function abrirModalLogin() {
+    document.getElementById('modal-login').classList.add('visivel');
+}
+
+function fecharModalLogin() {
+    document.getElementById('modal-login').classList.remove('visivel');
+}
+
+function verificarLoginEContagemDeUso() {
+    const usuarioLogado = localStorage.getItem('usuarioLogado') === 'true';
+
+    if (usuarioLogado) return;
+
+    let contagemDeUso = parseInt(localStorage.getItem('contagemDeUso'), 10) || 0;
+
+    if (contagemDeUso >= 5) {
+        abrirModalLogin();
+    } else {
+        contagemDeUso++;
+        localStorage.setItem('contagemDeUso', contagemDeUso);
+        
+        const usosRestantes = 5 - contagemDeUso + 1; // +1 porque a contagem já foi incrementada
+        if (usosRestantes > 0 && usosRestantes <= 5) { // Só mostra o alerta se ainda houver usos "restantes" antes de 5
+            mostrarAlerta(`Você pode usar o app mais ${usosRestantes} vez(es) antes de pedirmos para você fazer login.`, 'info');
+        }
+    }
+}
+
+
+// =================================================================================
 // --- PONTO DE ENTRADA E EVENT LISTENERS ---
 // =================================================================================
 document.addEventListener('DOMContentLoaded', () => {
     buscarEExibirVeiculos();
+    
+    // --- PONTO DE ENTRADA DO CONTROLE DE LOGIN ---
+    verificarLoginEContagemDeUso();
 
-    // Event listener para o formulário de buscar previsão do tempo
     document.getElementById('form-buscar-previsao').addEventListener('submit', async (e) => {
-        e.preventDefault(); // Impede o envio padrão do formulário
+        e.preventDefault();
         const inputCidade = document.getElementById('cidade-input');
         const cidade = inputCidade.value.trim();
         const resultadoEl = document.getElementById('previsao-resultado');
@@ -348,10 +413,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
         }
-    }); // Fim do addEventListener('submit') para form-buscar-previsao
+    });
 
-
-    // Event listener para o formulário de adicionar novo veículo
     document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const novoVeiculo = {
@@ -363,17 +426,11 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('cor-veiculo').value
         };
         try {
-            const response = await fetch('/api/veiculos', {
+            await buscarApi('/api/veiculos', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(novoVeiculo)
             });
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.message);
-            }
             mostrarAlerta('Veículo adicionado com sucesso!', 'info');
             await buscarEExibirVeiculos();
             e.target.reset();
@@ -382,17 +439,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Event listener para os botões de ação do veículo (selecionar, editar, excluir)
     document.getElementById('botoes-veiculo').addEventListener('click', async (event) => {
-        const target = event.target;
+        const target = event.target.closest('button');
+        if (!target) return; // Se clicou na LI mas não no botão, sai. A seleção é feita no item.addEventListener.
+        
         const veiculoId = target.dataset.id;
         if (target.classList.contains('btn-delete')) {
-            if (confirm('Tem certeza que deseja excluir este veículo?')) {
+            if (confirm('Tem certeza que deseja excluir este veículo e todo o seu histórico?')) {
                 try {
-                    const response = await fetch(`/api/veiculos/${veiculoId}`, {
-                        method: 'DELETE'
-                    });
-                    if (!response.ok) throw new Error('Falha ao deletar o veículo.');
+                    await buscarApi(`/api/veiculos/${veiculoId}`, { method: 'DELETE' });
                     mostrarAlerta('Veículo excluído com sucesso.', 'info');
                     if (veiculoAtual && veiculoAtual._id === veiculoId) desselecionarVeiculo();
                     await buscarEExibirVeiculos();
@@ -402,12 +457,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else if (target.classList.contains('btn-edit')) {
             abrirModalEdicao(veiculoId);
-        } else if (target.closest('.veiculo-info')) {
-            selecionarVeiculo(veiculoId);
         }
+        // A lógica de selecionar veículo ao clicar no veiculo-info agora está no item.addEventListener em buscarEExibirVeiculos
     });
 
-    // Event listener para o formulário de edição de veículo (modal)
     document.getElementById('form-edit-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = document.getElementById('edit-veiculo-id').value;
@@ -420,33 +473,25 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('edit-cor-veiculo').value
         };
         try {
-            const response = await fetch(`/api/veiculos/${id}`, {
+            await buscarApi(`/api/veiculos/${id}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosAtualizados)
             });
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.message);
-            }
             fecharModalEdicao();
             mostrarAlerta('Veículo atualizado com sucesso!', 'info');
             await buscarEExibirVeiculos();
-            if (veiculoAtual && veiculoAtual._id === id) selecionarVeiculo(id);
+            if (veiculoAtual && veiculoAtual._id === id) await selecionarVeiculo(id);
         } catch (error) {
             mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
         }
     });
 
-    // Event listener para os controles de ação do veículo (ligar, acelerar, etc.)
     document.getElementById('controles-veiculo').addEventListener('click', (event) => {
         const acao = event.target.dataset.acao;
         if (acao) interagir(acao);
     });
 
-    // Event listener para o botão de buscar dicas de manutenção
     document.getElementById('btn-buscar-dicas').addEventListener('click', async () => {
         if (!veiculoAtual) return mostrarAlerta("Selecione um veículo.", "erro");
         const resultadoEl = document.getElementById('dicas-resultado');
@@ -460,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // LISTENER DO FORMULÁRIO DE MANUTENÇÃO ATUALIZADO
     document.getElementById('form-add-manutencao').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!veiculoAtual) return mostrarAlerta('Nenhum veículo selecionado.', 'erro');
@@ -469,45 +513,40 @@ document.addEventListener('DOMContentLoaded', () => {
             data: document.getElementById('data-manutencao').value,
             descricaoServico: document.getElementById('descricao-servico-input').value,
             custo: parseFloat(document.getElementById('custo-manutencao').value),
-            // Se quilometragem estiver vazia, parseInt retorna NaN, e NaN || null = null, que é aceitável para um campo opcional
             quilometragem: parseInt(document.getElementById('quilometragem-manutencao').value, 10) || null
         };
 
         const veiculoId = veiculoAtual._id;
-        const url = `/api/veiculos/${veiculoId}/manutencoes`;
-
         try {
-            const response = await fetch(url, {
+            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosFormulario)
             });
-
-            const resultado = await response.json(); // Tenta ler a resposta JSON para obter a mensagem e detalhes
-
-            if (!response.ok) {
-                // Se a resposta não for OK (ex: 400 Bad Request),
-                // verifica se há detalhes de validação e os exibe.
-                if (response.status === 400 && resultado.details) {
-                    throw new Error(`${resultado.message} Detalhes: ${resultado.details}`);
-                }
-                throw new Error(resultado.message || 'Falha ao registrar manutenção.');
-            }
-
             mostrarAlerta('Manutenção registrada com sucesso!', 'info');
-            e.target.reset(); // Limpa o formulário
-
-            // Re-carrega o histórico de manutenção para atualizar a exibição
+            e.target.reset();
             await carregarManutencoes(veiculoId);
-
         } catch (error) {
-            // Agora o error.message pode conter os detalhes do erro de validação do Mongoose
             mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro');
         }
     });
 
-    // Event listener para o controle de volume
     document.getElementById('volume-control').addEventListener('input', e => {
         volumeAtual = parseFloat(e.target.value);
     });
-}); // Fim do document.addEventListener('DOMContentLoaded', ...)
+
+    // --- EVENT LISTENERS PARA O MODAL DE LOGIN ---
+    document.getElementById('form-login').addEventListener('submit', (e) => {
+        e.preventDefault();
+        // SIMULAÇÃO DE LOGIN BEM-SUCEDIDO
+        // Aqui você integraria com um backend de autenticação real
+        mostrarAlerta('Login realizado com sucesso! Bem-vindo(a) de volta!', 'info');
+        localStorage.setItem('usuarioLogado', 'true');
+        localStorage.removeItem('contagemDeUso'); // Reseta a contagem de uso após o login
+        fecharModalLogin();
+    });
+
+    document.getElementById('btn-continuar-sem-login').addEventListener('click', () => {
+        fecharModalLogin();
+    });
+});

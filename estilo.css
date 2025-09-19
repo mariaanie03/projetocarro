@@ -1,348 +1,526 @@
-/* style.css - Novo Tema Visual */
+/* Importação da fonte Poppins do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-/* ========================== */
-/* Estilos Gerais e Reset     */
-/* ========================== */
+/* Variáveis CSS para cores e sombras */
 :root {
-    --cor-fundo: #f4f6f8;
-    --cor-caixa: #ffffff;
-    --cor-texto-principal: #34495e;
-    --cor-texto-titulo: #2c3e50;
-    --cor-borda: #e0e4e8;
-    --cor-sombra: rgba(44, 62, 80, 0.1);
-    --cor-primaria: #1abc9c; /* Verde-água */
-    --cor-primaria-escura: #16a085;
-    --cor-perigo: #e74c3c; /* Vermelho suave */
-    --cor-perigo-escura: #c0392b;
-    --cor-info-fundo: #e8f8f5;
-    --cor-info-borda: #a3e4d7;
+    --cor-fundo-principal: #1a1a2e;
+    --cor-fundo-secundario: #16213e;
+    --cor-card: #0f3460;
+    --cor-borda: #e94560;
+    --cor-texto-principal: #e0e0e0;
+    --cor-texto-secundario: #a0a0a0;
+    --cor-sucesso: #28a745;
+    --cor-info: #17a2b8;
+    --cor-erro: #dc3545;
+    --sombra-leve: 0 4px 8px rgba(0, 0, 0, 0.2);
+    --sombra-media: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* Reset básico e estilos globais */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--cor-fundo-principal);
+    color: var(--cor-texto-principal);
     line-height: 1.6;
     padding: 20px;
-    background-color: var(--cor-fundo);
-    color: var(--cor-texto-principal);
-}
-
-h1, h2, h3 {
-    color: var(--cor-texto-titulo);
-    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
 }
 
 h1 {
+    color: var(--cor-borda);
     text-align: center;
     margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 600;
+    font-size: 2.5em;
+    text-shadow: var(--sombra-leve);
+}
+
+h2, h3, h4 {
+    color: var(--cor-borda);
+    margin-bottom: 15px;
+    text-align: center;
 }
 
 hr {
-    border: 0;
-    height: 1px;
-    background-color: var(--cor-borda);
-    margin: 25px 0;
+    border: none;
+    border-top: 1px solid var(--cor-fundo-secundario);
+    margin: 20px 0;
 }
 
-/* ========================== */
-/* Layout Principal (Grid)    */
-/* ========================== */
+/* Container principal da aplicação */
 .container {
     display: grid;
-    grid-template-columns: 1fr 2fr 1.5fr;
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    width: 100%;
     max-width: 1400px;
-    margin: 0 auto;
 }
 
+/* Estilos para as caixas de seção */
 .section-box {
-    background-color: var(--cor-caixa);
+    background-color: var(--cor-card);
     padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px var(--cor-sombra);
-    border: 1px solid var(--cor-borda);
+    border-radius: 10px;
+    box-shadow: var(--sombra-media);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
-/* ========================== */
-/* Estilos de Botões          */
-/* ========================== */
-button {
-    padding: 10px 18px;
-    cursor: pointer;
-    background-color: var(--cor-primaria);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 0.95em;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    border-bottom: 2px solid var(--cor-primaria-escura);
-    font-weight: 600;
+/* Formulários */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-button:hover {
-    background-color: var(--cor-primaria-escura);
-}
-
-button:active {
-    transform: translateY(1px);
-    border-bottom-width: 1px;
-}
-
-.btn-delete {
-    background-color: var(--cor-perigo);
-    border-bottom-color: var(--cor-perigo-escura);
-    padding: 5px 10px;
-    font-size: 0.8em;
-}
-.btn-delete:hover {
-    background-color: var(--cor-perigo-escura);
-}
-
-/* ========================== */
-/* Estilos de Formulários     */
-/* ========================== */
 form label {
-    display: block;
-    margin-bottom: 6px;
     font-weight: 500;
-    font-size: 0.9em;
+    color: var(--cor-texto-principal);
 }
 
-form select,
 form input[type="text"],
 form input[type="number"],
-form input[type="date"] 
-#cidade-previsao-select{
-    display: block;
-    width: 100%;
-    margin-bottom: 18px;
-    padding: 10px 12px;
-    border: 1px solid var(--cor-borda);
-    border-radius: 4px;
+form input[type="email"],
+form input[type="password"],
+form input[type="date"],
+form select {
+    padding: 10px;
+    border: 1px solid var(--cor-fundo-secundario);
+    border-radius: 5px;
+    background-color: var(--cor-fundo-principal);
+    color: var(--cor-texto-principal);
     font-size: 1em;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-form select:focus,
-form input:focus {
-    border-color: var(--cor-primaria);
-    outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.25);
-}
-
-form button[type="submit"] {
     width: 100%;
-    padding: 12px;
-    font-size: 1.05em;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* ========================== */
-/* Seção: Garagem Lista       */
-/* ========================== */
+form input:focus,
+form select:focus {
+    outline: none;
+    border-color: var(--cor-borda);
+    box-shadow: 0 0 0 2px rgba(var(--cor-borda), 0.5); /* Exemplo, ajuste a cor */
+}
+
+form button {
+    background-color: var(--cor-borda);
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 15px;
+}
+
+form button:hover {
+    background-color: #f0545f; /* Um pouco mais claro */
+    transform: translateY(-2px);
+}
+
+form button:active {
+    transform: translateY(0);
+}
+
+/* Botões da garagem (lista de veículos) */
 .lista-veiculos-db {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
+
 .lista-veiculos-db li {
-    padding: 12px 15px;
-    margin-bottom: 8px;
-    border: 1px solid var(--cor-borda);
+    background-color: var(--cor-fundo-secundario);
+    padding: 10px 15px;
     border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-.lista-veiculos-db li:hover {
-    background-color: #f8f9fa;
-    border-color: #ced4da;
-}
-.lista-veiculos-db li.selecionado {
-    background-color: var(--cor-info-fundo);
-    border-left: 4px solid var(--cor-primaria);
-    font-weight: 500;
-}
-
-/* ========================== */
-/* Seção: Display do Veículo  */
-/* ========================== */
-#informacoes-veiculo {
-    margin: 15px 0 25px 0;
-    padding: 20px;
-    background-color: var(--cor-info-fundo);
-    border-radius: 5px;
-    border-left: 5px solid var(--cor-primaria);
-    line-height: 1.7;
-}
-
-.status-ligado { color: #27ae60; font-weight: bold; }
-.status-desligado { color: #c0392b; font-weight: bold; }
-
-/* Velocímetro */
-#velocimetro {
-    width: 100%;
-    height: 18px;
-    appearance: none;
-    border-radius: 9px;
-    overflow: hidden;
-    border: 1px solid #bdc3c7;
-}
-#velocimetro::-webkit-progress-value {
-    background: linear-gradient(to right, #f1c40f, #e67e22, #e74c3c);
-}
-
-/* Alertas de Feedback */
-#alerta-container {
-    padding: 15px 20px;
-    border-radius: 5px;
-    font-weight: 500;
-    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
     border: 1px solid transparent;
-    margin-bottom: 15px;
-}
-.alerta-erro {
-    background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;
-}
-.alerta-info {
-    background-color: var(--cor-info-fundo); color: var(--cor-primaria-escura); border-color: var(--cor-info-borda);
 }
 
-/* ========================== */
-/* Seção: Extras e Manutenção */
-/* ========================== */
-.api-box {
-    font-size: 0.9em;
-    padding: 15px;
-    margin-top: 10px;
-    border-radius: 4px;
-    background-color: #f8f9fa;
-    border: 1px solid var(--cor-borda);
+.lista-veiculos-db li:hover {
+    background-color: #283a62;
+    box-shadow: var(--sombra-leve);
 }
-.api-erro {
-    color: var(--cor-perigo-escura);
+
+.lista-veiculos-db li.selecionado {
+    border-color: var(--cor-borda);
+    background-color: #2e4a86;
+    box-shadow: var(--sombra-media);
+}
+
+.veiculo-info {
+    flex-grow: 1;
+    color: var(--cor-texto-principal);
+    font-size: 1.1em;
     font-weight: 500;
 }
 
-/* ========================== */
-/* Responsividade             */
-/* ========================== */
-@media (max-width: 1200px) {
-    .container {
-        grid-template-columns: 1fr 1.8fr;
-        grid-template-areas: "selecao display" "manutencao manutencao";
-    }
-    .selecao-veiculo { grid-area: selecao; }
-    .display-veiculo { grid-area: display; }
-    .manutencao-veiculo { grid-area: manutencao; }
-}
-
-@media (max-width: 768px) {
-    .container {
-        grid-template-columns: 1fr;
-        grid-template-areas: "selecao" "display" "manutencao";
-    }
-}
-
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+.veiculo-actions {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    
-    /* Regras para esconder o modal corretamente */
-    opacity: 0;
-    visibility: hidden; /* Isso impede a interação com o elemento */
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal-overlay.visivel {
-    /* Regras para mostrar o modal */
-    opacity: 1;
-    visibility: visible; /* Torna o elemento visível e interativo */
-}
-
-.modal-content {
-    background: white;
-    padding: 30px 40px;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.visivel .modal-content {
-    transform: scale(1);
-}
-
-.modal-close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: transparent;
-    color: #888;
-    border: none;
-    font-size: 1.8em;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-}
-
-.modal-close:hover {
-    color: #333;
-    background-color: transparent;
-}
-.lista-veiculos-db li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 8px;
 }
 
 .veiculo-actions button {
-    margin-left: 8px;
-    padding: 6px 12px;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    margin-top: 0;
+    transition: all 0.2s ease;
+}
+
+.veiculo-actions .btn-edit {
+    background-color: var(--cor-info);
+}
+
+.veiculo-actions .btn-edit:hover {
+    background-color: #1a8fb1;
+}
+
+.veiculo-actions .btn-delete {
+    background-color: var(--cor-erro);
+}
+
+.veiculo-actions .btn-delete:hover {
+    background-color: #c82333;
+}
+
+/* Display do veículo selecionado */
+#informacoes-veiculo p {
+    margin-bottom: 5px;
+}
+
+#informacoes-veiculo p strong {
+    color: var(--cor-borda);
+}
+
+.status-ligado {
+    color: var(--cor-sucesso);
+    font-weight: bold;
+}
+
+.status-desligado {
+    color: var(--cor-erro);
+    font-weight: bold;
+}
+
+/* Velocímetro */
+#velocimetro-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+#velocimetro {
+    flex-grow: 1;
+    height: 20px;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: var(--cor-fundo-principal);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+#velocimetro::-webkit-progress-bar {
+    background-color: var(--cor-fundo-principal);
+}
+
+#velocimetro::-webkit-progress-value {
+    background-color: var(--cor-borda);
+    transition: width 0.5s ease-out;
+}
+
+#velocimetro::-moz-progress-bar {
+    background-color: var(--cor-borda);
+    transition: width 0.5s ease-out;
+}
+
+#velocidade-texto {
+    font-size: 1.2em;
+    font-weight: bold;
+    min-width: 80px; /* Garante que o texto não "dance" */
+    text-align: right;
+}
+
+/* Controles de ação do veículo */
+#controles-veiculo {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+#controles-veiculo button {
+    flex: 1 1 auto; /* Permite que os botões se ajustem e quebrem linha */
+    min-width: 100px;
+    max-width: 180px;
+    background-color: var(--cor-info);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 0; /* Override do estilo de form button */
+}
+
+#controles-veiculo button:hover {
+    background-color: #1a8fb1;
+    transform: translateY(-2px);
+}
+
+/* Estilos para o histórico de manutenção e formulário */
+#historico-manutencao {
+    background-color: var(--cor-fundo-secundario);
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,0.2);
+}
+
+.lista-manutencao {
+    list-style: none;
+    padding: 0;
+}
+
+.lista-manutencao li {
+    background-color: var(--cor-fundo-principal);
+    margin-bottom: 8px;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border-left: 5px solid var(--cor-borda);
+}
+
+.lista-manutencao li small {
+    color: var(--cor-texto-secundario);
     font-size: 0.85em;
 }
 
-.btn-edit {
-    background-color: #f39c12; /* Laranja */
-    border-bottom-color: #e67e22;
-}
-.btn-edit:hover {
-    background-color: #e67e22;
+#form-manutencao-container form {
+    margin-top: 15px;
 }
 
-/* Estilos do Modal */
+#form-manutencao-container form button {
+    background-color: var(--cor-sucesso);
+}
+
+#form-manutencao-container form button:hover {
+    background-color: #218838;
+}
+
+/* API Boxes (Previsão do Tempo e Dicas) */
+.api-box {
+    background-color: var(--cor-fundo-secundario);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    min-height: 100px; /* Garante um tamanho mínimo para visualização */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.api-box p {
+    color: var(--cor-texto-secundario);
+}
+
+.api-erro {
+    color: var(--cor-erro);
+    font-weight: bold;
+}
+
+/* Previsão do tempo */
+.lista-previsao-dias {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.lista-previsao-dias li {
+    background-color: var(--cor-fundo-principal);
+    padding: 10px;
+    border-radius: 8px;
+    width: 120px;
+    text-align: center;
+    box-shadow: var(--sombra-leve);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.lista-previsao-dias li img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 5px;
+}
+
+.lista-previsao-dias li .dia-info strong {
+    display: block;
+    color: var(--cor-borda);
+    font-size: 1.1em;
+}
+
+.lista-previsao-dias li .dia-info span {
+    font-size: 0.8em;
+    color: var(--cor-texto-secundario);
+    text-transform: capitalize;
+}
+
+.lista-previsao-dias li .dia-temp {
+    margin-top: 8px;
+    font-size: 0.9em;
+}
+.lista-previsao-dias li .dia-temp strong {
+    color: var(--cor-texto-principal);
+    font-size: 1.2em;
+}
+.lista-previsao-dias li .dia-temp span {
+    color: var(--cor-texto-secundario);
+}
+
+
+/* Dicas de Manutenção */
+#dicas-manutencao-container button {
+    background-color: var(--cor-info);
+}
+#dicas-manutencao-container button:hover {
+    background-color: #1a8fb1;
+}
+
+#dicas-resultado ul {
+    list-style: disc;
+    padding-left: 20px;
+    text-align: left;
+    color: var(--cor-texto-secundario);
+    font-size: 0.95em;
+}
+
+#dicas-resultado li {
+    margin-bottom: 5px;
+}
+
+/* Alertas globais */
+#alerta-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 1000;
+    box-shadow: var(--sombra-media);
+    opacity: 0; /* Inicia invisível */
+    transition: opacity 0.4s ease-in-out; /* Adiciona transição suave */
+    pointer-events: none; /* Não bloqueia cliques quando invisível */
+}
+
+#alerta-container.visivel {
+    opacity: 1; /* Torna visível */
+    pointer-events: auto; /* Permite interações (se houver alguma) */
+}
+
+.alerta-info {
+    background-color: var(--cor-info);
+}
+
+.alerta-erro {
+    background-color: var(--cor-erro);
+}
+
+/* Controles de Áudio */
+.audio-controls {
+    margin-top: 30px;
+    background-color: var(--cor-card);
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: var(--sombra-media);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.audio-controls label {
+    font-weight: 500;
+    color: var(--cor-texto-principal);
+}
+
+#volume-control {
+    flex-grow: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: var(--cor-fundo-principal);
+    outline: none;
+    border-radius: 5px;
+    transition: opacity .2s;
+}
+
+#volume-control::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--cor-borda);
+    cursor: pointer;
+    box-shadow: var(--sombra-leve);
+}
+
+#volume-control::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--cor-borda);
+    cursor: pointer;
+    box-shadow: var(--sombra-leve);
+}
+
+
+/* Modais (Edição e Login) */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.7);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 1001; /* Acima dos alertas */
 }
 
 .modal-overlay.visivel {
@@ -351,139 +529,120 @@ form button[type="submit"] {
 }
 
 .modal-content {
-    background: white;
-    padding: 30px 40px;
-    border-radius: 8px;
+    background-color: var(--cor-card);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: var(--sombra-media);
     width: 90%;
     max-width: 500px;
     position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.visivel .modal-content {
+    transform: translateY(0);
+}
+
+.modal-content h2 {
+    color: var(--cor-borda);
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 .modal-close {
     position: absolute;
-    top: 10px;
+    top: 15px;
     right: 15px;
-    background: transparent;
-    color: #888;
+    background: none;
     border: none;
     font-size: 1.8em;
+    color: var(--cor-texto-secundario);
     cursor: pointer;
-    padding: 0;
-    line-height: 1;
+    transition: color 0.2s ease;
 }
 
 .modal-close:hover {
-    color: #333;
-    background-color: transparent; /* Garante que não pegue o hover do botão padrão */
+    color: var(--cor-borda);
+}
+
+.modal-content form button.btn-secondary {
+    background-color: var(--cor-fundo-secundario);
+    color: var(--cor-texto-principal);
+    margin-top: 10px;
+}
+.modal-content form button.btn-secondary:hover {
+    background-color: #283a62;
 }
 
 
+/* Media Queries para responsividade */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2em;
+    }
 
-#previsao-tempo-container .api-box {
-    padding: 10px 15px;
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .section-box {
+        padding: 20px;
+    }
+
+    .veiculo-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .veiculo-actions button {
+        width: 100%;
+        max-width: none;
+    }
+
+    #controles-veiculo button {
+        min-width: unset;
+        flex: 1 1 45%; /* 2 colunas */
+    }
+
+    .lista-previsao-dias {
+        gap: 10px;
+    }
+
+    .lista-previsao-dias li {
+        width: 100px;
+        padding: 8px;
+    }
+
+    .audio-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #modal-login .modal-content {
+        padding: 20px;
+    }
 }
 
-#previsao-resultado .previsao-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-}
-
-#previsao-resultado .previsao-header img {
-    width: 45px;
-    height: 45px;
-    background-color: #e0f0ff;
-    border-radius: 50%;
-}
-
-#previsao-resultado .previsao-info {
-    display: flex;
-    flex-direction: column;
-    text-align: left;
-}
-
-#previsao-resultado .previsao-info strong {
-    font-size: 1.15em;
-    color: var(--cor-texto-titulo);
-}
-
-#previsao-resultado .previsao-info span {
-    font-size: 0.9em;
-    font-weight: 500;
-}
-
-#form-buscar-previsao {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-#form-buscar-previsao input {
-    flex-grow: 1; /* Faz o input ocupar o espaço disponível */
-    margin-bottom: 0;
-}
-
-#form-buscar-previsao button {
-    white-space: nowrap; /* Impede que o texto do botão quebre linha */
-}
-
-/* Estilos para a lista de previsão de 5 dias */
-#previsao-resultado h4 {
-    text-align: center;
-    margin-bottom: 15px;
-    color: var(--cor-texto-titulo);
-}
-
-.lista-previsao-dias {
-    list-style: none;
-    padding: 0;
-}
-
-.lista-previsao-dias li {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--cor-borda);
-}
-
-.lista-previsao-dias li:last-child {
-    border-bottom: none;
-}
-
-.lista-previsao-dias img {
-    width: 40px;
-    height: 40px;
-    margin-right: 15px;
-}
-
-.lista-previsao-dias .dia-info {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.lista-previsao-dias .dia-info strong {
-    font-weight: 600;
-}
-
-.lista-previsao-dias .dia-info span {
-    font-size: 0.9em;
-    color: #7f8c8d;
-}
-
-.lista-previsao-dias .dia-temp {
-    text-align: right;
-}
-
-.lista-previsao-dias .dia-temp strong {
-    font-size: 1.1em;
-    font-weight: 600;
-}
-
-.lista-previsao-dias .dia-temp span {
-    margin-left: 8px;
-    color: #7f8c8d;
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+    h1 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    .section-box {
+        padding: 15px;
+    }
+    form button {
+        padding: 10px 15px;
+        font-size: 1em;
+    }
+    #controles-veiculo button {
+        flex: 1 1 100%; /* 1 coluna */
+    }
+    .lista-previsao-dias li {
+        width: 100%; /* Ocupa a largura total */
+    }
 }
