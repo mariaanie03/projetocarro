@@ -14,10 +14,13 @@ import axios from 'axios';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
+import bcrypt from 'bcryptjs';        // <-- Nova importação
+import jwt from 'jsonwebtoken';       // <-- Nova importação
 
 // Importação dos modelos do Mongoose
 import Veiculo from './models/Veiculo.js';
 import Manutencao from './models/Manutencao.js';
+import User from './models/User.js';  // <-- Nova importação
 
 // =======================================================
 // ----- CONFIGURAÇÃO INICIAL -----
@@ -28,6 +31,13 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Chave secreta para JWT
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    console.error("❌ [ERRO FATAL] JWT_SECRET não configurado no .env! O sistema de autenticação não funcionará.");
+    process.exit(1);
+}
 
 // Rate Limiter para todas as requisições da API
 const apiLimiter = rateLimit({
@@ -43,6 +53,14 @@ const createVehicleLimiter = rateLimit({
     message: 'Você atingiu o limite de criação de veículos. Por favor, tente novamente mais tarde.'
 });
 
+// Rate Limiter para autenticação (registro e login)
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 50, // Limita cada IP a 50 tentativas de autenticação/registro em 15 minutos
+    message: 'Muitas tentativas de autenticação ou registro, por favor, tente novamente mais tarde.'
+});
+
+
 // =======================================================
 // ----- CONEXÃO COM O BANCO DE DADOS -----
 // =======================================================
@@ -57,11 +75,13 @@ mongoose.connect(process.env.MONGO_URI_CRUD).then(() => {
 // ----- MIDDLEWARES E DADOS ESTÁTICOS -----
 // =======================================================
 app.use(helmet()); // Para configurar cabeçalhos de segurança HTTP
-app.use('/api/', apiLimiter); // PRIMEIRO USO do apiLimiter (mantido)
 app.use(cors()); // Permite requisições de outras origens
 app.use(express.json({ limit: '10kb' })); // Permite o parsing de JSON no corpo da requisição, com limite de tamanho
 app.use(express.static(__dirname)); // Serve arquivos estáticos da pasta raiz
-app.use('/api/', apiLimiter); // SEGUNDO USO do apiLimiter (mantido, conforme solicitado)
+
+// APLICAÇÃO DO API LIMITER (UMA ÚNICA VEZ para rotas /api/ não-auth)
+app.use('/api/', apiLimiter);
+// REMOVA A LINHA DUPLICADA app.use('/api/', apiLimiter); se não tiver feito ainda.
 
 // Carrega os dados do arquivo JSON para as dicas
 let dados = {};
@@ -72,17 +92,121 @@ try {
     console.error('[Servidor ERRO] Não foi possível carregar dados.json:', error);
 }
 
+
+// =======================================================
+// ----- MIDDLEWARE DE AUTENTICAÇÃO (JWT) -----
+// =======================================================
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1]; // Formato: Bearer TOKEN
+
+    if (token == null) {
+        console.warn('⚠️ Tentativa de acesso não autorizado: Nenhum token fornecido.');
+        return res.status(401).json({ message: 'Acesso não autorizado: Nenhum token fornecido.' });
+    }
+
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            console.warn('⚠️ Token inválido ou expirado:', err.message);
+            return res.status(403).json({ message: 'Token inválido ou expirado.' });
+        }
+        req.user = user; // Adiciona os dados do usuário (do token) ao objeto da requisição
+        next();
+    });
+};
+
+// Exemplo de como proteger uma rota:
+// app.get('/api/veiculos', authenticateToken, async (req, res) => { /* ... */ });
+
+
 // =======================================================
 // ----- ROTAS DA API -----
 // =======================================================
+
+// --- ROTAS DE AUTENTICAÇÃO ---
+app.post('/api/auth/register', authLimiter, [
+    body('email', 'Email inválido').isEmail().normalizeEmail(),
+    body('password', 'A senha deve ter no mínimo 6 caracteres.').isLength({ min: 6 })
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array().map(err => err.msg) });
+    }
+
+    const { email, password } = req.body;
+    try {
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(409).json({ message: 'Este email já está registrado.' });
+        }
+
+        user = new User({ email, password }); // A senha será hashada no middleware pre-save
+        await user.save();
+
+        // Gera token para o novo usuário já logado
+        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(201).json({ message: 'Usuário registrado com sucesso!', token, email: user.email });
+    } catch (error) {
+        console.error('❌ Erro no registro de usuário:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao registrar o usuário.' });
+    }
+});
+
+app.post('/api/auth/login', authLimiter, [
+    body('email', 'Email inválido').isEmail().normalizeEmail(),
+    body('password', 'A senha é obrigatória.').not().isEmpty()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array().map(err => err.msg) });
+    }
+
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Credenciais inválidas.' });
+        }
+
+        const isMatch = await user.comparePassword(password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Credenciais inválidas.' });
+        }
+
+        const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+
+        res.status(200).json({ message: 'Login realizado com sucesso!', token, email: user.email });
+    } catch (error) {
+        console.error('❌ Erro no login de usuário:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao fazer login.' });
+    }
+});
+
+// Rota para verificar a validade do token e retornar dados básicos do usuário
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+    try {
+        // req.user é populado pelo middleware authenticateToken
+        const user = await User.findById(req.user.id).select('-password'); // Não retorna a senha
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+        res.status(200).json({ user: { id: user._id, email: user.email } });
+    } catch (error) {
+        console.error('❌ Erro ao verificar token/buscar usuário:', error);
+        res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
+});
+
 
 // --- ROTAS CRUD PARA VEÍCULOS ---
 
 // CRIAR um novo Veículo
 app.post('/api/veiculos',
-    createVehicleLimiter, // Aplica o limitador específico para criação
+    // Opcional: proteja esta rota com authenticateToken
+    // authenticateToken,
+    createVehicleLimiter,
     [
-        // Validação e sanitização do express-validator
         body('placa', 'Formato de placa inválido. Use 3 letras, 1 número, 1 letra, 2 números (Ex: ABC1D23) OU 3 letras e 4 números (Ex: ABC1234).')
             .matches(/^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$/)
             .trim()
@@ -96,7 +220,6 @@ app.post('/api/veiculos',
         body('tipo', 'Tipo de veículo inválido. Escolha entre Carro, CarroEsportivo ou Caminhao.').isIn(['Carro', 'CarroEsportivo', 'Caminhao'])
     ],
     async (req, res) => {
-        // Verifica se houve erros de validação do express-validator
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
             console.log('🚨 Erros de validação ao criar veículo:', errors.array());
@@ -113,7 +236,6 @@ app.post('/api/veiculos',
                 return res.status(409).json({ message: 'Erro: A placa informada já existe.' });
             }
             if (error.name === 'ValidationError') {
-                // Erros de validação do Mongoose (caso algo passe pelo express-validator mas falhe no Mongoose)
                 console.error('🚫 Erro de validação Mongoose:', error.message);
                 const errorMessages = Object.values(error.errors).map(e => e.message).join('; ');
                 return res.status(400).json({ message: `Erro de validação no banco de dados: ${errorMessages}` });
@@ -143,14 +265,15 @@ app.get('/api/veiculos', async (req, res) => {
 
 // ATUALIZAR um Veículo existente
 app.put('/api/veiculos/:id',
+    // Opcional: proteja esta rota com authenticateToken
+    // authenticateToken,
     [
-        // Validação e sanitização para atualização
         body('placa', 'Formato de placa inválido. Use 3 letras, 1 número, 1 letra, 2 números (Ex: ABC1D23) OU 3 letras e 4 números (Ex: ABC1234).')
             .matches(/^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$/)
             .trim()
             .toUpperCase(),
         body('marca', 'A marca é obrigatória e não pode estar vazia.').not().isEmpty().trim().escape(),
-        body('modelo', 'O modelo é obrigatório e não pode estar vazio.').not().isEmpty().trim().escape(),
+        body('modelo', 'O modelo é obrigatório e não pode estar vazia.').not().isEmpty().trim().escape(),
         body('ano', `O ano deve ser um número inteiro válido entre 1900 e ${new Date().getFullYear() + 2}.`)
             .isInt({ min: 1900, max: new Date().getFullYear() + 2 })
             .toInt(),
@@ -193,7 +316,6 @@ app.delete('/api/veiculos/:id', async (req, res) => {
         const resultado = await Veiculo.findByIdAndDelete(id);
         if (!resultado) return res.status(404).json({ message: "Veículo não encontrado." });
 
-        // Também deleta todas as manutenções associadas a este veículo
         await Manutencao.deleteMany({ veiculo: id });
 
         res.status(200).json({ message: `Veículo ${resultado.placa} e seu histórico foram deletados.` });
@@ -274,7 +396,6 @@ app.get('/api/dicas-manutencao/:tipoVeiculo', (req, res) => {
     const chaveJson = mapeamentoTipos[tipoVeiculo.toLowerCase()];
 
     if (chaveJson && dados.dicasManutencao && dados.dicasManutencao[chaveJson]) {
-        // Retorna as dicas gerais e as específicas do tipo, se houver
         const dicasGerais = dados.dicasManutencao.geral || [];
         const dicasEspecificas = dados.dicasManutencao[chaveJson] || [];
         return res.json([...dicasGerais, ...dicasEspecificas]);
@@ -311,9 +432,7 @@ app.get('/api/previsao', async (req, res) => {
             if (!previsoesPorDia[dia]) {
                 previsoesPorDia[dia] = { diaSemana: dia.charAt(0).toUpperCase() + dia.slice(1), temps: [], descricoes: {}, icones: {} };
             }
-            // Conta as ocorrências de cada descrição para pegar a mais frequente
             previsoesPorDia[dia].temps.push(item.main.temp);
-            // Conta as ocorrências de cada ícone
             previsoesPorDia[dia].descricoes[item.weather[0].description] = (previsoesPorDia[dia].descricoes[item.weather[0].description] || 0) + 1;
             previsoesPorDia[dia].icones[item.weather[0].icon] = (previsoesPorDia[dia].icones[item.weather[0].icon] || 0) + 1;
         });
@@ -322,9 +441,7 @@ app.get('/api/previsao', async (req, res) => {
             dia: diaInfo.diaSemana,
             temp_min: Math.round(Math.min(...diaInfo.temps)),
             temp_max: Math.round(Math.max(...diaInfo.temps)),
-            // Pega a descrição mais frequente
             descricao: Object.keys(diaInfo.descricoes).reduce((a, b) => diaInfo.descricoes[a] > diaInfo.descricoes[b] ? a : b),
-            // Pega o ícone mais frequente
             icone: `http://openweathermap.org/img/wn/${Object.keys(diaInfo.icones).reduce((a, b) => diaInfo.icones[a] > diaInfo.icones[b] ? a : b)}.png`
         }));
 

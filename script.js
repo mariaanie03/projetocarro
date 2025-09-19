@@ -50,11 +50,6 @@ class Veiculo {
     buzinar() {
         tocarSomVeiculo('buzina');
     }
-
-    // REMOVIDO: O método exibirInformacoes não é mais usado diretamente, a lógica foi movida para atualizarDisplayVeiculo.
-    // exibirInformacoes() {
-    //     return `<p><strong>Placa:</strong> ${this.placa}</p><p><strong>Marca:</strong> ${this.marca}</p><p><strong>Tipo:</strong> ${this.tipo}</p><p><strong>Status:</strong> <span class="status-${this.ligado ? 'ligado' : 'desligado'}">${this.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span></p>`;
-    // }
 }
 
 class Carro extends Veiculo {
@@ -88,10 +83,6 @@ class CarroEsportivo extends Carro {
     acelerar(incBase = 15) {
         super.acelerar(this.turboAtivado ? incBase * 1.8 : incBase);
     }
-    // REMOVIDO: O método exibirInformacoes não é mais usado diretamente, a lógica foi movida para atualizarDisplayVeiculo.
-    // exibirInformacoes() {
-    //     return `${super.exibirInformacoes()}<p><strong>Turbo:</strong> <span class="status-${this.turboAtivado ? 'ligado' : 'desligado'}">${this.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span></p>`;
-    // }
 }
 
 class Caminhao extends Veiculo {
@@ -110,6 +101,8 @@ let garagemDB = [],
     veiculoAtual = null,
     alertaTimeout = null,
     volumeAtual = 0.5;
+let authMode = 'login'; // 'login' ou 'register' para o modal de autenticação
+
 
 // =================================================================================
 // --- FUNÇÕES DE API ---
@@ -159,9 +152,7 @@ async function buscarEExibirVeiculos() {
             item.appendChild(infoSpan);
             item.appendChild(actionsDiv);
 
-            // Adiciona o listener de clique no item inteiro (para selecionar)
             item.addEventListener('click', (event) => {
-                // Impede que o clique nos botões de ação selecione o veículo
                 if (!event.target.closest('button')) {
                     selecionarVeiculo(veiculoData._id);
                 }
@@ -174,7 +165,6 @@ async function buscarEExibirVeiculos() {
         mostrarAlerta(error.message, 'erro');
     }
 }
-
 
 async function selecionarVeiculo(veiculoId) {
     const veiculoData = garagemDB.find(v => v._id === veiculoId);
@@ -193,8 +183,6 @@ async function selecionarVeiculo(veiculoId) {
         default:
             return;
     }
-    // Copia as propriedades do objeto do banco de dados para a instância
-    // Incluindo o historicoManutencao que já vem populado do backend
     Object.assign(veiculoAtual, veiculoData);
     await carregarManutencoes(veiculoId);
     atualizarDisplayVeiculo();
@@ -232,8 +220,7 @@ function atualizarDisplayVeiculo() {
 
     nomeVeiculoEl.textContent = `${veiculoAtual.marca} ${veiculoAtual.modelo}`;
     
-    // --- INÍCIO DA VERSÃO SEGURA PARA EXIBIR INFORMAÇÕES (MANTIDA) ---
-    infoVeiculoEl.innerHTML = ''; // Limpa o conteúdo anterior
+    infoVeiculoEl.innerHTML = '';
 
     const criarInfoLinha = (label, value) => {
         const p = document.createElement('p');
@@ -257,7 +244,6 @@ function atualizarDisplayVeiculo() {
         pTurbo.innerHTML = `<strong>Turbo: </strong><span class="status-${veiculoAtual.turboAtivado ? 'ligado' : 'desligado'}">${veiculoAtual.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span>`;
         infoVeiculoEl.appendChild(pTurbo);
     }
-    // --- FIM DA VERSÃO SEGURA ---
 
     velocimetro.value = veiculoAtual.velocidade;
     velocimetro.max = veiculoAtual.velocidadeMaxima;
@@ -305,19 +291,16 @@ function mostrarAlerta(mensagem, tipo = 'info') {
     if (alertaTimeout) clearTimeout(alertaTimeout);
 
     alertaContainer.textContent = mensagem;
-    alertaContainer.className = `alerta-${tipo}`; // Define o tipo de estilo (info, erro)
+    alertaContainer.className = `alerta-${tipo}`;
 
-    // Adiciona a classe 'visivel' para iniciar a transição de entrada
     alertaContainer.classList.add('visivel');
 
     alertaTimeout = setTimeout(() => {
-        // Remove a classe 'visivel' para iniciar a transição de saída
         alertaContainer.classList.remove('visivel');
-        // Após a transição de saída, limpa o texto
         setTimeout(() => {
             alertaContainer.textContent = '';
-        }, 400); // Deve ser o mesmo tempo da transição CSS
-    }, 4000); // Tempo que o alerta fica visível antes de começar a desaparecer
+        }, 400);
+    }, 4000);
 }
 
 function tocarSomVeiculo(acao) {
@@ -360,33 +343,118 @@ function fecharModalEdicao() {
 }
 
 // =================================================================================
-// --- FUNÇÕES DE LOGIN E CONTROLE DE USO (NOVAS) ---
+// --- FUNÇÕES DE AUTENTICAÇÃO E CONTROLE DE USO (NOVAS/ATUALIZADAS) ---
 // =================================================================================
-function abrirModalLogin() {
-    document.getElementById('modal-login').classList.add('visivel');
+function abrirModalAuth(mode = 'login') {
+    authMode = mode;
+    const modal = document.getElementById('modal-login'); // ID do modal de autenticação
+    const title = document.getElementById('auth-form-title');
+    const subtitle = document.getElementById('auth-form-subtitle');
+    const submitBtn = document.getElementById('btn-submit-auth');
+    const toggleLink = document.getElementById('link-toggle-auth');
+
+    if (authMode === 'login') {
+        title.textContent = 'Acesse sua Garagem';
+        subtitle.textContent = 'Faça login para salvar suas manutenções e acessar recursos exclusivos.';
+        submitBtn.textContent = 'Entrar';
+        toggleLink.textContent = 'Não tem uma conta? Registre-se';
+        toggleLink.onclick = () => abrirModalAuth('register');
+    } else { // 'register'
+        title.textContent = 'Crie sua Conta';
+        subtitle.textContent = 'Registre-se para começar a usar todos os recursos!';
+        submitBtn.textContent = 'Registrar';
+        toggleLink.textContent = 'Já tem uma conta? Faça login';
+        toggleLink.onclick = () => abrirModalAuth('login');
+    }
+    modal.classList.add('visivel');
 }
 
-function fecharModalLogin() {
+function fecharModalAuth() {
     document.getElementById('modal-login').classList.remove('visivel');
+    document.getElementById('form-auth').reset(); // Limpa o formulário
 }
 
-function verificarLoginEContagemDeUso() {
-    const usuarioLogado = localStorage.getItem('usuarioLogado') === 'true';
+// Lógica para logout
+function logout() {
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userEmail'); // Limpa email do usuário
+    localStorage.setItem('usuarioLogado', 'false'); // Marca como deslogado
+    localStorage.removeItem('contagemDeUso'); // Opcional: resetar contagem de uso no logout
 
-    if (usuarioLogado) return;
+    mostrarAlerta('Logout realizado com sucesso!', 'info');
+    updateHeaderAuthButton(); // Atualiza o botão no topo
+    // Opcional: recarregar a página ou re-inicializar algumas partes do app
+}
+
+// Função para atualizar o botão de Login/Logout no cabeçalho
+function updateHeaderAuthButton() {
+    const btnLoginTopo = document.getElementById('btn-abrir-login-topo');
+    const userEmail = localStorage.getItem('userEmail');
+
+    if (localStorage.getItem('jwtToken') && localStorage.getItem('usuarioLogado') === 'true') {
+        btnLoginTopo.textContent = `Olá, ${userEmail || 'Usuário'} (Sair)`;
+        btnLoginTopo.classList.add('btn-logout'); // Adiciona classe para estilo de logout se quiser
+        btnLoginTopo.onclick = logout; // Ao clicar, faz logout
+    } else {
+        btnLoginTopo.textContent = 'Login';
+        btnLoginTopo.classList.remove('btn-logout');
+        btnLoginTopo.onclick = () => abrirModalAuth('login'); // Ao clicar, abre o modal de login
+    }
+}
+
+// Chamada para verificar status de autenticação na inicialização
+async function checkAuthStatus() {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+        try {
+            // Tenta verificar o token no backend
+            const response = await fetch('/api/auth/me', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('usuarioLogado', 'true');
+                localStorage.setItem('userEmail', data.user.email);
+                localStorage.removeItem('contagemDeUso'); // Resetar contagem se o login persistiu
+                updateHeaderAuthButton();
+                // mostrarAlerta(`Bem-vindo de volta, ${data.user.email}!`, 'info'); // Opcional
+            } else {
+                // Token inválido ou expirado
+                console.log('Token expirado ou inválido. Realize o login novamente.');
+                logout(); // Força o logout no frontend
+            }
+        } catch (error) {
+            console.error('Erro ao verificar token:', error);
+            logout(); // Força o logout em caso de erro de rede, etc.
+        }
+    } else {
+        // Se não há token, inicia o tracking de uso
+        initializeUsageTracking();
+    }
+}
+
+
+// Lógica de tracking de uso para não logados
+function initializeUsageTracking() {
+    if (localStorage.getItem('usuarioLogado') === 'true') return; // Não rastreia se já logado
 
     let contagemDeUso = parseInt(localStorage.getItem('contagemDeUso'), 10) || 0;
+    contagemDeUso++;
+    localStorage.setItem('contagemDeUso', contagemDeUso);
 
-    if (contagemDeUso >= 5) {
-        abrirModalLogin();
-    } else {
-        contagemDeUso++;
-        localStorage.setItem('contagemDeUso', contagemDeUso);
-        
-        const usosRestantes = 5 - contagemDeUso + 1; // +1 porque a contagem já foi incrementada
-        if (usosRestantes > 0 && usosRestantes <= 5) { // Só mostra o alerta se ainda houver usos "restantes" antes de 5
-            mostrarAlerta(`Você pode usar o app mais ${usosRestantes} vez(es) antes de pedirmos para você fazer login.`, 'info');
+    const LIMITE_USOS_SEM_LOGIN = 5;
+
+    if (contagemDeUso < LIMITE_USOS_SEM_LOGIN) {
+        const usosRestantes = LIMITE_USOS_SEM_LOGIN - contagemDeUso;
+        if (usosRestantes > 0) { // Garante que a mensagem só aparece antes de 5
+             mostrarAlerta(`Você pode usar o app mais ${usosRestantes} vez(es) antes de sugerirmos o login.`, 'info');
         }
+    } else if (contagemDeUso === LIMITE_USOS_SEM_LOGIN) {
+        mostrarAlerta('Você utilizou o app 5 vezes. Considere fazer login para salvar seu progresso!', 'info');
+        abrirModalAuth('login'); // Abre o modal para sugerir o login
     }
 }
 
@@ -395,10 +463,16 @@ function verificarLoginEContagemDeUso() {
 // --- PONTO DE ENTRADA E EVENT LISTENERS ---
 // =================================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Primeiro, verifica o status de autenticação (se já tem token válido)
+    checkAuthStatus();
     buscarEExibirVeiculos();
     
-    // --- PONTO DE ENTRADA DO CONTROLE DE LOGIN ---
-    verificarLoginEContagemDeUso();
+    // Event listener para o botão de login/logout no topo
+    const btnAbrirLoginTopo = document.getElementById('btn-abrir-login-topo');
+    if (btnAbrirLoginTopo) {
+        // A função onclick é definida por updateHeaderAuthButton()
+        // e mudará dependendo do estado de login.
+    }
 
     document.getElementById('form-buscar-previsao').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -426,11 +500,18 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('cor-veiculo').value
         };
         try {
-            await buscarApi('/api/veiculos', {
+            // Adicionar token ao header se a rota de veículos for protegida no futuro
+            const options = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(novoVeiculo)
-            });
+            };
+            const token = localStorage.getItem('jwtToken');
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+            
+            await buscarApi('/api/veiculos', options);
             mostrarAlerta('Veículo adicionado com sucesso!', 'info');
             await buscarEExibirVeiculos();
             e.target.reset();
@@ -441,13 +522,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('botoes-veiculo').addEventListener('click', async (event) => {
         const target = event.target.closest('button');
-        if (!target) return; // Se clicou na LI mas não no botão, sai. A seleção é feita no item.addEventListener.
+        if (!target) return;
         
         const veiculoId = target.dataset.id;
+        const options = { method: 'DELETE' };
+        const token = localStorage.getItem('jwtToken');
+        if (token) {
+            options.headers = { 'Authorization': `Bearer ${token}` };
+        }
+
         if (target.classList.contains('btn-delete')) {
             if (confirm('Tem certeza que deseja excluir este veículo e todo o seu histórico?')) {
                 try {
-                    await buscarApi(`/api/veiculos/${veiculoId}`, { method: 'DELETE' });
+                    await buscarApi(`/api/veiculos/${veiculoId}`, options);
                     mostrarAlerta('Veículo excluído com sucesso.', 'info');
                     if (veiculoAtual && veiculoAtual._id === veiculoId) desselecionarVeiculo();
                     await buscarEExibirVeiculos();
@@ -458,7 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (target.classList.contains('btn-edit')) {
             abrirModalEdicao(veiculoId);
         }
-        // A lógica de selecionar veículo ao clicar no veiculo-info agora está no item.addEventListener em buscarEExibirVeiculos
     });
 
     document.getElementById('form-edit-veiculo').addEventListener('submit', async (e) => {
@@ -473,11 +559,17 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('edit-cor-veiculo').value
         };
         try {
-            await buscarApi(`/api/veiculos/${id}`, {
+            const options = {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosAtualizados)
-            });
+            };
+            const token = localStorage.getItem('jwtToken');
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            await buscarApi(`/api/veiculos/${id}`, options);
             fecharModalEdicao();
             mostrarAlerta('Veículo atualizado com sucesso!', 'info');
             await buscarEExibirVeiculos();
@@ -518,11 +610,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const veiculoId = veiculoAtual._id;
         try {
-            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, {
+            const options = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosFormulario)
-            });
+            };
+            const token = localStorage.getItem('jwtToken');
+            if (token) {
+                options.headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, options);
             mostrarAlerta('Manutenção registrada com sucesso!', 'info');
             e.target.reset();
             await carregarManutencoes(veiculoId);
@@ -535,18 +633,59 @@ document.addEventListener('DOMContentLoaded', () => {
         volumeAtual = parseFloat(e.target.value);
     });
 
-    // --- EVENT LISTENERS PARA O MODAL DE LOGIN ---
-    document.getElementById('form-login').addEventListener('submit', (e) => {
+    // --- EVENT LISTENER PRINCIPAL PARA O FORMULÁRIO DE AUTENTICAÇÃO ---
+    document.getElementById('form-auth').addEventListener('submit', async (e) => {
         e.preventDefault();
-        // SIMULAÇÃO DE LOGIN BEM-SUCEDIDO
-        // Aqui você integraria com um backend de autenticação real
-        mostrarAlerta('Login realizado com sucesso! Bem-vindo(a) de volta!', 'info');
-        localStorage.setItem('usuarioLogado', 'true');
-        localStorage.removeItem('contagemDeUso'); // Reseta a contagem de uso após o login
-        fecharModalLogin();
+        const email = document.getElementById('auth-email').value;
+        const password = document.getElementById('auth-password').value;
+
+        try {
+            let response;
+            if (authMode === 'login') {
+                response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+            } else { // register
+                response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+            }
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                const errorMessage = data.message || (data.errors ? data.errors.join(', ') : 'Erro desconhecido.');
+                throw new Error(errorMessage);
+            }
+
+            localStorage.setItem('jwtToken', data.token);
+            localStorage.setItem('userEmail', data.email);
+            localStorage.setItem('usuarioLogado', 'true');
+            localStorage.removeItem('contagemDeUso');
+            mostrarAlerta(data.message, 'sucesso');
+            fecharModalAuth();
+            updateHeaderAuthButton();
+        } catch (error) {
+            mostrarAlerta(`Erro de autenticação: ${error.message}`, 'erro');
+        }
     });
 
+    // Event Listener para alternar entre Login e Registro
+    document.getElementById('link-toggle-auth').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (authMode === 'login') {
+            abrirModalAuth('register');
+        } else {
+            abrirModalAuth('login');
+        }
+    });
+
+    // Event Listener para o botão 'Continuar sem login' no modal
     document.getElementById('btn-continuar-sem-login').addEventListener('click', () => {
-        fecharModalLogin();
+        fecharModalAuth();
     });
 });

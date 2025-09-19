@@ -10,7 +10,10 @@
     <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-    <h1>Garagem Virtual Interativa</h1>
+    <header class="app-header">
+        <h1>Garagem Virtual Interativa</h1>
+        <button id="btn-abrir-login-topo" class="btn-header-login">Login</button>
+    </header>
 
     <div class="container">
         <!-- SEÇÃO 1: GARAGEM E FORMULÁRIO -->
@@ -36,7 +39,6 @@
                 <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca" required>
                 <label for="ano-veiculo">Ano:</label>
                 <input type="number" id="ano-veiculo" placeholder="Ex: 1975" required min="1900">
-                <!-- O CAMPO "ANO" DUPLICADO FOI REMOVIDO DAQUI -->
                 <label for="cor-veiculo">Cor:</label>
                 <input type="text" id="cor-veiculo" placeholder="Ex: Azul" required>
                 <button type="submit">Adicionar à Garagem</button>
@@ -46,7 +48,7 @@
         <!-- SEÇÃO 2: DISPLAY E INTERAÇÃO -->
         <div class="display-veiculo section-box">
             <h2>Veículo Selecionado: <span id="nome-veiculo-selecionado">Nenhum</span></h2>
-            <div id="alerta-container"></div> <!-- Removido style="display: none;" para que a classe .visivel controle -->
+            <div id="alerta-container"></div>
             <div id="informacoes-veiculo">
                 <p>Selecione um veículo na garagem.</p>
             </div>
@@ -115,23 +117,28 @@
     </div>
 
     <!-- ================================== -->
-    <!-- MODAL DE LOGIN                     -->
+    <!-- MODAL DE LOGIN/REGISTRO            -->
     <!-- ================================== -->
     <div id="modal-login" class="modal-overlay">
         <div class="modal-content">
-            <h2>Acesse sua Garagem</h2>
-            <p style="margin-bottom: 20px; color: var(--cor-texto-secundario); text-align: center;">Faça login para salvar suas manutenções e acessar recursos exclusivos.</p>
+            <button class="modal-close" onclick="fecharModalAuth()">&times;</button>
+            <h2 id="auth-form-title">Acesse sua Garagem</h2>
+            <p id="auth-form-subtitle" style="margin-bottom: 20px; color: var(--cor-texto-secundario); text-align: center;">Faça login ou registre-se para salvar suas manutenções e acessar recursos exclusivos.</p>
             
-            <form id="form-login">
-                <label for="login-email">Email:</label>
-                <input type="email" id="login-email" placeholder="seu@email.com" required>
+            <form id="form-auth">
+                <label for="auth-email">Email:</label>
+                <input type="email" id="auth-email" placeholder="seu@email.com" required>
                 
-                <label for="login-senha">Senha:</label>
-                <input type="password" id="login-senha" placeholder="••••••••" required>
+                <label for="auth-password">Senha:</label>
+                <input type="password" id="auth-password" placeholder="••••••••" required>
                 
-                <button type="submit">Entrar</button>
+                <button type="submit" id="btn-submit-auth">Entrar</button>
             </form>
             
+            <p style="text-align: center; margin-top: 15px;">
+                <a href="#" id="link-toggle-auth" class="text-link">Não tem uma conta? Registre-se</a>
+            </p>
+
             <hr>
             
             <button id="btn-continuar-sem-login" class="btn-secondary" style="background: var(--cor-borda); color: var(--cor-texto-principal); width: 100%;">
