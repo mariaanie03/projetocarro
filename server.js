@@ -14,13 +14,14 @@ import axios from 'axios';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { body, validationResult } from 'express-validator';
-import bcrypt from 'bcryptjs';        // <-- Nova importação
-import jwt from 'jsonwebtoken';       // <-- Nova importação
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Importação dos modelos do Mongoose
 import Veiculo from './models/Veiculo.js';
 import Manutencao from './models/Manutencao.js';
-import User from './models/User.js';  // <-- Nova importação
+import User from './models/User.js';
+import RemovedVehicleLog from './models/RemovedVehicleLog.js'; // <-- NOVA IMPORTAÇÃO: Importa o novo modelo
 
 // =======================================================
 // ----- CONFIGURAÇÃO INICIAL -----
@@ -74,14 +75,13 @@ mongoose.connect(process.env.MONGO_URI_CRUD).then(() => {
 // =======================================================
 // ----- MIDDLEWARES E DADOS ESTÁTICOS -----
 // =======================================================
-app.use(helmet()); // Para configurar cabeçalhos de segurança HTTP
-app.use(cors()); // Permite requisições de outras origens
-app.use(express.json({ limit: '10kb' })); // Permite o parsing de JSON no corpo da requisição, com limite de tamanho
-app.use(express.static(__dirname)); // Serve arquivos estáticos da pasta raiz
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: '10kb' }));
+app.use(express.static(__dirname));
 
 // APLICAÇÃO DO API LIMITER (UMA ÚNICA VEZ para rotas /api/ não-auth)
 app.use('/api/', apiLimiter);
-// REMOVA A LINHA DUPLICADA app.use('/api/', apiLimiter); se não tiver feito ainda.
 
 // Carrega os dados do arquivo JSON para as dicas
 let dados = {};
@@ -115,9 +115,6 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// Exemplo de como proteger uma rota:
-// app.get('/api/veiculos', authenticateToken, async (req, res) => { /* ... */ });
-
 
 // =======================================================
 // ----- ROTAS DA API -----
@@ -140,10 +137,9 @@ app.post('/api/auth/register', authLimiter, [
             return res.status(409).json({ message: 'Este email já está registrado.' });
         }
 
-        user = new User({ email, password }); // A senha será hashada no middleware pre-save
+        user = new User({ email, password });
         await user.save();
 
-        // Gera token para o novo usuário já logado
         const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
         res.status(201).json({ message: 'Usuário registrado com sucesso!', token, email: user.email });
@@ -174,6 +170,10 @@ app.post('/api/auth/login', authLimiter, [
             return res.status(400).json({ message: 'Credenciais inválidas.' });
         }
 
+        user.lastLogin = new Date();
+        user.loginCount = (user.loginCount || 0) + 1;
+        await user.save();
+
         const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
 
         res.status(200).json({ message: 'Login realizado com sucesso!', token, email: user.email });
@@ -183,18 +183,42 @@ app.post('/api/auth/login', authLimiter, [
     }
 });
 
-// Rota para verificar a validade do token e retornar dados básicos do usuário
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
     try {
-        // req.user é populado pelo middleware authenticateToken
-        const user = await User.findById(req.user.id).select('-password'); // Não retorna a senha
+        const user = await User.findById(req.user.id).select('-password createdAt lastLogin loginCount');
         if (!user) {
             return res.status(404).json({ message: 'Usuário não encontrado.' });
         }
-        res.status(200).json({ user: { id: user._id, email: user.email } });
+        res.status(200).json({ user: { id: user._id, email: user.email, createdAt: user.createdAt, lastLogin: user.lastLogin, loginCount: user.loginCount } });
     } catch (error) {
         console.error('❌ Erro ao verificar token/buscar usuário:', error);
         res.status(500).json({ message: 'Erro interno do servidor.' });
+    }
+});
+
+// --- NOVA ROTA: Dashboard do Usuário ---
+app.get('/api/user/dashboard', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password createdAt lastLogin loginCount');
+        if (!user) {
+            return res.status(404).json({ message: 'Usuário não encontrado.' });
+        }
+
+        const removedVehicles = await RemovedVehicleLog.find({ owner: req.user.id }).sort({ deletionDate: -1 });
+
+        res.status(200).json({
+            user: {
+                id: user._id,
+                email: user.email,
+                createdAt: user.createdAt,
+                lastLogin: user.lastLogin,
+                loginCount: user.loginCount
+            },
+            removedVehicles: removedVehicles
+        });
+    } catch (error) {
+        console.error('❌ Erro ao buscar dados do dashboard do usuário:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao buscar dados do dashboard.' });
     }
 });
 
@@ -202,10 +226,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
 // --- ROTAS CRUD PARA VEÍCULOS ---
 
 // CRIAR um novo Veículo
-app.post('/api/veiculos',
-    // Opcional: proteja esta rota com authenticateToken
-    // authenticateToken,
-    createVehicleLimiter,
+app.post('/api/veiculos', authenticateToken, createVehicleLimiter,
     [
         body('placa', 'Formato de placa inválido. Use 3 letras, 1 número, 1 letra, 2 números (Ex: ABC1D23) OU 3 letras e 4 números (Ex: ABC1234).')
             .matches(/^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$/)
@@ -228,7 +249,7 @@ app.post('/api/veiculos',
         }
 
         try {
-            const veiculoCriado = await Veiculo.create(req.body);
+            const veiculoCriado = await Veiculo.create({ ...req.body, owner: req.user.id });
             res.status(201).json(veiculoCriado);
         } catch (error) {
             if (error.code === 11000) {
@@ -246,15 +267,16 @@ app.post('/api/veiculos',
     }
 );
 
-// LER todos os Veículos (com o histórico de manutenção populado)
-app.get('/api/veiculos', async (req, res) => {
+// LER todos os Veículos DO USUÁRIO LOGADO
+app.get('/api/veiculos', authenticateToken, async (req, res) => {
     try {
-        const todosOsVeiculos = await Veiculo.find({})
+        const todosOsVeiculos = await Veiculo.find({ owner: req.user.id })
             .populate({
                 path: 'historicoManutencao',
                 model: 'Manutencao',
                 options: { sort: { 'data': -1 } }
             })
+            .populate('owner', 'email')
             .sort({ createdAt: -1 });
         res.status(200).json(todosOsVeiculos);
     } catch (error) {
@@ -264,9 +286,7 @@ app.get('/api/veiculos', async (req, res) => {
 });
 
 // ATUALIZAR um Veículo existente
-app.put('/api/veiculos/:id',
-    // Opcional: proteja esta rota com authenticateToken
-    // authenticateToken,
+app.put('/api/veiculos/:id', authenticateToken,
     [
         body('placa', 'Formato de placa inválido. Use 3 letras, 1 número, 1 letra, 2 números (Ex: ABC1D23) OU 3 letras e 4 números (Ex: ABC1234).')
             .matches(/^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$/)
@@ -278,6 +298,7 @@ app.put('/api/veiculos/:id',
             .isInt({ min: 1900, max: new Date().getFullYear() + 2 })
             .toInt(),
         body('cor', 'A cor é obrigatória e não pode estar vazia.').not().isEmpty().trim().escape(),
+        // CORREÇÃO: Mensagem de validação do tipo
         body('tipo', 'Tipo de veículo inválido. Escolha entre Carro, CarroEsportivo ou Caminhao.').isIn(['Carro', 'CarroEsportivo', 'Caminhao'])
     ],
     async (req, res) => {
@@ -290,8 +311,12 @@ app.put('/api/veiculos/:id',
 
         try {
             const { id } = req.params;
+            const veiculo = await Veiculo.findOne({ _id: id, owner: req.user.id });
+            if (!veiculo) {
+                return res.status(404).json({ message: "Veículo não encontrado ou você não tem permissão para atualizá-lo." });
+            }
+
             const veiculoAtualizado = await Veiculo.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
-            if (!veiculoAtualizado) return res.status(404).json({ message: "Veículo não encontrado para atualização." });
             res.status(200).json(veiculoAtualizado);
         } catch (error) {
             if (error.code === 11000) {
@@ -299,7 +324,7 @@ app.put('/api/veiculos/:id',
                 return res.status(409).json({ message: 'Erro: Essa placa já pertence a outro veículo.' });
             }
             if (error.name === 'ValidationError') {
-                console.error('🚫 Erro de validação Mongoose ao atualizar:', error.message);
+                console.error('🚫 Erro de validação Mongoose:', error.message);
                 const errorMessages = Object.values(error.errors).map(e => e.message).join('; ');
                 return res.status(400).json({ message: `Erro de validação no banco de dados: ${errorMessages}` });
             }
@@ -310,15 +335,32 @@ app.put('/api/veiculos/:id',
 );
 
 // DELETAR um Veículo
-app.delete('/api/veiculos/:id', async (req, res) => {
+app.delete('/api/veiculos/:id', authenticateToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const resultado = await Veiculo.findByIdAndDelete(id);
-        if (!resultado) return res.status(404).json({ message: "Veículo não encontrado." });
+        const veiculoToDelete = await Veiculo.findOne({ _id: id, owner: req.user.id });
+        if (!veiculoToDelete) {
+            return res.status(404).json({ message: "Veículo não encontrado ou você não tem permissão para deletá-lo." });
+        }
 
+        // ALTERAÇÃO: Antes de deletar, registra o resumo do veículo no RemovedVehicleLog
+        const removedLog = new RemovedVehicleLog({
+            owner: req.user.id,
+            placa: veiculoToDelete.placa,
+            marca: veiculoToDelete.marca,
+            modelo: veiculoToDelete.modelo,
+            ano: veiculoToDelete.ano,
+            cor: veiculoToDelete.cor,
+            tipo: veiculoToDelete.tipo,
+            deletionDate: new Date()
+        });
+        await removedLog.save();
+        
+        // Deleta as manutenções associadas e o próprio veículo
         await Manutencao.deleteMany({ veiculo: id });
+        await Veiculo.findByIdAndDelete(id);
 
-        res.status(200).json({ message: `Veículo ${resultado.placa} e seu histórico foram deletados.` });
+        res.status(200).json({ message: `Veículo ${veiculoToDelete.placa} e seu histórico foram deletados e registrados no log de remoção.` });
     } catch (error) {
         console.error('❌ Erro ao deletar o veículo:', error);
         res.status(500).json({ message: 'Erro ao deletar o veículo.' });
@@ -328,7 +370,7 @@ app.delete('/api/veiculos/:id', async (req, res) => {
 // --- ROTAS PARA MANUTENÇÕES ---
 
 // CRIAR UMA NOVA MANUTENÇÃO ASSOCIADA A UM VEÍCULO
-app.post('/api/veiculos/:veiculoId/manutencoes',
+app.post('/api/veiculos/:veiculoId/manutencoes', authenticateToken,
     [
         body('data', 'A data da manutenção é obrigatória e deve ser uma data válida.').isISO8601().toDate(),
         body('descricaoServico', 'A descrição do serviço é obrigatória.').not().isEmpty().trim().escape(),
@@ -349,6 +391,9 @@ app.post('/api/veiculos/:veiculoId/manutencoes',
             const veiculoExistente = await Veiculo.findById(veiculoId);
             if (!veiculoExistente) {
                 return res.status(404).json({ message: "Operação falhou: Veículo não encontrado." });
+            }
+            if (veiculoExistente.owner.toString() !== req.user.id) {
+                return res.status(403).json({ message: "Você não tem permissão para adicionar manutenções a este veículo." });
             }
 
             const dadosNovaManutencao = { ...req.body, veiculo: veiculoId };
@@ -372,12 +417,15 @@ app.post('/api/veiculos/:veiculoId/manutencoes',
 );
 
 // LER TODAS AS MANUTENÇÕES DE UM VEÍCULO ESPECÍFICO
-app.get('/api/veiculos/:veiculoId/manutencoes', async (req, res) => {
+app.get('/api/veiculos/:veiculoId/manutencoes', authenticateToken, async (req, res) => {
     try {
         const { veiculoId } = req.params;
         const veiculo = await Veiculo.findById(veiculoId);
         if (!veiculo) {
             return res.status(404).json({ message: 'Não foi possível buscar manutenções: Veículo não encontrado.' });
+        }
+        if (veiculo.owner.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Você não tem permissão para ver as manutenções deste veículo." });
         }
         const manutenções = await Manutencao.find({ veiculo: veiculoId }).sort({ data: -1 });
         res.status(200).json(manutenções);

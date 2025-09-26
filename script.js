@@ -12,6 +12,7 @@ class Veiculo {
         this.velocidade = 0;
         this.velocidadeMaxima = this.definirVelocidadeMaxima();
         this.historicoManutencao = [];
+        // O campo 'owner' será adicionado e gerenciado pelo backend
     }
 
     definirVelocidadeMaxima() {
@@ -108,11 +109,44 @@ let authMode = 'login'; // 'login' ou 'register' para o modal de autenticação
 // --- FUNÇÕES DE API ---
 // =================================================================================
 async function buscarApi(endpoint, options = {}) {
-    const response = await fetch(endpoint, options);
+    const token = localStorage.getItem('jwtToken'); // Pega o token do localStorage
+
+    const headers = {
+        ...options.headers // Copia os headers existentes
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`; // Adiciona o cabeçalho de autorização se houver token
+    }
+
+    // Define Content-Type como application/json por padrão para POST/PUT se não for especificado
+    if (options.body && typeof options.body === 'string' && (!headers['Content-Type'] || headers['Content-Type'] === '')) {
+        headers['Content-Type'] = 'application/json';
+    }
+    
+    // Remove Content-Type se o método for GET ou DELETE e não houver body
+    if ((options.method === 'GET' || options.method === 'DELETE') && !options.body) {
+        delete headers['Content-Type'];
+    }
+
+    const finalOptions = {
+        ...options,
+        headers: headers // Usa os headers atualizados
+    };
+
+    const response = await fetch(endpoint, finalOptions);
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({
             message: `Erro ${response.status}: ${response.statusText}`
         }));
+        
+        // Se o token for inválido ou expirado (401/403), força o logout
+        if (response.status === 401 || response.status === 403) {
+            console.warn('Token expirado ou inválido. Forçando logout.');
+            logout(true); // Passa true para indicar que é um logout forçado
+            throw new Error('Sua sessão expirou ou é inválida. Por favor, faça login novamente.');
+        }
+        
         throw new Error(errorData.message);
     }
     return response.json();
@@ -123,11 +157,18 @@ async function buscarApi(endpoint, options = {}) {
 // =================================================================================
 async function buscarEExibirVeiculos() {
     const container = document.getElementById('botoes-veiculo');
+    // Verifica se o usuário está logado antes de tentar buscar veículos
+    if (localStorage.getItem('usuarioLogado') !== 'true') {
+        container.innerHTML = '<p>Faça login para ver e gerenciar seus veículos.</p>';
+        desselecionarVeiculo();
+        return;
+    }
+
     try {
-        garagemDB = await buscarApi('/api/veiculos');
+        garagemDB = await buscarApi('/api/veiculos'); // buscarApi enviará o token automaticamente
         container.innerHTML = '';
         if (garagemDB.length === 0) {
-            container.innerHTML = '<p>Nenhum veículo na garagem.</p>';
+            container.innerHTML = '<p>Nenhum veículo na sua garagem.</p>';
             desselecionarVeiculo();
             return;
         }
@@ -162,7 +203,12 @@ async function buscarEExibirVeiculos() {
         });
         container.appendChild(lista);
     } catch (error) {
-        mostrarAlerta(error.message, 'erro');
+        // Se buscarApi já chamou logout, o modal já foi aberto e o erro já foi alertado.
+        // Se for outro erro (ex: problema de rede), apenas alerta.
+        if (!error.message.includes('Sua sessão expirou')) { // Evita alertar duas vezes sobre expiração
+            mostrarAlerta(error.message, 'erro');
+        }
+        desselecionarVeiculo();
     }
 }
 
@@ -183,6 +229,7 @@ async function selecionarVeiculo(veiculoId) {
         default:
             return;
     }
+    // Copia as propriedades do objeto do DB para a instância da classe Vehicle
     Object.assign(veiculoAtual, veiculoData);
     await carregarManutencoes(veiculoId);
     atualizarDisplayVeiculo();
@@ -261,7 +308,7 @@ async function carregarManutencoes(veiculoId) {
     historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p><em>Carregando histórico...</em></p>';
 
     try {
-        const manutenções = await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`);
+        const manutenções = await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`); // buscarApi enviará o token
         if (manutenções && manutenções.length > 0) {
             const listaHtml = manutenções.map(m => {
                 const custoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
@@ -275,7 +322,10 @@ async function carregarManutencoes(veiculoId) {
         }
     } catch (error) {
         historicoManutencaoEl.innerHTML = `<p class="api-erro">Erro ao carregar histórico: ${error.message}</p>`;
-        mostrarAlerta(`Erro ao carregar histórico de manutenção: ${error.message}`, 'erro');
+        // A função buscarApi já lida com 401/403 e chama logout. Evita duplicidade de alerta.
+        if (!error.message.includes('Sua sessão expirou')) {
+            mostrarAlerta(`Erro ao carregar histórico de manutenção: ${error.message}`, 'erro');
+        }
     }
 }
 
@@ -291,16 +341,17 @@ function mostrarAlerta(mensagem, tipo = 'info') {
     if (alertaTimeout) clearTimeout(alertaTimeout);
 
     alertaContainer.textContent = mensagem;
-    alertaContainer.className = `alerta-${tipo}`;
+    alertaContainer.className = `alerta-${tipo}`; // Reseta e aplica a classe de tipo
 
     alertaContainer.classList.add('visivel');
 
     alertaTimeout = setTimeout(() => {
         alertaContainer.classList.remove('visivel');
+        // Pequeno delay para transição de saída antes de limpar o texto
         setTimeout(() => {
-            alertaContainer.textContent = '';
-        }, 400);
-    }, 4000);
+            alertaContainer.textContent = ''; 
+        }, 400); 
+    }, 4000); 
 }
 
 function tocarSomVeiculo(acao) {
@@ -346,44 +397,64 @@ function fecharModalEdicao() {
 // --- FUNÇÕES DE AUTENTICAÇÃO E CONTROLE DE USO (NOVAS/ATUALIZADAS) ---
 // =================================================================================
 function abrirModalAuth(mode = 'login') {
+    console.log(`Abrindo modal de autenticação no modo: ${mode}`); // Depuração
     authMode = mode;
-    const modal = document.getElementById('modal-login'); // ID do modal de autenticação
+    const modal = document.getElementById('modal-login');
     const title = document.getElementById('auth-form-title');
     const subtitle = document.getElementById('auth-form-subtitle');
     const submitBtn = document.getElementById('btn-submit-auth');
     const toggleLink = document.getElementById('link-toggle-auth');
+
+    // Correção: Garante que o display seja flex ANTES de adicionar a classe 'visivel' para que a transição comece corretamente.
+    modal.style.display = 'flex'; 
 
     if (authMode === 'login') {
         title.textContent = 'Acesse sua Garagem';
         subtitle.textContent = 'Faça login para salvar suas manutenções e acessar recursos exclusivos.';
         submitBtn.textContent = 'Entrar';
         toggleLink.textContent = 'Não tem uma conta? Registre-se';
-        toggleLink.onclick = () => abrirModalAuth('register');
+        toggleLink.onclick = (e) => { e.preventDefault(); abrirModalAuth('register'); };
     } else { // 'register'
         title.textContent = 'Crie sua Conta';
         subtitle.textContent = 'Registre-se para começar a usar todos os recursos!';
         submitBtn.textContent = 'Registrar';
         toggleLink.textContent = 'Já tem uma conta? Faça login';
-        toggleLink.onclick = () => abrirModalAuth('login');
+        toggleLink.onclick = (e) => { e.preventDefault(); abrirModalAuth('login'); };
     }
     modal.classList.add('visivel');
 }
 
 function fecharModalAuth() {
-    document.getElementById('modal-login').classList.remove('visivel');
+    console.log('Fechando modal de autenticação.'); // Depuração
+    const modal = document.getElementById('modal-login');
+    modal.classList.remove('visivel');
     document.getElementById('form-auth').reset(); // Limpa o formulário
+
+    // Correção: Adiciona um setTimeout para definir display: none APÓS a transição de opacidade/visibilidade.
+    // O tempo deve ser igual ou um pouco maior que o `transition-duration` do CSS para `opacity` e `visibility` do modal-overlay.
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300); // 300ms é o transition-duration definido no CSS para o modal-overlay
 }
 
 // Lógica para logout
-function logout() {
+function logout(forced = false) {
+    console.log(`Realizando logout. Forçado: ${forced}`); // Depuração
     localStorage.removeItem('jwtToken');
-    localStorage.removeItem('userEmail'); // Limpa email do usuário
-    localStorage.setItem('usuarioLogado', 'false'); // Marca como deslogado
-    localStorage.removeItem('contagemDeUso'); // Opcional: resetar contagem de uso no logout
+    localStorage.removeItem('userEmail');
+    localStorage.setItem('usuarioLogado', 'false');
+    // localStorage.removeItem('contagemDeUso'); // REMOVIDO: Rastreamento de uso não é mais necessário.
 
-    mostrarAlerta('Logout realizado com sucesso!', 'info');
-    updateHeaderAuthButton(); // Atualiza o botão no topo
-    // Opcional: recarregar a página ou re-inicializar algumas partes do app
+    if (!forced) {
+        mostrarAlerta('Logout realizado com sucesso!', 'info');
+    } else {
+        mostrarAlerta('Sua sessão expirou ou é inválida. Por favor, faça login novamente.', 'erro');
+    }
+    
+    updateHeaderAuthButton();
+    buscarEExibirVeiculos();
+    desselecionarVeiculo();
+    abrirModalAuth('login'); // SEMPRE ABRE O MODAL DE LOGIN APÓS O LOGOUT
 }
 
 // Função para atualizar o botão de Login/Logout no cabeçalho
@@ -393,12 +464,12 @@ function updateHeaderAuthButton() {
 
     if (localStorage.getItem('jwtToken') && localStorage.getItem('usuarioLogado') === 'true') {
         btnLoginTopo.textContent = `Olá, ${userEmail || 'Usuário'} (Sair)`;
-        btnLoginTopo.classList.add('btn-logout'); // Adiciona classe para estilo de logout se quiser
-        btnLoginTopo.onclick = logout; // Ao clicar, faz logout
+        btnLoginTopo.classList.add('btn-logout');
+        btnLoginTopo.onclick = logout;
     } else {
         btnLoginTopo.textContent = 'Login';
         btnLoginTopo.classList.remove('btn-logout');
-        btnLoginTopo.onclick = () => abrirModalAuth('login'); // Ao clicar, abre o modal de login
+        btnLoginTopo.onclick = () => abrirModalAuth('login');
     }
 }
 
@@ -407,7 +478,6 @@ async function checkAuthStatus() {
     const token = localStorage.getItem('jwtToken');
     if (token) {
         try {
-            // Tenta verificar o token no backend
             const response = await fetch('/api/auth/me', {
                 method: 'GET',
                 headers: {
@@ -418,61 +488,37 @@ async function checkAuthStatus() {
                 const data = await response.json();
                 localStorage.setItem('usuarioLogado', 'true');
                 localStorage.setItem('userEmail', data.user.email);
-                localStorage.removeItem('contagemDeUso'); // Resetar contagem se o login persistiu
+                // localStorage.removeItem('contagemDeUso'); // REMOVIDO: Rastreamento de uso não é mais necessário.
                 updateHeaderAuthButton();
-                // mostrarAlerta(`Bem-vindo de volta, ${data.user.email}!`, 'info'); // Opcional
+                // <<<<<<< AQUI ESTÁ A MUDANÇA CRÍTICA >>>>>>>
+                buscarEExibirVeiculos(); // CHAMA A FUNÇÃO PARA BUSCAR OS VEÍCULOS APÓS CONFIRMAR O LOGIN
             } else {
-                // Token inválido ou expirado
                 console.log('Token expirado ou inválido. Realize o login novamente.');
-                logout(); // Força o logout no frontend
+                logout(true);
             }
         } catch (error) {
             console.error('Erro ao verificar token:', error);
-            logout(); // Força o logout em caso de erro de rede, etc.
+            logout(true);
         }
     } else {
-        // Se não há token, inicia o tracking de uso
-        initializeUsageTracking();
+        // Se não há token, o usuário não está logado. Atualiza a UI e tenta buscar (que mostrará msg de login)
+        updateHeaderAuthButton();
+        buscarEExibirVeiculos();
     }
 }
 
 
-// Lógica de tracking de uso para não logados
-function initializeUsageTracking() {
-    if (localStorage.getItem('usuarioLogado') === 'true') return; // Não rastreia se já logado
-
-    let contagemDeUso = parseInt(localStorage.getItem('contagemDeUso'), 10) || 0;
-    contagemDeUso++;
-    localStorage.setItem('contagemDeUso', contagemDeUso);
-
-    const LIMITE_USOS_SEM_LOGIN = 5;
-
-    if (contagemDeUso < LIMITE_USOS_SEM_LOGIN) {
-        const usosRestantes = LIMITE_USOS_SEM_LOGIN - contagemDeUso;
-        if (usosRestantes > 0) { // Garante que a mensagem só aparece antes de 5
-             mostrarAlerta(`Você pode usar o app mais ${usosRestantes} vez(es) antes de sugerirmos o login.`, 'info');
-        }
-    } else if (contagemDeUso === LIMITE_USOS_SEM_LOGIN) {
-        mostrarAlerta('Você utilizou o app 5 vezes. Considere fazer login para salvar seu progresso!', 'info');
-        abrirModalAuth('login'); // Abre o modal para sugerir o login
-    }
-}
+// initializeUsageTracking() foi REMOVIDA, pois não é mais necessária.
 
 
 // =================================================================================
 // --- PONTO DE ENTRADA E EVENT LISTENERS ---
 // =================================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Primeiro, verifica o status de autenticação (se já tem token válido)
+    // Simplificado: checkAuthStatus agora gerencia a atualização da UI e a busca de veículos.
     checkAuthStatus();
-    buscarEExibirVeiculos();
     
-    // Event listener para o botão de login/logout no topo
-    const btnAbrirLoginTopo = document.getElementById('btn-abrir-login-topo');
-    if (btnAbrirLoginTopo) {
-        // A função onclick é definida por updateHeaderAuthButton()
-        // e mudará dependendo do estado de login.
-    }
+    // O onclick para btn-abrir-login-topo é definido em updateHeaderAuthButton()
 
     document.getElementById('form-buscar-previsao').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -491,6 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (localStorage.getItem('usuarioLogado') !== 'true') {
+            mostrarAlerta('Você precisa estar logado para adicionar veículos!', 'erro');
+            abrirModalAuth('login');
+            return;
+        }
+
         const novoVeiculo = {
             tipo: document.getElementById('tipo-veiculo').value,
             placa: document.getElementById('placa-veiculo').value,
@@ -500,23 +552,17 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('cor-veiculo').value
         };
         try {
-            // Adicionar token ao header se a rota de veículos for protegida no futuro
-            const options = {
+            await buscarApi('/api/veiculos', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(novoVeiculo)
-            };
-            const token = localStorage.getItem('jwtToken');
-            if (token) {
-                options.headers['Authorization'] = `Bearer ${token}`;
-            }
-            
-            await buscarApi('/api/veiculos', options);
+            });
             mostrarAlerta('Veículo adicionado com sucesso!', 'info');
             await buscarEExibirVeiculos();
             e.target.reset();
         } catch (error) {
-            mostrarAlerta(error.message, 'erro');
+            if (!error.message.includes('Sua sessão expirou')) {
+                 mostrarAlerta(error.message, 'erro');
+            }
         }
     });
 
@@ -524,22 +570,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const target = event.target.closest('button');
         if (!target) return;
         
-        const veiculoId = target.dataset.id;
-        const options = { method: 'DELETE' };
-        const token = localStorage.getItem('jwtToken');
-        if (token) {
-            options.headers = { 'Authorization': `Bearer ${token}` };
+        if (localStorage.getItem('usuarioLogado') !== 'true') {
+            mostrarAlerta('Você precisa estar logado para editar ou excluir veículos!', 'erro');
+            abrirModalAuth('login');
+            return;
         }
+
+        const veiculoId = target.dataset.id;
 
         if (target.classList.contains('btn-delete')) {
             if (confirm('Tem certeza que deseja excluir este veículo e todo o seu histórico?')) {
                 try {
-                    await buscarApi(`/api/veiculos/${veiculoId}`, options);
+                    await buscarApi(`/api/veiculos/${veiculoId}`, {
+                        method: 'DELETE'
+                    });
                     mostrarAlerta('Veículo excluído com sucesso.', 'info');
                     if (veiculoAtual && veiculoAtual._id === veiculoId) desselecionarVeiculo();
                     await buscarEExibirVeiculos();
                 } catch (error) {
-                    mostrarAlerta(error.message, 'erro');
+                    if (!error.message.includes('Sua sessão expirou')) {
+                        mostrarAlerta(error.message, 'erro');
+                    }
                 }
             }
         } else if (target.classList.contains('btn-edit')) {
@@ -549,6 +600,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('form-edit-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
+        if (localStorage.getItem('usuarioLogado') !== 'true') {
+            mostrarAlerta('Você precisa estar logado para editar veículos!', 'erro');
+            abrirModalAuth('login');
+            return;
+        }
+
         const id = document.getElementById('edit-veiculo-id').value;
         const dadosAtualizados = {
             tipo: document.getElementById('edit-tipo-veiculo').value,
@@ -559,23 +616,18 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('edit-cor-veiculo').value
         };
         try {
-            const options = {
+            await buscarApi(`/api/veiculos/${id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosAtualizados)
-            };
-            const token = localStorage.getItem('jwtToken');
-            if (token) {
-                options.headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            await buscarApi(`/api/veiculos/${id}`, options);
+            });
             fecharModalEdicao();
             mostrarAlerta('Veículo atualizado com sucesso!', 'info');
             await buscarEExibirVeiculos();
             if (veiculoAtual && veiculoAtual._id === id) await selecionarVeiculo(id);
         } catch (error) {
-            mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
+            if (!error.message.includes('Sua sessão expirou')) {
+                mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
+            }
         }
     });
 
@@ -600,6 +652,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('form-add-manutencao').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!veiculoAtual) return mostrarAlerta('Nenhum veículo selecionado.', 'erro');
+        if (localStorage.getItem('usuarioLogado') !== 'true') {
+            mostrarAlerta('Você precisa estar logado para registrar manutenções!', 'erro');
+            abrirModalAuth('login');
+            return;
+        }
 
         const dadosFormulario = {
             data: document.getElementById('data-manutencao').value,
@@ -610,22 +667,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const veiculoId = veiculoAtual._id;
         try {
-            const options = {
+            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dadosFormulario)
-            };
-            const token = localStorage.getItem('jwtToken');
-            if (token) {
-                options.headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, options);
+            });
             mostrarAlerta('Manutenção registrada com sucesso!', 'info');
             e.target.reset();
             await carregarManutencoes(veiculoId);
         } catch (error) {
-            mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro');
+            if (!error.message.includes('Sua sessão expirou')) {
+                mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro');
+            }
         }
     });
 
@@ -633,7 +685,6 @@ document.addEventListener('DOMContentLoaded', () => {
         volumeAtual = parseFloat(e.target.value);
     });
 
-    // --- EVENT LISTENER PRINCIPAL PARA O FORMULÁRIO DE AUTENTICAÇÃO ---
     document.getElementById('form-auth').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('auth-email').value;
@@ -641,18 +692,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             let response;
+            const authOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            };
+
             if (authMode === 'login') {
-                response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                response = await fetch('/api/auth/login', authOptions);
             } else { // register
-                response = await fetch('/api/auth/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
+                response = await fetch('/api/auth/register', authOptions);
             }
 
             const data = await response.json();
@@ -665,16 +714,16 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('jwtToken', data.token);
             localStorage.setItem('userEmail', data.email);
             localStorage.setItem('usuarioLogado', 'true');
-            localStorage.removeItem('contagemDeUso');
+
             mostrarAlerta(data.message, 'sucesso');
             fecharModalAuth();
             updateHeaderAuthButton();
+            buscarEExibirVeiculos(); // Recarrega a garagem com os veículos do usuário logado
         } catch (error) {
             mostrarAlerta(`Erro de autenticação: ${error.message}`, 'erro');
         }
     });
 
-    // Event Listener para alternar entre Login e Registro
     document.getElementById('link-toggle-auth').addEventListener('click', (e) => {
         e.preventDefault();
         if (authMode === 'login') {
@@ -684,8 +733,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Event Listener para o botão 'Continuar sem login' no modal
     document.getElementById('btn-continuar-sem-login').addEventListener('click', () => {
         fecharModalAuth();
+        buscarEExibirVeiculos(); 
     });
 });

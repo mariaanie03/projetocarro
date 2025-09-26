@@ -1,4 +1,4 @@
-// models/Veiculo.js (ASSUMINDO QUE ESTE É O CONTEÚDO ATUAL DO SEU MODELO Veiculo)
+// models/Veiculo.js
 
 import mongoose from 'mongoose';
 
@@ -29,7 +29,13 @@ const veiculoSchema = new mongoose.Schema({
     historicoManutencao: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Manutencao'
-    }]
+    }],
+    // NOVO CAMPO: Associando o veículo a um usuário (dono)
+    owner: {
+        type: mongoose.Schema.Types.ObjectId, // Tipo ObjectId para referenciar outro documento
+        ref: 'User', // O nome do modelo que está sendo referenciado
+        required: [true, 'Um veículo deve ter um proprietário.'] // Torna o proprietário obrigatório
+    }
 }, {
     timestamps: true // Adiciona createdAt e updatedAt
 });
