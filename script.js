@@ -413,13 +413,13 @@ function abrirModalAuth(mode = 'login') {
         subtitle.textContent = 'Faça login para salvar suas manutenções e acessar recursos exclusivos.';
         submitBtn.textContent = 'Entrar';
         toggleLink.textContent = 'Não tem uma conta? Registre-se';
-        toggleLink.onclick = (e) => { e.preventDefault(); abrirModalAuth('register'); };
+        
     } else { // 'register'
         title.textContent = 'Crie sua Conta';
         subtitle.textContent = 'Registre-se para começar a usar todos os recursos!';
         submitBtn.textContent = 'Registrar';
         toggleLink.textContent = 'Já tem uma conta? Faça login';
-        toggleLink.onclick = (e) => { e.preventDefault(); abrirModalAuth('login'); };
+       
     }
     modal.classList.add('visivel');
 }
