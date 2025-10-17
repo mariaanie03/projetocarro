@@ -85,7 +85,7 @@ let garagemDB = [],
 let authMode = 'login';
 
 // =================================================================================
-// --- LÓGICA DE UI E AUTENTICAÇÃO (FASE 1) ---
+// --- LÓGICA DE UI E AUTENTICAÇÃO ---
 // =================================================================================
 function updateUIForAuthState(isLoggedIn) {
     if (isLoggedIn) {
@@ -174,7 +174,6 @@ async function buscarApi(endpoint, options = {}) {
     return response.json();
 }
 
-// FUNÇÃO ATUALIZADA NA FASE 3
 async function buscarEExibirVeiculos() {
     const container = document.getElementById('botoes-veiculo');
     if (localStorage.getItem('usuarioLogado') !== 'true') {
@@ -204,7 +203,6 @@ async function buscarEExibirVeiculos() {
                 sharedIndicatorHtml = `<span class="shared-indicator">(Compartilhado por ${veiculoData.owner.email})</span>`;
             }
 
-            // Ações de Editar/Excluir só aparecem para o dono
             const actionsHtml = isOwner ? `
                 <div class="veiculo-actions">
                     <button class="btn-edit" data-id="${veiculoData._id}">Editar</button>
@@ -263,6 +261,7 @@ function atualizarDisplayVeiculo() {
     const dicasContainer = document.getElementById('dicas-manutencao-container');
     const formManutencao = document.getElementById('form-manutencao-container');
     const historicoEl = document.getElementById('historico-manutencao');
+    const shareFormContainer = document.getElementById('form-share-container');
 
     document.querySelectorAll('.lista-veiculos-db li').forEach(li => li.classList.remove('selecionado'));
 
@@ -272,9 +271,15 @@ function atualizarDisplayVeiculo() {
         controlesEl.style.display = 'none';
         dicasContainer.style.display = 'none';
         formManutencao.style.display = 'none';
+        shareFormContainer.style.display = 'none';
         historicoEl.innerHTML = '<p>Selecione um veículo para ver o histórico.</p>';
         return;
     }
+
+    const loggedInUserEmail = localStorage.getItem('userEmail');
+    const isOwner = veiculoAtual.owner && veiculoAtual.owner.email === loggedInUserEmail;
+    
+    shareFormContainer.style.display = isOwner ? 'block' : 'none';
 
     document.getElementById(`veiculo-${veiculoAtual._id}`)?.classList.add('selecionado');
     nomeEl.textContent = `${veiculoAtual.marca} ${veiculoAtual.modelo}`;
@@ -472,6 +477,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (veiculoAtual && veiculoAtual._id === id) await selecionarVeiculo(id);
         } catch (error) {
             mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
+        }
+    });
+
+    document.getElementById('form-share-veiculo').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!veiculoAtual) return mostrarAlerta('Selecione um veículo para compartilhar.', 'erro');
+        const emailInput = document.getElementById('share-email-input');
+        const emailToShare = emailInput.value.trim();
+        if (!emailToShare) return mostrarAlerta('Por favor, insira um e-mail.', 'erro');
+        try {
+            const response = await buscarApi(`/api/veiculos/${veiculoAtual._id}/share`, {
+                method: 'POST',
+                body: JSON.stringify({ email: emailToShare })
+            });
+            mostrarAlerta(response.message, 'sucesso');
+            e.target.reset();
+        } catch (error) {
+            mostrarAlerta(`Erro ao compartilhar: ${error.message}`, 'erro');
         }
     });
 
