@@ -1,6 +1,12 @@
 "use strict";
 
 // =================================================================================
+// --- ELEMENTOS DO DOM ---
+// =================================================================================
+const mainAppContainer = document.getElementById('main-app-container');
+const welcomeMessage = document.getElementById('welcome-message');
+
+// =================================================================================
 // --- CLASSES DE VEÍCULOS ---
 // =================================================================================
 class Veiculo {
@@ -12,20 +18,14 @@ class Veiculo {
         this.velocidade = 0;
         this.velocidadeMaxima = this.definirVelocidadeMaxima();
         this.historicoManutencao = [];
-        // O campo 'owner' será adicionado e gerenciado pelo backend
     }
-
-    definirVelocidadeMaxima() {
-        throw new Error("Implementar na subclasse.");
-    }
-
+    definirVelocidadeMaxima() { throw new Error("Implementar na subclasse."); }
     ligar() {
         if (this.ligado) return mostrarAlerta(`${this.modelo} já está ligado.`, 'info');
         this.ligado = true;
         tocarSomVeiculo('ligar');
         atualizarDisplayVeiculo();
     }
-
     desligar() {
         if (!this.ligado) return mostrarAlerta(`${this.modelo} já está desligado.`, 'info');
         if (this.velocidade > 0) return mostrarAlerta(`Não é possível desligar ${this.modelo} em movimento.`, 'erro');
@@ -33,43 +33,30 @@ class Veiculo {
         tocarSomVeiculo('desligar');
         atualizarDisplayVeiculo();
     }
-
     acelerar(inc = 10) {
         if (!this.ligado) return mostrarAlerta(`Ligue o ${this.modelo} antes.`, 'erro');
         this.velocidade = Math.min(this.velocidade + Math.round(inc), this.velocidadeMaxima);
         tocarSomVeiculo('acelerar');
         atualizarDisplayVeiculo();
     }
-
     frear(dec = 10) {
         if (this.velocidade === 0) return mostrarAlerta(`${this.modelo} já está parado.`, 'info');
         this.velocidade = Math.max(this.velocidade - Math.round(dec), 0);
         tocarSomVeiculo('frear');
         atualizarDisplayVeiculo();
     }
-
-    buzinar() {
-        tocarSomVeiculo('buzina');
-    }
+    buzinar() { tocarSomVeiculo('buzina'); }
 }
-
 class Carro extends Veiculo {
-    constructor(modelo, cor) {
-        super(modelo, cor);
-    }
-    definirVelocidadeMaxima() {
-        return 180;
-    }
+    constructor(modelo, cor) { super(modelo, cor); }
+    definirVelocidadeMaxima() { return 180; }
 }
-
 class CarroEsportivo extends Carro {
     constructor(modelo, cor) {
         super(modelo, cor);
         this.turboAtivado = false;
     }
-    definirVelocidadeMaxima() {
-        return 250;
-    }
+    definirVelocidadeMaxima() { return 250; }
     ativarTurbo() {
         if (!this.ligado) return mostrarAlerta(`Ligue o ${this.modelo} antes.`, 'erro');
         this.turboAtivado = true;
@@ -81,18 +68,11 @@ class CarroEsportivo extends Carro {
         mostrarAlerta('Turbo desativado.', 'info');
         atualizarDisplayVeiculo();
     }
-    acelerar(incBase = 15) {
-        super.acelerar(this.turboAtivado ? incBase * 1.8 : incBase);
-    }
+    acelerar(incBase = 15) { super.acelerar(this.turboAtivado ? incBase * 1.8 : incBase); }
 }
-
 class Caminhao extends Veiculo {
-    constructor(modelo, cor) {
-        super(modelo, cor);
-    }
-    definirVelocidadeMaxima() {
-        return 100;
-    }
+    constructor(modelo, cor) { super(modelo, cor); }
+    definirVelocidadeMaxima() { return 100; }
 }
 
 // =================================================================================
@@ -102,70 +82,107 @@ let garagemDB = [],
     veiculoAtual = null,
     alertaTimeout = null,
     volumeAtual = 0.5;
-let authMode = 'login'; // 'login' ou 'register' para o modal de autenticação
-
+let authMode = 'login';
 
 // =================================================================================
-// --- FUNÇÕES DE API ---
+// --- LÓGICA DE UI E AUTENTICAÇÃO (FASE 1) ---
+// =================================================================================
+function updateUIForAuthState(isLoggedIn) {
+    if (isLoggedIn) {
+        mainAppContainer.classList.remove('hidden');
+        welcomeMessage.classList.add('hidden');
+    } else {
+        mainAppContainer.classList.add('hidden');
+        welcomeMessage.classList.remove('hidden');
+    }
+    updateHeaderAuthButton();
+}
+
+async function checkAuthState() {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+        try {
+            const response = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('usuarioLogado', 'true');
+                localStorage.setItem('userEmail', data.user.email);
+                updateUIForAuthState(true);
+                buscarEExibirVeiculos();
+            } else {
+                logout(true);
+            }
+        } catch (error) {
+            console.error('Erro de rede ao verificar token:', error);
+            updateUIForAuthState(false);
+        }
+    } else {
+        updateUIForAuthState(false);
+    }
+}
+
+function logout(forced = false) {
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('userEmail');
+    localStorage.setItem('usuarioLogado', 'false');
+    if (!forced) {
+        mostrarAlerta('Logout realizado com sucesso!', 'info');
+    } else {
+        mostrarAlerta('Sua sessão expirou ou é inválida.', 'erro');
+    }
+    updateUIForAuthState(false);
+    desselecionarVeiculo();
+    document.getElementById('botoes-veiculo').innerHTML = '';
+    if (forced) {
+        abrirModalAuth('login');
+    }
+}
+
+function updateHeaderAuthButton() {
+    const btnLoginTopo = document.getElementById('btn-abrir-login-topo');
+    const userEmail = localStorage.getItem('userEmail');
+    if (localStorage.getItem('jwtToken')) {
+        btnLoginTopo.textContent = `Olá, ${userEmail || 'Usuário'} (Sair)`;
+        btnLoginTopo.classList.add('btn-logout');
+        btnLoginTopo.onclick = () => logout(false);
+    } else {
+        btnLoginTopo.textContent = 'Login';
+        btnLoginTopo.classList.remove('btn-logout');
+        btnLoginTopo.onclick = () => abrirModalAuth('login');
+    }
+}
+
+// =================================================================================
+// --- FUNÇÕES DE API E MANIPULAÇÃO DE DADOS ---
 // =================================================================================
 async function buscarApi(endpoint, options = {}) {
-    const token = localStorage.getItem('jwtToken'); // Pega o token do localStorage
-
-    const headers = {
-        ...options.headers // Copia os headers existentes
-    };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`; // Adiciona o cabeçalho de autorização se houver token
-    }
-
-    // Define Content-Type como application/json por padrão para POST/PUT se não for especificado
-    if (options.body && typeof options.body === 'string' && (!headers['Content-Type'] || headers['Content-Type'] === '')) {
-        headers['Content-Type'] = 'application/json';
-    }
-    
-    // Remove Content-Type se o método for GET ou DELETE e não houver body
-    if ((options.method === 'GET' || options.method === 'DELETE') && !options.body) {
-        delete headers['Content-Type'];
-    }
-
-    const finalOptions = {
-        ...options,
-        headers: headers // Usa os headers atualizados
-    };
+    const token = localStorage.getItem('jwtToken');
+    const headers = { ...options.headers };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
+    const finalOptions = { ...options, headers };
 
     const response = await fetch(endpoint, finalOptions);
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-            message: `Erro ${response.status}: ${response.statusText}`
-        }));
-        
-        // Se o token for inválido ou expirado (401/403), força o logout
+        const errorData = await response.json().catch(() => ({ message: `Erro ${response.status}` }));
         if (response.status === 401 || response.status === 403) {
-            console.warn('Token expirado ou inválido. Forçando logout.');
-            logout(true); // Passa true para indicar que é um logout forçado
-            throw new Error('Sua sessão expirou ou é inválida. Por favor, faça login novamente.');
+            logout(true);
+            throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
         }
-        
         throw new Error(errorData.message);
     }
     return response.json();
 }
 
-// =================================================================================
-// --- LÓGICA PRINCIPAL DA APLICAÇÃO ---
-// =================================================================================
+// FUNÇÃO ATUALIZADA NA FASE 3
 async function buscarEExibirVeiculos() {
     const container = document.getElementById('botoes-veiculo');
-    // Verifica se o usuário está logado antes de tentar buscar veículos
     if (localStorage.getItem('usuarioLogado') !== 'true') {
         container.innerHTML = '<p>Faça login para ver e gerenciar seus veículos.</p>';
-        desselecionarVeiculo();
         return;
     }
-
     try {
-        garagemDB = await buscarApi('/api/veiculos'); // buscarApi enviará o token automaticamente
+        garagemDB = await buscarApi('/api/veiculos');
         container.innerHTML = '';
         if (garagemDB.length === 0) {
             container.innerHTML = '<p>Nenhum veículo na sua garagem.</p>';
@@ -174,41 +191,46 @@ async function buscarEExibirVeiculos() {
         }
         const lista = document.createElement('ul');
         lista.className = 'lista-veiculos-db';
+        const loggedInUserEmail = localStorage.getItem('userEmail');
+
         garagemDB.forEach(veiculoData => {
             const item = document.createElement('li');
             item.id = `veiculo-${veiculoData._id}`;
             
-            const infoSpan = document.createElement('span');
-            infoSpan.className = 'veiculo-info';
-            infoSpan.dataset.id = veiculoData._id;
-            infoSpan.innerHTML = `<strong>${veiculoData.placa}</strong> - ${veiculoData.marca} ${veiculoData.modelo}`;
-            
-            const actionsDiv = document.createElement('div');
-            actionsDiv.className = 'veiculo-actions';
-            actionsDiv.innerHTML = `
-                <button class="btn-edit" data-id="${veiculoData._id}">Editar</button>
-                <button class="btn-delete" data-id="${veiculoData._id}">Excluir</button>
+            const isOwner = veiculoData.owner && veiculoData.owner.email === loggedInUserEmail;
+            let sharedIndicatorHtml = '';
+
+            if (!isOwner && veiculoData.owner) {
+                sharedIndicatorHtml = `<span class="shared-indicator">(Compartilhado por ${veiculoData.owner.email})</span>`;
+            }
+
+            // Ações de Editar/Excluir só aparecem para o dono
+            const actionsHtml = isOwner ? `
+                <div class="veiculo-actions">
+                    <button class="btn-edit" data-id="${veiculoData._id}">Editar</button>
+                    <button class="btn-delete" data-id="${veiculoData._id}">Excluir</button>
+                </div>
+            ` : '';
+
+            item.innerHTML = `
+                <span class="veiculo-info" data-id="${veiculoData._id}">
+                    <strong>${veiculoData.placa}</strong> - ${veiculoData.marca} ${veiculoData.modelo} ${sharedIndicatorHtml}
+                </span>
+                ${actionsHtml}
             `;
             
-            item.appendChild(infoSpan);
-            item.appendChild(actionsDiv);
-
             item.addEventListener('click', (event) => {
                 if (!event.target.closest('button')) {
                     selecionarVeiculo(veiculoData._id);
                 }
             });
-
             lista.appendChild(item);
         });
         container.appendChild(lista);
     } catch (error) {
-        // Se buscarApi já chamou logout, o modal já foi aberto e o erro já foi alertado.
-        // Se for outro erro (ex: problema de rede), apenas alerta.
-        if (!error.message.includes('Sua sessão expirou')) { // Evita alertar duas vezes sobre expiração
+        if (!error.message.includes('Sua sessão expirou')) {
             mostrarAlerta(error.message, 'erro');
         }
-        desselecionarVeiculo();
     }
 }
 
@@ -217,19 +239,11 @@ async function selecionarVeiculo(veiculoId) {
     if (!veiculoData) return;
 
     switch (veiculoData.tipo) {
-        case 'Carro':
-            veiculoAtual = new Carro(veiculoData.modelo, veiculoData.cor);
-            break;
-        case 'CarroEsportivo':
-            veiculoAtual = new CarroEsportivo(veiculoData.modelo, veiculoData.cor);
-            break;
-        case 'Caminhao':
-            veiculoAtual = new Caminhao(veiculoData.modelo, veiculoData.cor);
-            break;
-        default:
-            return;
+        case 'Carro': veiculoAtual = new Carro(veiculoData.modelo, veiculoData.cor); break;
+        case 'CarroEsportivo': veiculoAtual = new CarroEsportivo(veiculoData.modelo, veiculoData.cor); break;
+        case 'Caminhao': veiculoAtual = new Caminhao(veiculoData.modelo, veiculoData.cor); break;
+        default: return;
     }
-    // Copia as propriedades do objeto do DB para a instância da classe Vehicle
     Object.assign(veiculoAtual, veiculoData);
     await carregarManutencoes(veiculoId);
     atualizarDisplayVeiculo();
@@ -241,117 +255,81 @@ function desselecionarVeiculo() {
 }
 
 function atualizarDisplayVeiculo() {
-    const nomeVeiculoEl = document.getElementById('nome-veiculo-selecionado');
-    const infoVeiculoEl = document.getElementById('informacoes-veiculo');
+    const nomeEl = document.getElementById('nome-veiculo-selecionado');
+    const infoEl = document.getElementById('informacoes-veiculo');
     const velocimetro = document.getElementById('velocimetro');
     const velocidadeTexto = document.getElementById('velocidade-texto');
-    const controlesVeiculoEl = document.getElementById('controles-veiculo');
+    const controlesEl = document.getElementById('controles-veiculo');
     const dicasContainer = document.getElementById('dicas-manutencao-container');
-    const formManutencaoContainer = document.getElementById('form-manutencao-container');
-    const historicoManutencaoEl = document.getElementById('historico-manutencao');
+    const formManutencao = document.getElementById('form-manutencao-container');
+    const historicoEl = document.getElementById('historico-manutencao');
 
     document.querySelectorAll('.lista-veiculos-db li').forEach(li => li.classList.remove('selecionado'));
 
     if (!veiculoAtual) {
-        nomeVeiculoEl.textContent = 'Nenhum';
-        infoVeiculoEl.innerHTML = '<p>Selecione um veículo na garagem.</p>';
-        controlesVeiculoEl.style.display = 'none';
+        nomeEl.textContent = 'Nenhum';
+        infoEl.innerHTML = '<p>Selecione um veículo na garagem.</p>';
+        controlesEl.style.display = 'none';
         dicasContainer.style.display = 'none';
-        formManutencaoContainer.style.display = 'none';
-        historicoManutencaoEl.innerHTML = '<p>Selecione um veículo para ver o histórico.</p>';
+        formManutencao.style.display = 'none';
+        historicoEl.innerHTML = '<p>Selecione um veículo para ver o histórico.</p>';
         return;
     }
 
-    const itemSelecionado = document.getElementById(`veiculo-${veiculoAtual._id}`);
-    if (itemSelecionado) itemSelecionado.classList.add('selecionado');
-
-    nomeVeiculoEl.textContent = `${veiculoAtual.marca} ${veiculoAtual.modelo}`;
-    
-    infoVeiculoEl.innerHTML = '';
-
-    const criarInfoLinha = (label, value) => {
-        const p = document.createElement('p');
-        const strong = document.createElement('strong');
-        strong.textContent = `${label}: `;
-        p.appendChild(strong);
-        p.append(value);
-        infoVeiculoEl.appendChild(p);
-    };
-
-    criarInfoLinha('Placa', veiculoAtual.placa);
-    criarInfoLinha('Marca', veiculoAtual.marca);
-    criarInfoLinha('Tipo', veiculoAtual.tipo);
-
-    const pStatus = document.createElement('p');
-    pStatus.innerHTML = `<strong>Status: </strong><span class="status-${veiculoAtual.ligado ? 'ligado' : 'desligado'}">${veiculoAtual.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span>`;
-    infoVeiculoEl.appendChild(pStatus);
-
-    if (veiculoAtual instanceof CarroEsportivo) {
-        const pTurbo = document.createElement('p');
-        pTurbo.innerHTML = `<strong>Turbo: </strong><span class="status-${veiculoAtual.turboAtivado ? 'ligado' : 'desligado'}">${veiculoAtual.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span>`;
-        infoVeiculoEl.appendChild(pTurbo);
-    }
-
+    document.getElementById(`veiculo-${veiculoAtual._id}`)?.classList.add('selecionado');
+    nomeEl.textContent = `${veiculoAtual.marca} ${veiculoAtual.modelo}`;
+    infoEl.innerHTML = `
+        <p><strong>Placa:</strong> ${veiculoAtual.placa}</p>
+        <p><strong>Marca:</strong> ${veiculoAtual.marca}</p>
+        <p><strong>Tipo:</strong> ${veiculoAtual.tipo}</p>
+        <p><strong>Status:</strong> <span class="status-${veiculoAtual.ligado ? 'ligado' : 'desligado'}">${veiculoAtual.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span></p>
+        ${veiculoAtual instanceof CarroEsportivo ? `<p><strong>Turbo:</strong> <span class="status-${veiculoAtual.turboAtivado ? 'ligado' : 'desligado'}">${veiculoAtual.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span></p>` : ''}
+    `;
     velocimetro.value = veiculoAtual.velocidade;
     velocimetro.max = veiculoAtual.velocidadeMaxima;
     velocidadeTexto.textContent = `${veiculoAtual.velocidade} km/h`;
-
-    controlesVeiculoEl.style.display = 'block';
+    controlesEl.style.display = 'block';
     dicasContainer.style.display = 'block';
-    formManutencaoContainer.style.display = 'block';
-    document.getElementById('dicas-resultado').innerHTML = '';
+    formManutencao.style.display = 'block';
     document.querySelectorAll('.acao-esportivo').forEach(el => el.style.display = (veiculoAtual instanceof CarroEsportivo) ? 'inline-block' : 'none');
 }
 
 async function carregarManutencoes(veiculoId) {
-    const historicoManutencaoEl = document.getElementById('historico-manutencao');
-    historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p><em>Carregando histórico...</em></p>';
-
+    const historicoEl = document.getElementById('historico-manutencao');
+    historicoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p><em>Carregando...</em></p>';
     try {
-        const manutenções = await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`); // buscarApi enviará o token
+        const manutenções = await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`);
         if (manutenções && manutenções.length > 0) {
             const listaHtml = manutenções.map(m => {
-                const custoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
-                const dataFormatada = new Date(m.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                const kmFormatado = m.quilometragem ? ` - ${m.quilometragem.toLocaleString('pt-BR')} km` : '';
-                return `<li><strong>${m.descricaoServico}</strong><br><small>Data: ${dataFormatada} | Custo: ${custoFormatado}${kmFormatado}</small></li>`;
+                const custo = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(m.custo);
+                const data = new Date(m.data).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                const km = m.quilometragem ? ` - ${m.quilometragem.toLocaleString('pt-BR')} km` : '';
+                return `<li><strong>${m.descricaoServico}</strong><br><small>Data: ${data} | Custo: ${custo}${km}</small></li>`;
             }).join('');
-            historicoManutencaoEl.innerHTML = `<h4>Histórico de Manutenção</h4><ul class="lista-manutencao">${listaHtml}</ul>`;
+            historicoEl.innerHTML = `<h4>Histórico de Manutenção</h4><ul class="lista-manutencao">${listaHtml}</ul>`;
         } else {
-            historicoManutencaoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p>Nenhum registro de manutenção para este veículo.</p>';
+            historicoEl.innerHTML = '<h4>Histórico de Manutenção</h4><p>Nenhum registro de manutenção.</p>';
         }
     } catch (error) {
-        historicoManutencaoEl.innerHTML = `<p class="api-erro">Erro ao carregar histórico: ${error.message}</p>`;
-        // A função buscarApi já lida com 401/403 e chama logout. Evita duplicidade de alerta.
-        if (!error.message.includes('Sua sessão expirou')) {
-            mostrarAlerta(`Erro ao carregar histórico de manutenção: ${error.message}`, 'erro');
-        }
+        historicoEl.innerHTML = `<p class="api-erro">Erro ao carregar histórico: ${error.message}</p>`;
     }
 }
 
+// =================================================================================
+// --- FUNÇÕES DE INTERAÇÃO E UTILITÁRIAS ---
+// =================================================================================
 function interagir(acao) {
     if (!veiculoAtual) return mostrarAlerta('Selecione um veículo!', 'erro');
-    if (typeof veiculoAtual[acao] === 'function') {
-        veiculoAtual[acao]();
-    }
+    if (typeof veiculoAtual[acao] === 'function') veiculoAtual[acao]();
 }
 
 function mostrarAlerta(mensagem, tipo = 'info') {
     const alertaContainer = document.getElementById('alerta-container');
-    if (alertaTimeout) clearTimeout(alertaTimeout);
-
+    clearTimeout(alertaTimeout);
     alertaContainer.textContent = mensagem;
-    alertaContainer.className = `alerta-${tipo}`; // Reseta e aplica a classe de tipo
-
+    alertaContainer.className = `alerta-${tipo}`;
     alertaContainer.classList.add('visivel');
-
-    alertaTimeout = setTimeout(() => {
-        alertaContainer.classList.remove('visivel');
-        // Pequeno delay para transição de saída antes de limpar o texto
-        setTimeout(() => {
-            alertaContainer.textContent = ''; 
-        }, 400); 
-    }, 4000); 
+    alertaTimeout = setTimeout(() => alertaContainer.classList.remove('visivel'), 4000);
 }
 
 function tocarSomVeiculo(acao) {
@@ -366,14 +344,12 @@ function tocarSomVeiculo(acao) {
 function exibirPrevisaoEstendida(dados) {
     const resultadoEl = document.getElementById('previsao-resultado');
     resultadoEl.innerHTML = `<h4>Previsão para ${dados.cidade}</h4>`;
-    const listaDiasEl = document.createElement('ul');
-    listaDiasEl.className = 'lista-previsao-dias';
-    dados.previsoes.slice(0, 5).forEach(previsaoDia => {
-        const itemDia = document.createElement('li');
-        itemDia.innerHTML = `<img src="${previsaoDia.icone}" alt="${previsaoDia.descricao}"><div class="dia-info"><strong>${previsaoDia.dia}</strong><span>${previsaoDia.descricao}</span></div><div class="dia-temp"><strong>${previsaoDia.temp_max}°</strong><span>${previsaoDia.temp_min}°</span></div>`;
-        listaDiasEl.appendChild(itemDia);
+    const lista = document.createElement('ul');
+    lista.className = 'lista-previsao-dias';
+    dados.previsoes.slice(0, 5).forEach(p => {
+        lista.innerHTML += `<li><img src="${p.icone}" alt="${p.descricao}"><div class="dia-info"><strong>${p.dia}</strong><span>${p.descricao}</span></div><div class="dia-temp"><strong>${p.temp_max}°</strong><span>${p.temp_min}°</span></div></li>`;
     });
-    resultadoEl.appendChild(listaDiasEl);
+    resultadoEl.appendChild(lista);
 }
 
 function abrirModalEdicao(veiculoId) {
@@ -393,143 +369,45 @@ function fecharModalEdicao() {
     document.getElementById('modal-editar').classList.remove('visivel');
 }
 
-// =================================================================================
-// --- FUNÇÕES DE AUTENTICAÇÃO E CONTROLE DE USO (NOVAS/ATUALIZADAS) ---
-// =================================================================================
 function abrirModalAuth(mode = 'login') {
-    console.log(`Abrindo modal de autenticação no modo: ${mode}`); // Depuração
     authMode = mode;
     const modal = document.getElementById('modal-login');
     const title = document.getElementById('auth-form-title');
-    const subtitle = document.getElementById('auth-form-subtitle');
     const submitBtn = document.getElementById('btn-submit-auth');
     const toggleLink = document.getElementById('link-toggle-auth');
-
-    // Correção: Garante que o display seja flex ANTES de adicionar a classe 'visivel' para que a transição comece corretamente.
-    modal.style.display = 'flex'; 
-
     if (authMode === 'login') {
         title.textContent = 'Acesse sua Garagem';
-        subtitle.textContent = 'Faça login para salvar suas manutenções e acessar recursos exclusivos.';
         submitBtn.textContent = 'Entrar';
         toggleLink.textContent = 'Não tem uma conta? Registre-se';
-        
-    } else { // 'register'
+    } else {
         title.textContent = 'Crie sua Conta';
-        subtitle.textContent = 'Registre-se para começar a usar todos os recursos!';
         submitBtn.textContent = 'Registrar';
         toggleLink.textContent = 'Já tem uma conta? Faça login';
-       
     }
     modal.classList.add('visivel');
 }
 
 function fecharModalAuth() {
-    console.log('Fechando modal de autenticação.'); // Depuração
-    const modal = document.getElementById('modal-login');
-    modal.classList.remove('visivel');
-    document.getElementById('form-auth').reset(); // Limpa o formulário
-
-    // Correção: Adiciona um setTimeout para definir display: none APÓS a transição de opacidade/visibilidade.
-    // O tempo deve ser igual ou um pouco maior que o `transition-duration` do CSS para `opacity` e `visibility` do modal-overlay.
-    setTimeout(() => {
-        modal.style.display = 'none';
-    }, 300); // 300ms é o transition-duration definido no CSS para o modal-overlay
+    document.getElementById('modal-login').classList.remove('visivel');
+    document.getElementById('form-auth').reset();
 }
-
-// Lógica para logout
-function logout(forced = false) {
-    console.log(`Realizando logout. Forçado: ${forced}`); // Depuração
-    localStorage.removeItem('jwtToken');
-    localStorage.removeItem('userEmail');
-    localStorage.setItem('usuarioLogado', 'false');
-    // localStorage.removeItem('contagemDeUso'); // REMOVIDO: Rastreamento de uso não é mais necessário.
-
-    if (!forced) {
-        mostrarAlerta('Logout realizado com sucesso!', 'info');
-    } else {
-        mostrarAlerta('Sua sessão expirou ou é inválida. Por favor, faça login novamente.', 'erro');
-    }
-    
-    updateHeaderAuthButton();
-    buscarEExibirVeiculos();
-    desselecionarVeiculo();
-    abrirModalAuth('login'); // SEMPRE ABRE O MODAL DE LOGIN APÓS O LOGOUT
-}
-
-// Função para atualizar o botão de Login/Logout no cabeçalho
-function updateHeaderAuthButton() {
-    const btnLoginTopo = document.getElementById('btn-abrir-login-topo');
-    const userEmail = localStorage.getItem('userEmail');
-
-    if (localStorage.getItem('jwtToken') && localStorage.getItem('usuarioLogado') === 'true') {
-        btnLoginTopo.textContent = `Olá, ${userEmail || 'Usuário'} (Sair)`;
-        btnLoginTopo.classList.add('btn-logout');
-        btnLoginTopo.onclick = logout;
-    } else {
-        btnLoginTopo.textContent = 'Login';
-        btnLoginTopo.classList.remove('btn-logout');
-        btnLoginTopo.onclick = () => abrirModalAuth('login');
-    }
-}
-
-// Chamada para verificar status de autenticação na inicialização
-async function checkAuthStatus() {
-    const token = localStorage.getItem('jwtToken');
-    if (token) {
-        try {
-            const response = await fetch('/api/auth/me', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                localStorage.setItem('usuarioLogado', 'true');
-                localStorage.setItem('userEmail', data.user.email);
-                // localStorage.removeItem('contagemDeUso'); // REMOVIDO: Rastreamento de uso não é mais necessário.
-                updateHeaderAuthButton();
-                // <<<<<<< AQUI ESTÁ A MUDANÇA CRÍTICA >>>>>>>
-                buscarEExibirVeiculos(); // CHAMA A FUNÇÃO PARA BUSCAR OS VEÍCULOS APÓS CONFIRMAR O LOGIN
-            } else {
-                console.log('Token expirado ou inválido. Realize o login novamente.');
-                logout(true);
-            }
-        } catch (error) {
-            console.error('Erro ao verificar token:', error);
-            logout(true);
-        }
-    } else {
-        // Se não há token, o usuário não está logado. Atualiza a UI e tenta buscar (que mostrará msg de login)
-        updateHeaderAuthButton();
-        buscarEExibirVeiculos();
-    }
-}
-
-
-// initializeUsageTracking() foi REMOVIDA, pois não é mais necessária.
-
 
 // =================================================================================
 // --- PONTO DE ENTRADA E EVENT LISTENERS ---
 // =================================================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Simplificado: checkAuthStatus agora gerencia a atualização da UI e a busca de veículos.
-    checkAuthStatus();
-    
-    // O onclick para btn-abrir-login-topo é definido em updateHeaderAuthButton()
+    checkAuthState();
 
+    document.getElementById('btn-login-welcome').addEventListener('click', () => abrirModalAuth('login'));
     document.getElementById('form-buscar-previsao').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const inputCidade = document.getElementById('cidade-input');
-        const cidade = inputCidade.value.trim();
+        const cidade = document.getElementById('cidade-input').value.trim();
         const resultadoEl = document.getElementById('previsao-resultado');
-        if (!cidade) return mostrarAlerta('Por favor, digite o nome de uma cidade.', 'erro');
-        resultadoEl.innerHTML = `<p><em>Buscando previsão para ${cidade}...</em> 🌍</p>`;
+        if (!cidade) return;
+        resultadoEl.innerHTML = `<p><em>Buscando...</em></p>`;
         try {
-            const dadosPrevisao = await buscarApi(`/api/previsao?cidade=${encodeURIComponent(cidade)}`);
-            exibirPrevisaoEstendida(dadosPrevisao);
+            const dados = await buscarApi(`/api/previsao?cidade=${encodeURIComponent(cidade)}`);
+            exibirPrevisaoEstendida(dados);
         } catch (error) {
             resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
         }
@@ -537,12 +415,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (localStorage.getItem('usuarioLogado') !== 'true') {
-            mostrarAlerta('Você precisa estar logado para adicionar veículos!', 'erro');
-            abrirModalAuth('login');
-            return;
-        }
-
         const novoVeiculo = {
             tipo: document.getElementById('tipo-veiculo').value,
             placa: document.getElementById('placa-veiculo').value,
@@ -552,45 +424,28 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('cor-veiculo').value
         };
         try {
-            await buscarApi('/api/veiculos', {
-                method: 'POST',
-                body: JSON.stringify(novoVeiculo)
-            });
-            mostrarAlerta('Veículo adicionado com sucesso!', 'info');
-            await buscarEExibirVeiculos();
+            await buscarApi('/api/veiculos', { method: 'POST', body: JSON.stringify(novoVeiculo) });
+            mostrarAlerta('Veículo adicionado!', 'sucesso');
             e.target.reset();
+            await buscarEExibirVeiculos();
         } catch (error) {
-            if (!error.message.includes('Sua sessão expirou')) {
-                 mostrarAlerta(error.message, 'erro');
-            }
+            mostrarAlerta(error.message, 'erro');
         }
     });
 
     document.getElementById('botoes-veiculo').addEventListener('click', async (event) => {
         const target = event.target.closest('button');
         if (!target) return;
-        
-        if (localStorage.getItem('usuarioLogado') !== 'true') {
-            mostrarAlerta('Você precisa estar logado para editar ou excluir veículos!', 'erro');
-            abrirModalAuth('login');
-            return;
-        }
-
         const veiculoId = target.dataset.id;
-
         if (target.classList.contains('btn-delete')) {
-            if (confirm('Tem certeza que deseja excluir este veículo e todo o seu histórico?')) {
+            if (confirm('Tem certeza que deseja excluir este veículo?')) {
                 try {
-                    await buscarApi(`/api/veiculos/${veiculoId}`, {
-                        method: 'DELETE'
-                    });
-                    mostrarAlerta('Veículo excluído com sucesso.', 'info');
+                    await buscarApi(`/api/veiculos/${veiculoId}`, { method: 'DELETE' });
+                    mostrarAlerta('Veículo excluído.', 'info');
                     if (veiculoAtual && veiculoAtual._id === veiculoId) desselecionarVeiculo();
                     await buscarEExibirVeiculos();
                 } catch (error) {
-                    if (!error.message.includes('Sua sessão expirou')) {
-                        mostrarAlerta(error.message, 'erro');
-                    }
+                    mostrarAlerta(error.message, 'erro');
                 }
             }
         } else if (target.classList.contains('btn-edit')) {
@@ -600,14 +455,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('form-edit-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (localStorage.getItem('usuarioLogado') !== 'true') {
-            mostrarAlerta('Você precisa estar logado para editar veículos!', 'erro');
-            abrirModalAuth('login');
-            return;
-        }
-
         const id = document.getElementById('edit-veiculo-id').value;
-        const dadosAtualizados = {
+        const dados = {
             tipo: document.getElementById('edit-tipo-veiculo').value,
             placa: document.getElementById('edit-placa-veiculo').value,
             marca: document.getElementById('edit-marca-veiculo').value,
@@ -616,68 +465,49 @@ document.addEventListener('DOMContentLoaded', () => {
             cor: document.getElementById('edit-cor-veiculo').value
         };
         try {
-            await buscarApi(`/api/veiculos/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(dadosAtualizados)
-            });
+            await buscarApi(`/api/veiculos/${id}`, { method: 'PUT', body: JSON.stringify(dados) });
             fecharModalEdicao();
-            mostrarAlerta('Veículo atualizado com sucesso!', 'info');
+            mostrarAlerta('Veículo atualizado!', 'sucesso');
             await buscarEExibirVeiculos();
             if (veiculoAtual && veiculoAtual._id === id) await selecionarVeiculo(id);
         } catch (error) {
-            if (!error.message.includes('Sua sessão expirou')) {
-                mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
-            }
+            mostrarAlerta(`Erro ao atualizar: ${error.message}`, 'erro');
         }
     });
 
-    document.getElementById('controles-veiculo').addEventListener('click', (event) => {
-        const acao = event.target.dataset.acao;
-        if (acao) interagir(acao);
+    document.getElementById('controles-veiculo').addEventListener('click', (e) => {
+        if (e.target.dataset.acao) interagir(e.target.dataset.acao);
     });
 
     document.getElementById('btn-buscar-dicas').addEventListener('click', async () => {
-        if (!veiculoAtual) return mostrarAlerta("Selecione um veículo.", "erro");
+        if (!veiculoAtual) return;
         const resultadoEl = document.getElementById('dicas-resultado');
         resultadoEl.innerHTML = '<em>Buscando...</em>';
         try {
-            const tipoParaAPI = veiculoAtual.tipo.toLowerCase();
-            const dicas = await buscarApi(`/api/dicas-manutencao/${tipoParaAPI}`);
+            const tipo = veiculoAtual.tipo.toLowerCase();
+            const dicas = await buscarApi(`/api/dicas-manutencao/${tipo}`);
             resultadoEl.innerHTML = `<ul>${dicas.map(d => `<li>${d.dica}</li>`).join('')}</ul>`;
         } catch (error) {
             resultadoEl.innerHTML = `<p class="api-erro">${error.message}</p>`;
         }
     });
-
+    
     document.getElementById('form-add-manutencao').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!veiculoAtual) return mostrarAlerta('Nenhum veículo selecionado.', 'erro');
-        if (localStorage.getItem('usuarioLogado') !== 'true') {
-            mostrarAlerta('Você precisa estar logado para registrar manutenções!', 'erro');
-            abrirModalAuth('login');
-            return;
-        }
-
-        const dadosFormulario = {
+        if (!veiculoAtual) return;
+        const dados = {
             data: document.getElementById('data-manutencao').value,
             descricaoServico: document.getElementById('descricao-servico-input').value,
             custo: parseFloat(document.getElementById('custo-manutencao').value),
             quilometragem: parseInt(document.getElementById('quilometragem-manutencao').value, 10) || null
         };
-
-        const veiculoId = veiculoAtual._id;
         try {
-            await buscarApi(`/api/veiculos/${veiculoId}/manutencoes`, {
-                method: 'POST',
-                body: JSON.stringify(dadosFormulario)
-            });
-            mostrarAlerta('Manutenção registrada com sucesso!', 'info');
+            await buscarApi(`/api/veiculos/${veiculoAtual._id}/manutencoes`, { method: 'POST', body: JSON.stringify(dados) });
+            mostrarAlerta('Manutenção registrada!', 'sucesso');
             e.target.reset();
-            await carregarManutencoes(veiculoId);
+            await carregarManutencoes(veiculoAtual._id);
         } catch (error) {
-            if (!error.message.includes('Sua sessão expirou')) {
-                mostrarAlerta(`Erro ao registrar manutenção: ${error.message}`, 'erro');
-            }
+            mostrarAlerta(error.message, 'erro');
         }
     });
 
@@ -689,52 +519,32 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const email = document.getElementById('auth-email').value;
         const password = document.getElementById('auth-password').value;
-
         try {
-            let response;
-            const authOptions = {
+            const response = await fetch(`/api/auth/${authMode}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password })
-            };
-
-            if (authMode === 'login') {
-                response = await fetch('/api/auth/login', authOptions);
-            } else { // register
-                response = await fetch('/api/auth/register', authOptions);
-            }
-
+            });
             const data = await response.json();
-
-            if (!response.ok) {
-                const errorMessage = data.message || (data.errors ? data.errors.join(', ') : 'Erro desconhecido.');
-                throw new Error(errorMessage);
-            }
-
+            if (!response.ok) throw new Error(data.message || 'Erro desconhecido.');
             localStorage.setItem('jwtToken', data.token);
             localStorage.setItem('userEmail', data.email);
             localStorage.setItem('usuarioLogado', 'true');
-
             mostrarAlerta(data.message, 'sucesso');
             fecharModalAuth();
-            updateHeaderAuthButton();
-            buscarEExibirVeiculos(); // Recarrega a garagem com os veículos do usuário logado
+            updateUIForAuthState(true);
+            buscarEExibirVeiculos();
         } catch (error) {
-            mostrarAlerta(`Erro de autenticação: ${error.message}`, 'erro');
+            mostrarAlerta(`Erro: ${error.message}`, 'erro');
         }
     });
 
     document.getElementById('link-toggle-auth').addEventListener('click', (e) => {
         e.preventDefault();
-        if (authMode === 'login') {
-            abrirModalAuth('register');
-        } else {
-            abrirModalAuth('login');
-        }
+        abrirModalAuth(authMode === 'login' ? 'register' : 'login');
     });
 
     document.getElementById('btn-continuar-sem-login').addEventListener('click', () => {
         fecharModalAuth();
-        buscarEExibirVeiculos(); 
     });
 });

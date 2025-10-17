@@ -1,740 +1,361 @@
-/* Importação da fonte Poppins do Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+/* ======================================================= */
+/* =========   TEMA ESCURO - GARAGEM VIRTUAL   =========== */
+/* ======================================================= */
 
-/* Variáveis CSS para cores e sombras */
 :root {
-    --cor-fundo-principal: #1a1a2e;
-    --cor-fundo-secundario: #16213e;
-    --cor-card: #0f3460;
-    --cor-borda: #e94560;
-    --cor-texto-principal: #e0e0e0;
-    --cor-texto-secundario: #a0a0a0;
-    --cor-sucesso: #28a745;
-    --cor-info: #17a2b8;
-    --cor-erro: #dc3545;
-    --sombra-leve: 0 4px 8px rgba(0, 0, 0, 0.2);
-    --sombra-media: 0 6px 12px rgba(0, 0, 0, 0.3);
+    /* Paleta Escura */
+    --cor-fundo: #1a1d24; /* Azul-ardósia quase preto */
+    --cor-fundo-secao: #282c34; /* Cinza-azulado escuro */
+    --cor-borda: #3a3f4b; /* Borda sutil, um pouco mais clara que a seção */
+    --cor-texto-principal: #e0e0e0; /* Branco suave para conforto visual */
+    --cor-texto-secundario: #8899a6; /* Cinza-azulado para textos secundários */
+
+    /* Paleta "Chamativa" de Destaque */
+    --cor-primaria: #00f6ff; /* Ciano elétrico vibrante */
+    --cor-sucesso: #39ff14; /* Verde neon */
+    --cor-erro: #ff1493; /* Rosa choque (Deep Pink) */
+    --cor-info: #f8f32b; /* Amarelo vibrante */
+    
+    /* Outros */
+    --sombra-box: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --fonte-principal: 'Poppins', sans-serif;
 }
 
-/* Reset básico e estilos globais */
+/* ======================================================= */
+/* ================== ESTILOS GERAIS ===================== */
+/* ======================================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Poppins', sans-serif;
 }
 
 body {
-    background-color: var(--cor-fundo-principal);
+    font-family: var(--fonte-principal);
+    background-color: var(--cor-fundo);
     color: var(--cor-texto-principal);
     line-height: 1.6;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
 }
 
-h1 {
-    color: var(--cor-borda);
-    text-align: center;
-    margin-bottom: 30px;
-    font-size: 2.5em;
-    text-shadow: var(--sombra-leve);
-}
-
-h2, h3, h4 {
-    color: var(--cor-borda);
-    margin-bottom: 15px;
-    text-align: center;
+h1, h2, h3 {
+    color: var(--cor-texto-principal);
+    margin-bottom: 0.75em;
+    font-weight: 600;
 }
 
 hr {
-    border: none;
-    border-top: 1px solid var(--cor-fundo-secundario);
-    margin: 20px 0;
+    border: 0;
+    height: 1px;
+    background-color: var(--cor-borda);
+    margin: 25px 0;
 }
 
-/* Container principal da aplicação */
+/* ======================================================= */
+/* ==================== CABEÇALHO ======================== */
+/* ======================================================= */
+.app-header {
+    background-color: var(--cor-fundo-secao);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--cor-borda);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.app-header h1 {
+    color: var(--cor-primaria);
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.btn-header-login {
+    padding: 8px 16px;
+    border: 1px solid var(--cor-primaria);
+    background-color: transparent;
+    color: var(--cor-primaria);
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-header-login:hover {
+    background-color: var(--cor-primaria);
+    color: #111;
+}
+
+.btn-header-login.btn-logout {
+    border-color: var(--cor-erro);
+    color: var(--cor-erro);
+}
+.btn-header-login.btn-logout:hover {
+    background-color: var(--cor-erro);
+    color: white;
+}
+
+/* ======================================================= */
+/* ============= LAYOUT PRINCIPAL E SEÇÕES =============== */
+/* ======================================================= */
 .container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    width: 100%;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 20px;
     max-width: 1400px;
+    margin: 0 auto;
 }
 
-/* Estilos para as caixas de seção */
 .section-box {
-    background-color: var(--cor-card);
+    background-color: var(--cor-fundo-secao);
     padding: 25px;
-    border-radius: 10px;
-    box-shadow: var(--sombra-media);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
 }
 
-/* Formulários */
+/* ======================================================= */
+/* =============== ESTILOS DAS REFATORAÇÕES ============== */
+/* ======================================================= */
+
+.hidden {
+    display: none !important;
+}
+
+#welcome-message {
+    text-align: center;
+    padding: 40px 20px;
+    margin: 40px auto;
+    border: none;
+    background: none;
+}
+
+#welcome-message h2 {
+    color: var(--cor-primaria);
+    font-size: 2.5em;
+}
+
+#welcome-message p {
+    color: var(--cor-texto-secundario);
+    font-size: 1.2em;
+}
+
+#welcome-message button {
+    padding: 12px 25px;
+    font-size: 1.2em;
+    cursor: pointer;
+    background-color: var(--cor-primaria);
+    color: #111;
+    border: none;
+    border-radius: 5px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-top: 20px;
+}
+
+#welcome-message button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 246, 255, 0.3);
+}
+
+/* ======================================================= */
+/* ============= FORMULÁRIOS E INPUTS ==================== */
+/* ======================================================= */
 form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
 form label {
     font-weight: 500;
-    color: var(--cor-texto-principal);
+    color: var(--cor-texto-secundario);
 }
 
-form input[type="text"],
-form input[type="number"],
-form input[type="email"],
-form input[type="password"],
-form input[type="date"],
-form select {
-    padding: 10px;
-    border: 1px solid var(--cor-fundo-secundario);
+form input, form select {
+    padding: 12px;
+    border: 1px solid var(--cor-borda);
     border-radius: 5px;
-    background-color: var(--cor-fundo-principal);
-    color: var(--cor-texto-principal);
     font-size: 1em;
-    width: 100%;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-family: var(--fonte-principal);
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto-principal);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-form input:focus,
-form select:focus {
+form input:focus, form select:focus {
     outline: none;
-    border-color: var(--cor-borda);
-    box-shadow: 0 0 0 2px rgba(var(--cor-borda), 0.5); /* Exemplo, ajuste a cor */
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 0 3px rgba(0, 246, 255, 0.2);
 }
 
-form button {
-    background-color: var(--cor-borda);
-    color: white;
-    padding: 12px 20px;
+form button[type="submit"] {
+    padding: 12px;
     border: none;
+    background-color: var(--cor-primaria);
+    color: #111;
     border-radius: 5px;
     cursor: pointer;
     font-size: 1.1em;
     font-weight: 600;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 15px;
+    margin-top: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-form button:hover {
-    background-color: #f0545f; /* Um pouco mais claro */
-    transform: translateY(-2px);
+form button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 246, 255, 0.3);
 }
 
-form button:active {
-    transform: translateY(0);
-}
-
-/* Botões da garagem (lista de veículos) */
+/* ======================================================= */
+/* ================ LISTA DE VEÍCULOS ==================== */
+/* ======================================================= */
 .lista-veiculos-db {
     list-style: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
 }
 
 .lista-veiculos-db li {
-    background-color: var(--cor-fundo-secundario);
-    padding: 10px 15px;
-    border-radius: 5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 12px 15px;
+    border: 1px solid var(--cor-borda);
+    border-left: 3px solid var(--cor-borda);
+    border-radius: 5px;
+    margin-bottom: 10px;
     cursor: pointer;
-    transition: background-color 0.2s ease, box-shadow 0.2s ease;
-    border: 1px solid transparent;
+    transition: background-color 0.2s ease, border-left-color 0.3s ease;
 }
 
 .lista-veiculos-db li:hover {
-    background-color: #283a62;
-    box-shadow: var(--sombra-leve);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--cor-info);
+}
+
+.shared-indicator {
+    font-size: 0.8em;
+    font-style: italic;
+    color: var(--cor-texto-secundario);
+    margin-left: 8px;
+    font-weight: 400;
 }
 
 .lista-veiculos-db li.selecionado {
-    border-color: var(--cor-borda);
-    background-color: #2e4a86;
-    box-shadow: var(--sombra-media);
-}
-
-.veiculo-info {
-    flex-grow: 1;
-    color: var(--cor-texto-principal);
-    font-size: 1.1em;
-    font-weight: 500;
-}
-
-.veiculo-actions {
-    display: flex;
-    gap: 8px;
+    background-color: rgba(0, 246, 255, 0.1);
+    border-left: 3px solid var(--cor-primaria);
+    font-weight: 600;
 }
 
 .veiculo-actions button {
-    padding: 8px 12px;
-    font-size: 0.9em;
-    margin-top: 0;
-    transition: all 0.2s ease;
+    padding: 5px 8px;
+    margin-left: 5px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: white;
+    transition: transform 0.2s ease;
+}
+.veiculo-actions button:hover {
+    transform: scale(1.1);
 }
 
-.veiculo-actions .btn-edit {
-    background-color: var(--cor-info);
-}
+.btn-edit { background-color: var(--cor-info); color: #111; }
+.btn-delete { background-color: var(--cor-erro); }
 
-.veiculo-actions .btn-edit:hover {
-    background-color: #1a8fb1;
-}
-
-.veiculo-actions .btn-delete {
-    background-color: var(--cor-erro);
-}
-
-.veiculo-actions .btn-delete:hover {
-    background-color: #c82333;
-}
-
-/* Display do veículo selecionado */
+/* ======================================================= */
+/* ================== DISPLAY VEÍCULO ==================== */
+/* ======================================================= */
 #informacoes-veiculo p {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    font-size: 1.1em;
 }
+.status-ligado { color: var(--cor-sucesso); font-weight: bold; }
+.status-desligado { color: var(--cor-erro); font-weight: bold; }
 
-#informacoes-veiculo p strong {
-    color: var(--cor-borda);
-}
-
-.status-ligado {
-    color: var(--cor-sucesso);
-    font-weight: bold;
-}
-
-.status-desligado {
-    color: var(--cor-erro);
-    font-weight: bold;
-}
-
-/* Velocímetro */
-#velocimetro-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-#velocimetro {
-    flex-grow: 1;
-    height: 20px;
-    -webkit-appearance: none;
-    appearance: none;
-    border-radius: 10px;
+progress {
+    width: 100%;
+    height: 12px;
+    border-radius: 6px;
     overflow: hidden;
-    background-color: var(--cor-fundo-principal);
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--cor-borda);
 }
-
-#velocimetro::-webkit-progress-bar {
-    background-color: var(--cor-fundo-principal);
+progress::-webkit-progress-bar {
+    background-color: var(--cor-fundo);
 }
-
-#velocimetro::-webkit-progress-value {
-    background-color: var(--cor-borda);
-    transition: width 0.5s ease-out;
-}
-
-#velocimetro::-moz-progress-bar {
-    background-color: var(--cor-borda);
-    transition: width 0.5s ease-out;
-}
-
-#velocidade-texto {
-    font-size: 1.2em;
-    font-weight: bold;
-    min-width: 80px; /* Garante que o texto não "dance" */
-    text-align: right;
-}
-
-/* Controles de ação do veículo */
-#controles-veiculo {
-    margin-top: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
+progress::-webkit-progress-value {
+    background: linear-gradient(90deg, var(--cor-info), var(--cor-primaria));
 }
 
 #controles-veiculo button {
-    flex: 1 1 auto; /* Permite que os botões se ajustem e quebrem linha */
-    min-width: 100px;
-    max-width: 180px;
-    background-color: var(--cor-info);
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
+    margin: 5px;
+    padding: 8px 12px;
     cursor: pointer;
-    font-size: 1em;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 0; /* Override do estilo de form button */
+    border-radius: 5px;
+    border: 1px solid var(--cor-texto-secundario);
+    background: transparent;
+    color: var(--cor-texto-secundario);
+    transition: all 0.3s ease;
 }
-
 #controles-veiculo button:hover {
-    background-color: #1a8fb1;
-    transform: translateY(-2px);
+    background-color: var(--cor-texto-secundario);
+    color: var(--cor-fundo-secao);
 }
 
-/* Estilos para o histórico de manutenção e formulário */
-#historico-manutencao {
-    background-color: var(--cor-fundo-secundario);
-    padding: 15px;
-    border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: inset 0 1px 5px rgba(0,0,0,0.2);
-}
-
-.lista-manutencao {
-    list-style: none;
-    padding: 0;
-}
-
-.lista-manutencao li {
-    background-color: var(--cor-fundo-principal);
-    margin-bottom: 8px;
-    padding: 10px 15px;
-    border-radius: 5px;
-    border-left: 5px solid var(--cor-borda);
-}
-
-.lista-manutencao li small {
-    color: var(--cor-texto-secundario);
-    font-size: 0.85em;
-}
-
-#form-manutencao-container form {
-    margin-top: 15px;
-}
-
-#form-manutencao-container form button {
-    background-color: var(--cor-sucesso);
-}
-
-#form-manutencao-container form button:hover {
-    background-color: #218838;
-}
-
-/* API Boxes (Previsão do Tempo e Dicas) */
-.api-box {
-    background-color: var(--cor-fundo-secundario);
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
-    min-height: 100px; /* Garante um tamanho mínimo para visualização */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-}
-
-.api-box p {
-    color: var(--cor-texto-secundario);
-}
-
-.api-erro {
-    color: var(--cor-erro);
-    font-weight: bold;
-}
-
-/* Previsão do tempo */
-.lista-previsao-dias {
-    list-style: none;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-.lista-previsao-dias li {
-    background-color: var(--cor-fundo-principal);
-    padding: 10px;
-    border-radius: 8px;
-    width: 120px;
-    text-align: center;
-    box-shadow: var(--sombra-leve);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.lista-previsao-dias li img {
-    width: 50px;
-    height: 50px;
-    margin-bottom: 5px;
-}
-
-.lista-previsao-dias li .dia-info strong {
-    display: block;
-    color: var(--cor-borda);
-    font-size: 1.1em;
-}
-
-.lista-previsao-dias li .dia-info span {
-    font-size: 0.8em;
-    color: var(--cor-texto-secundario);
-    text-transform: capitalize;
-}
-
-.lista-previsao-dias li .dia-temp {
-    margin-top: 8px;
-    font-size: 0.9em;
-}
-.lista-previsao-dias li .dia-temp strong {
-    color: var(--cor-texto-principal);
-    font-size: 1.2em;
-}
-.lista-previsao-dias li .dia-temp span {
-    color: var(--cor-texto-secundario);
-}
-
-
-/* Dicas de Manutenção */
-#dicas-manutencao-container button {
-    background-color: var(--cor-info);
-}
-#dicas-manutencao-container button:hover {
-    background-color: #1a8fb1;
-}
-
-#dicas-resultado ul {
-    list-style: disc;
-    padding-left: 20px;
-    text-align: left;
-    color: var(--cor-texto-secundario);
-    font-size: 0.95em;
-}
-
-#dicas-resultado li {
-    margin-bottom: 5px;
-}
-
-/* Alertas globais */
+/* ======================================================= */
+/* ===================== ALERTAS ========================= */
+/* ======================================================= */
 #alerta-container {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 12px 25px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    z-index: 1000;
-    box-shadow: var(--sombra-media);
-    opacity: 0; /* Inicia invisível */
-    transition: opacity 0.4s ease-in-out; /* Adiciona transição suave */
-    pointer-events: none; /* Não bloqueia cliques quando invisível */
-}
-
-#alerta-container.visivel {
-    opacity: 1; /* Torna visível */
-    pointer-events: auto; /* Permite interações (se houver alguma) */
-}
-
-.alerta-info {
-    background-color: var(--cor-info);
-}
-
-.alerta-erro {
-    background-color: var(--cor-erro);
-}
-
-/* Controles de Áudio */
-.audio-controls {
-    margin-top: 30px;
-    background-color: var(--cor-card);
-    padding: 15px 25px;
-    border-radius: 10px;
-    box-shadow: var(--sombra-media);
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    width: 100%;
-    max-width: 400px;
-}
-
-.audio-controls label {
-    font-weight: 500;
-    color: var(--cor-texto-principal);
-}
-
-#volume-control {
-    flex-grow: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    background: var(--cor-fundo-principal);
-    outline: none;
+    padding: 15px;
     border-radius: 5px;
-    transition: opacity .2s;
+    margin-bottom: 15px;
+    font-weight: 500;
+    color: #111; /* Texto escuro para melhor contraste */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
 }
+#alerta-container.visivel { opacity: 1; visibility: visible; }
+.alerta-info { background-color: var(--cor-info); }
+.alerta-erro { background-color: var(--cor-erro); color: white; }
+.alerta-sucesso { background-color: var(--cor-sucesso); }
 
-#volume-control::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--cor-borda);
-    cursor: pointer;
-    box-shadow: var(--sombra-leve);
-}
-
-#volume-control::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--cor-borda);
-    cursor: pointer;
-    box-shadow: var(--sombra-leve);
-}
-
-
-/* Modais (Edição e Login) */
+/* ======================================================= */
+/* ==================== MODAIS =========================== */
+/* ======================================================= */
 .modal-overlay {
-    display: none; /* Escondido por padrão, para não ocupar espaço */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
-    z-index: 1001; /* Garante que o overlay esteja acima de outros elementos */
-    align-items: center; /* Centraliza o conteúdo verticalmente */
-    justify-content: center; /* Centraliza o conteúdo horizontalmente */
-    opacity: 0; /* Começa invisível para transição */
-    visibility: hidden; /* Adicionado para garantir que não interaja antes de estar visível */
-    transition: opacity 0.3s ease-out, visibility 0.3s ease-out; /* Suaviza a entrada */
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
 }
-
-.modal-overlay.visivel {
-    /* display: flex; REMOVIDO. Será definido via JS em abrirModalAuth() */
-    opacity: 1; /* Torna-o visível */
-    visibility: visible; /* Torna-o visível para interações */
-}
-
+.modal-overlay.visivel { opacity: 1; visibility: visible; }
 .modal-content {
-    background-color: var(--cor-card);
+    background: var(--cor-fundo-secao);
     padding: 30px;
-    border-radius: 10px;
-    box-shadow: var(--sombra-media);
+    border-radius: 8px;
+    border: 1px solid var(--cor-borda);
     width: 90%;
     max-width: 500px;
     position: relative;
-    transform: translateY(-20px); /* Começa um pouco acima */
-    opacity: 0; /* Começa invisível para a transição do conteúdo */
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out; /* Suaviza a entrada */
+    box-shadow: 0 5px 25px rgba(0,0,0,0.5);
 }
-
-/* Quando o overlay está visível, o conteúdo também deve ficar */
-.modal-overlay.visivel .modal-content {
-    opacity: 1; /* Torna o conteúdo visível */
-    transform: translateY(0); /* Move para a posição final */
-}
-.modal-content h2 {
-    color: var(--cor-borda);
-    margin-bottom: 20px;
-    text-align: center;
-}
-
 .modal-close {
     position: absolute;
-    top: 15px;
+    top: 10px;
     right: 15px;
     background: none;
     border: none;
-    font-size: 1.8em;
+    font-size: 2em;
+    cursor: pointer;
     color: var(--cor-texto-secundario);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.modal-close:hover {
-    color: var(--cor-borda);
-}
-
-.modal-content form button.btn-secondary {
-    background-color: var(--cor-fundo-secundario);
-    color: var(--cor-texto-principal);
-    margin-top: 10px;
-}
-.modal-content form button.btn-secondary:hover {
-    background-color: #283a62;
-}
-
-
-/* Media Queries para responsividade */
-@media (max-width: 768px) {
-    h1 {
-        font-size: 2em;
-    }
-
-    .container {
-        grid-template-columns: 1fr;
-    }
-
-    .section-box {
-        padding: 20px;
-    }
-
-    .veiculo-actions {
-        flex-direction: column;
-        gap: 5px;
-    }
-
-    .veiculo-actions button {
-        width: 100%;
-        max-width: none;
-    }
-
-    #controles-veiculo button {
-        min-width: unset;
-        flex: 1 1 45%; /* 2 colunas */
-    }
-
-    .lista-previsao-dias {
-        gap: 10px;
-    }
-
-    .lista-previsao-dias li {
-        width: 100px;
-        padding: 8px;
-    }
-
-    .audio-controls {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    #modal-login .modal-content {
-        padding: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-    h1 {
-        font-size: 1.8em;
-        margin-bottom: 20px;
-    }
-    .section-box {
-        padding: 15px;
-    }
-    form button {
-        padding: 10px 15px;
-        font-size: 1em;
-    }
-    #controles-veiculo button {
-        flex: 1 1 100%; /* 1 coluna */
-    }
-    .lista-previsao-dias li {
-        width: 100%; /* Ocupa a largura total */
-    }
-}
-
-/* Estilos para o novo cabeçalho do app */
-.app-header {
-    width: 100%;
-    max-width: 1400px; /* Alinhe com a largura máxima do container */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px; /* Espaçamento abaixo do cabeçalho */
-    padding: 10px 20px; /* Padding interno para o cabeçalho */
-    background-color: var(--cor-card); /* Mesma cor dos cards para manter a consistência */
-    border-radius: 10px;
-    box-shadow: var(--sombra-media);
-}
-
-.app-header h1 {
-    margin: 0; /* Remove margem padrão do h1 para centralizar melhor */
-    font-size: 2em; /* Ajuste o tamanho da fonte se necessário */
-}
-
-/* Estilos para o botão de login no cabeçalho */
-.btn-header-login {
-    background-color: var(--cor-info); /* Cor de informação para o botão */
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: 500;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-.btn-header-login:hover {
-    background-color: #1a8fb1;
-    transform: translateY(-2px);
-}
-
-/* Ajuste para h1 dentro do header para evitar conflito com o estilo global */
-.app-header h1 {
-    color: var(--cor-borda);
-    text-align: left; /* Alinha o título à esquerda no header */
-    margin-bottom: 0; /* Remove margem inferior para alinhamento */
-    font-size: 2.2em; /* Ajuste se necessário */
-}
-
-/* Media Queries para responsividade do cabeçalho */
-@media (max-width: 768px) {
-    .app-header {
-        flex-direction: column; /* Empilha os itens em telas menores */
-        gap: 15px;
-        padding: 15px;
-    }
-    .app-header h1 {
-        text-align: center; /* Centraliza o título */
-    }
-}
-
-@media (max-width: 480px) {
-    .app-header h1 {
-        font-size: 1.8em;
-    }
-    .btn-header-login {
-        padding: 8px 12px;
-        font-size: 0.9em;
-    }
-}
-
-/* Estilos para o link de alternância Login/Registro */
-.text-link {
-    color: var(--cor-info);
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease;
-}
-
-.text-link:hover {
-    color: #1a8fb1;
-    text-decoration: underline;
-}
-
-/* Estilo para o botão de logout no cabeçalho */
-.btn-header-login.btn-logout {
-    background-color: var(--cor-erro); /* Uma cor diferente para logout */
-}
-
-.btn-header-login.btn-logout:hover {
-    background-color: #c82333;
 }

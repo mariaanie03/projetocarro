@@ -15,7 +15,20 @@
         <button id="btn-abrir-login-topo" class="btn-header-login">Login</button>
     </header>
 
-    <div class="container">
+    <!-- ======================================================= -->
+    <!-- ========= SEÇÃO DE BOAS-VINDAS PARA VISITANTES ======== -->
+    <!-- ======================================================= -->
+    <div id="welcome-message" class="section-box hidden">
+        <h2>Bem-vindo à Garagem Virtual Interativa!</h2>
+        <p>Acesse sua conta ou crie um novo registro para começar a gerenciar seus veículos de forma fácil e divertida.</p>
+        <p>Com a nossa ferramenta, você pode adicionar carros, registrar manutenções, obter dicas e muito mais!</p>
+        <button id="btn-login-welcome" class="btn-header-login">Acessar ou Registrar</button>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- ========= CONTAINER PRINCIPAL DA APLICAÇÃO ============ -->
+    <!-- ======================================================= -->
+    <div class="container" id="main-app-container">
         <!-- SEÇÃO 1: GARAGEM E FORMULÁRIO -->
         <div class="selecao-veiculo section-box">
             <h2>Veículos na Garagem</h2>
@@ -129,8 +142,8 @@
                 <label for="auth-email">Email:</label>
                 <input type="email" id="auth-email" placeholder="seu@email.com" required>
                 
-            <label for="auth-password">Senha (mín. 6 caracteres):</label>
-            <input type="password" id="auth-password" placeholder="••••••••" required minlength="6">
+                <label for="auth-password">Senha (mín. 6 caracteres):</label>
+                <input type="password" id="auth-password" placeholder="••••••••" required minlength="6">
                 
                 <button type="submit" id="btn-submit-auth">Entrar</button>
             </form>
@@ -161,7 +174,7 @@
     <!-- MODAL DE EDIÇÃO -->
     <div id="modal-editar" class="modal-overlay">
         <div class="modal-content">
-           <button class="modal-close" onclick="fecharModalAuth()">&times;</button>
+            <button class="modal-close" onclick="fecharModalEdicao()">&times;</button>
             <h2>Editar Veículo</h2>
             <form id="form-edit-veiculo">
                 <input type="hidden" id="edit-veiculo-id">
