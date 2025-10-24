@@ -193,15 +193,15 @@ app.post('/api/veiculos', authenticateToken, createVehicleLimiter, [
     }
 });
 
-// LER todos os Veículos (próprios e compartilhados) DO USUÁRIO LOGADO - (ALTERADO NA FASE 3)
+// LER todos os Veículos (próprios e compartilhados) DO USUÁRIO LOGADO
 app.get('/api/veiculos', authenticateToken, async (req, res) => {
     try {
-        const userId = req.user.id; // ID do usuário logado
+        const userId = req.user.id; 
 
         const todosOsVeiculos = await Veiculo.find({
             $or: [
-                { owner: userId },       // Condição 1: Veículos que eu possuo
-                { sharedWith: userId }   // Condição 2: Veículos compartilhados comigo
+                { owner: userId },
+                { sharedWith: userId }
             ]
         })
         .populate({
@@ -209,7 +209,8 @@ app.get('/api/veiculos', authenticateToken, async (req, res) => {
             model: 'Manutencao',
             options: { sort: { 'data': -1 } }
         })
-        .populate('owner', 'email') // Popula o dono para sabermos o email dele no frontend
+        .populate('owner', 'email')
+        .populate('sharedWith', 'email') // <<< ALTERAÇÃO DESTA FASE
         .sort({ createdAt: -1 });
 
         res.status(200).json(todosOsVeiculos);
@@ -271,7 +272,7 @@ app.delete('/api/veiculos/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// NOVA ROTA: COMPARTILHAR UM VEÍCULO (FASE 2)
+// ROTA: COMPARTILHAR UM VEÍCULO
 app.post('/api/veiculos/:veiculoId/share', authenticateToken, async (req, res) => {
     try {
         const { veiculoId } = req.params;
@@ -314,6 +315,45 @@ app.post('/api/veiculos/:veiculoId/share', authenticateToken, async (req, res) =
     }
 });
 
+// ROTA: REVOGAR O COMPARTILHAMENTO DE UM VEÍCULO
+app.post('/api/veiculos/:veiculoId/unshare', authenticateToken, async (req, res) => {
+    try {
+        const { veiculoId } = req.params;
+        const { emailToRemove } = req.body;
+        const ownerId = req.user.id;
+
+        if (!emailToRemove) {
+            return res.status(400).json({ message: "O email do usuário para remover o acesso é obrigatório." });
+        }
+
+        const veiculo = await Veiculo.findById(veiculoId);
+        if (!veiculo) {
+            return res.status(404).json({ message: "Veículo não encontrado." });
+        }
+        
+        const userToRemove = await User.findOne({ email: emailToRemove.toLowerCase() });
+        if (!userToRemove) {
+            return res.status(404).json({ message: `Usuário com o email "${emailToRemove}" não encontrado.` });
+        }
+
+        if (veiculo.owner.toString() !== ownerId) {
+            return res.status(403).json({ message: "Acesso proibido. Apenas o proprietário pode revogar o acesso." });
+        }
+
+        await Veiculo.updateOne(
+            { _id: veiculoId },
+            { $pull: { sharedWith: userToRemove._id } }
+        );
+
+        res.status(200).json({ message: `Acesso ao veículo removido com sucesso para ${emailToRemove}.` });
+
+    } catch (error) {
+        console.error('❌ Erro ao revogar o compartilhamento do veículo:', error);
+        res.status(500).json({ message: 'Erro interno do servidor ao revogar o compartilhamento.' });
+    }
+});
+
+
 // --- ROTAS PARA MANUTENÇÕES ---
 
 // CRIAR UMA NOVA MANUTENÇÃO
@@ -332,7 +372,7 @@ app.post('/api/veiculos/:veiculoId/manutencoes', authenticateToken, [
         if (!veiculo) {
             return res.status(404).json({ message: "Veículo não encontrado." });
         }
-        // Permite que o dono OU um usuário compartilhado adicione manutenção
+
         if (veiculo.owner.toString() !== req.user.id && !veiculo.sharedWith.map(id => id.toString()).includes(req.user.id)) {
             return res.status(403).json({ message: "Você não tem permissão para adicionar manutenções a este veículo." });
         }

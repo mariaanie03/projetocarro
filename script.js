@@ -263,6 +263,11 @@ function atualizarDisplayVeiculo() {
     const historicoEl = document.getElementById('historico-manutencao');
     const shareFormContainer = document.getElementById('form-share-container');
 
+    const oldSharedList = document.getElementById('shared-list-container');
+    if (oldSharedList) {
+        oldSharedList.remove();
+    }
+
     document.querySelectorAll('.lista-veiculos-db li').forEach(li => li.classList.remove('selecionado'));
 
     if (!veiculoAtual) {
@@ -290,6 +295,28 @@ function atualizarDisplayVeiculo() {
         <p><strong>Status:</strong> <span class="status-${veiculoAtual.ligado ? 'ligado' : 'desligado'}">${veiculoAtual.ligado ? 'Ligado ✅' : 'Desligado ❌'}</span></p>
         ${veiculoAtual instanceof CarroEsportivo ? `<p><strong>Turbo:</strong> <span class="status-${veiculoAtual.turboAtivado ? 'ligado' : 'desligado'}">${veiculoAtual.turboAtivado ? 'Ativado 🔥' : 'Desativado'}</span></p>` : ''}
     `;
+    
+    if (isOwner && veiculoAtual.sharedWith && veiculoAtual.sharedWith.length > 0) {
+        const sharedContainer = document.createElement('div');
+        sharedContainer.id = 'shared-list-container';
+        sharedContainer.className = 'shared-section';
+
+        let listHTML = '<h4>Compartilhado Com:</h4><ul class="lista-shared">';
+        veiculoAtual.sharedWith.forEach(user => {
+            listHTML += `
+                <li>
+                    <span>${user.email}</span>
+                    <button class="btn-unshare" data-email="${user.email}" title="Remover acesso de ${user.email}">
+                        &times;
+                    </button>
+                </li>
+            `;
+        });
+        listHTML += '</ul>';
+        sharedContainer.innerHTML = listHTML;
+        shareFormContainer.insertAdjacentElement('afterend', sharedContainer);
+    }
+    
     velocimetro.value = veiculoAtual.velocidade;
     velocimetro.max = veiculoAtual.velocidadeMaxima;
     velocidadeTexto.textContent = `${veiculoAtual.velocidade} km/h`;
@@ -319,6 +346,29 @@ async function carregarManutencoes(veiculoId) {
         historicoEl.innerHTML = `<p class="api-erro">Erro ao carregar histórico: ${error.message}</p>`;
     }
 }
+
+async function handleUnshare(veiculoId, emailToRemove) {
+    if (!confirm(`Tem certeza que deseja remover o acesso de ${emailToRemove} a este veículo?`)) {
+        return;
+    }
+    try {
+        const response = await buscarApi(`/api/veiculos/${veiculoId}/unshare`, {
+            method: 'POST',
+            body: JSON.stringify({ emailToRemove })
+        });
+
+        mostrarAlerta(response.message, 'sucesso');
+        
+        if (veiculoAtual && veiculoAtual._id === veiculoId) {
+            veiculoAtual.sharedWith = veiculoAtual.sharedWith.filter(user => user.email !== emailToRemove);
+            atualizarDisplayVeiculo(); 
+        }
+
+    } catch (error) {
+        mostrarAlerta(`Erro ao remover acesso: ${error.message}`, 'erro');
+    }
+}
+
 
 // =================================================================================
 // --- FUNÇÕES DE INTERAÇÃO E UTILITÁRIAS ---
@@ -493,6 +543,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             mostrarAlerta(response.message, 'sucesso');
             e.target.reset();
+            // Para atualizar a lista, podemos rebuscar os dados ou adicionar localmente.
+            // Rebuscar é mais simples e garante consistência.
+            const veiculoId = veiculoAtual._id;
+            await buscarEExibirVeiculos();
+            await selecionarVeiculo(veiculoId);
+            
         } catch (error) {
             mostrarAlerta(`Erro ao compartilhar: ${error.message}`, 'erro');
         }
@@ -569,5 +625,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btn-continuar-sem-login').addEventListener('click', () => {
         fecharModalAuth();
+    });
+
+    // EVENT LISTENER DELEGADO CORRIGIDO
+    document.getElementById('main-app-container').addEventListener('click', (event) => {
+        if (event.target.classList.contains('btn-unshare')) {
+            const emailToRemove = event.target.dataset.email;
+            if (veiculoAtual && emailToRemove) {
+                handleUnshare(veiculoAtual._id, emailToRemove);
+            }
+        }
     });
 });
