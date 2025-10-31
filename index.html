@@ -35,25 +35,35 @@
             <div id="botoes-veiculo"></div>
             <hr>
             <h2>Adicionar Novo Veículo</h2>
-            <form id="form-add-veiculo">
+            <!-- FASE 2: Adicionado enctype="multipart/form-data" para permitir o upload de arquivos -->
+            <form id="form-add-veiculo" enctype="multipart/form-data">
                 <label for="tipo-veiculo">Tipo:</label>
-                <select id="tipo-veiculo" required>
+                <select id="tipo-veiculo" name="tipo" required>
                     <option value="" disabled selected>Selecione</option>
                     <option value="Carro">Carro</option>
                     <option value="CarroEsportivo">Carro Esportivo</option>
                     <option value="Caminhao">Caminhão</option>
                 </select>
+
                 <label for="placa-veiculo">Placa:</label>
-                <input type="text" id="placa-veiculo" placeholder="Ex: ABC1D23 ou ABC1234" required minlength="7" maxlength="7" pattern="^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$" title="Formato de placa inválido (Ex: ABC1D23 ou ABC1234)">  
+                <input type="text" id="placa-veiculo" name="placa" placeholder="Ex: ABC1D23 ou ABC1234" required minlength="7" maxlength="7" pattern="^[A-Z]{3}\d{1}[A-Z]{1}\d{2}$|^[A-Z]{3}\d{4}$" title="Formato de placa inválido (Ex: ABC1D23 ou ABC1234)">  
                 
                 <label for="marca-veiculo">Marca:</label>
-                <input type="text" id="marca-veiculo" placeholder="Ex: Volkswagen" required>
+                <input type="text" id="marca-veiculo" name="marca" placeholder="Ex: Volkswagen" required>
+
                 <label for="modelo-veiculo">Modelo:</label>
-                <input type="text" id="modelo-veiculo" placeholder="Ex: Fusca" required>
+                <input type="text" id="modelo-veiculo" name="modelo" placeholder="Ex: Fusca" required>
+
                 <label for="ano-veiculo">Ano:</label>
-                <input type="number" id="ano-veiculo" placeholder="Ex: 1975" required min="1900">
+                <input type="number" id="ano-veiculo" name="ano" placeholder="Ex: 1975" required min="1900">
+
                 <label for="cor-veiculo">Cor:</label>
-                <input type="text" id="cor-veiculo" placeholder="Ex: Azul" required>
+                <input type="text" id="cor-veiculo" name="cor" placeholder="Ex: Azul" required>
+
+                <!-- FASE 2: Adicionado campo de input para a imagem -->
+                <label for="imagem-veiculo">Imagem do Veículo (Opcional):</label>
+                <input type="file" id="imagem-veiculo" name="imagemVeiculo" accept="image/png, image/jpeg, image/webp">
+
                 <button type="submit">Adicionar à Garagem</button>
             </form>
         </div>
@@ -62,6 +72,10 @@
         <div class="display-veiculo section-box">
             <h2>Veículo Selecionado: <span id="nome-veiculo-selecionado">Nenhum</span></h2>
             <div id="alerta-container"></div>
+
+            <!-- FASE 2: Contêiner para exibir a imagem do veículo -->
+            <div id="imagem-veiculo-display"></div>
+            
             <div id="informacoes-veiculo">
                 <p>Selecione um veículo na garagem.</p>
             </div>

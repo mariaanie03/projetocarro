@@ -155,12 +155,23 @@ function updateHeaderAuthButton() {
 // =================================================================================
 // --- FUNÇÕES DE API E MANIPULAÇÃO DE DADOS ---
 // =================================================================================
+
+// --- FASE 2: Função buscarApi atualizada ---
+// Agora ela não define 'Content-Type' se o body for FormData
 async function buscarApi(endpoint, options = {}) {
     const token = localStorage.getItem('jwtToken');
     const headers = { ...options.headers };
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    if (options.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
-    const finalOptions = { ...options, headers };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Não definir Content-Type se o corpo for FormData (o browser faz isso)
+    if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
+    }
+
+    const finalOptions = { ...options, headers, body: options.body };
 
     const response = await fetch(endpoint, finalOptions);
     if (!response.ok) {
@@ -169,10 +180,11 @@ async function buscarApi(endpoint, options = {}) {
             logout(true);
             throw new Error('Sua sessão expirou. Por favor, faça login novamente.');
         }
-        throw new Error(errorData.message);
+        throw new Error(errorData.message || 'Ocorreu um erro desconhecido.');
     }
     return response.json();
 }
+
 
 async function buscarEExibirVeiculos() {
     const container = document.getElementById('botoes-veiculo');
@@ -252,9 +264,11 @@ function desselecionarVeiculo() {
     atualizarDisplayVeiculo();
 }
 
+// --- FASE 2: Função de display atualizada para mostrar a imagem ---
 function atualizarDisplayVeiculo() {
     const nomeEl = document.getElementById('nome-veiculo-selecionado');
     const infoEl = document.getElementById('informacoes-veiculo');
+    const imagemDisplayEl = document.getElementById('imagem-veiculo-display'); // Pega o contêiner da imagem
     const velocimetro = document.getElementById('velocimetro');
     const velocidadeTexto = document.getElementById('velocidade-texto');
     const controlesEl = document.getElementById('controles-veiculo');
@@ -263,6 +277,8 @@ function atualizarDisplayVeiculo() {
     const historicoEl = document.getElementById('historico-manutencao');
     const shareFormContainer = document.getElementById('form-share-container');
 
+    // Limpa conteúdo anterior
+    imagemDisplayEl.innerHTML = '';
     const oldSharedList = document.getElementById('shared-list-container');
     if (oldSharedList) {
         oldSharedList.remove();
@@ -279,6 +295,15 @@ function atualizarDisplayVeiculo() {
         shareFormContainer.style.display = 'none';
         historicoEl.innerHTML = '<p>Selecione um veículo para ver o histórico.</p>';
         return;
+    }
+
+    // Exibe a imagem se ela existir
+    if (veiculoAtual.imageUrl) {
+        const img = document.createElement('img');
+        img.src = veiculoAtual.imageUrl; // O caminho já vem correto do backend
+        img.alt = `Imagem de ${veiculoAtual.marca} ${veiculoAtual.modelo}`;
+        img.className = 'imagem-veiculo-selecionado';
+        imagemDisplayEl.appendChild(img);
     }
 
     const loggedInUserEmail = localStorage.getItem('userEmail');
@@ -468,25 +493,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- FASE 2: Event Listener do formulário atualizado para usar FormData ---
     document.getElementById('form-add-veiculo').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const novoVeiculo = {
-            tipo: document.getElementById('tipo-veiculo').value,
-            placa: document.getElementById('placa-veiculo').value,
-            marca: document.getElementById('marca-veiculo').value,
-            modelo: document.getElementById('modelo-veiculo').value,
-            ano: document.getElementById('ano-veiculo').value,
-            cor: document.getElementById('cor-veiculo').value
-        };
+        const form = e.target;
+        const formData = new FormData(form); // Cria o FormData a partir do formulário
+
         try {
-            await buscarApi('/api/veiculos', { method: 'POST', body: JSON.stringify(novoVeiculo) });
-            mostrarAlerta('Veículo adicionado!', 'sucesso');
-            e.target.reset();
-            await buscarEExibirVeiculos();
+            // Envia o FormData diretamente. A função buscarApi irá lidar com o token.
+            await buscarApi('/api/veiculos', {
+                method: 'POST',
+                body: formData // Não usamos JSON.stringify aqui
+            });
+
+            mostrarAlerta('Veículo adicionado com sucesso!', 'sucesso');
+            form.reset(); // Limpa o formulário
+            await buscarEExibirVeiculos(); // Atualiza a lista de veículos
         } catch (error) {
-            mostrarAlerta(error.message, 'erro');
+            mostrarAlerta(`Erro ao adicionar veículo: ${error.message}`, 'erro');
         }
     });
+
 
     document.getElementById('botoes-veiculo').addEventListener('click', async (event) => {
         const target = event.target.closest('button');
@@ -543,8 +570,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             mostrarAlerta(response.message, 'sucesso');
             e.target.reset();
-            // Para atualizar a lista, podemos rebuscar os dados ou adicionar localmente.
-            // Rebuscar é mais simples e garante consistência.
             const veiculoId = veiculoAtual._id;
             await buscarEExibirVeiculos();
             await selecionarVeiculo(veiculoId);
@@ -627,7 +652,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fecharModalAuth();
     });
 
-    // EVENT LISTENER DELEGADO CORRIGIDO
     document.getElementById('main-app-container').addEventListener('click', (event) => {
         if (event.target.classList.contains('btn-unshare')) {
             const emailToRemove = event.target.dataset.email;
